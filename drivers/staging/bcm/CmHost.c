@@ -550,7 +550,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	/* UCHAR ucProtocolLength = 0; */
 	ULONG sf_id;
 	UINT classifier_idx = 0;
-	enum E_CLASSIFIER_ACTION eClassifierAction = eInvalidClassifierAction;
+	enum E_CLASSIFIER_ACTION classifier_action = eInvalidClassifierAction;
 	B_UINT16 packet_classification_rule_idx = 0;
 	int i;
 	struct bcm_convergence_types *cs_type = NULL;
@@ -653,26 +653,26 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			curr_packinfo->bClassifierPriority = TRUE;
 
 		if (dsx_type == DSA_ACK) {
-			eClassifierAction = eAddClassifier;
+			classifier_action = eAddClassifier;
 		} else if (dsx_type == DSC_ACK) {
 			switch (cs_type->u8ClassfierDSCAction) {
 			case 0: /* DSC Add Classifier */
-				eClassifierAction = eAddClassifier;
+				classifier_action = eAddClassifier;
 				break;
 			case 1: /* DSC Replace Classifier */
-				eClassifierAction = eReplaceClassifier;
+				classifier_action = eReplaceClassifier;
 				break;
 			case 2: /* DSC Delete Classifier */
-				eClassifierAction = eDeleteClassifier;
+				classifier_action = eDeleteClassifier;
 				break;
 			default:
-				eClassifierAction = eInvalidClassifierAction;
+				classifier_action = eInvalidClassifierAction;
 			}
 		}
 
 		packet_classification_rule_idx = ntohs(cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 
-		switch (eClassifierAction) {
+		switch (classifier_action) {
 		case eAddClassifier:
 			/* Get a Free Classifier Index From Classifier table for this SF to add the Classifier */
 			/* Contained in this message */

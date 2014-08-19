@@ -14,7 +14,7 @@ enum E_CLASSIFIER_ACTION {
 };
 
 static ULONG GetNextTargetBufferLocation(struct bcm_mini_adapter *ad,
-		B_UINT16 tid);
+					 B_UINT16 tid);
 static void restore_endianess_of_classifier_entry(
 		struct bcm_classifier_rule *classifier_entry,
 		enum bcm_ipaddr_context ip_addr_context);
@@ -80,8 +80,8 @@ static int SearchFreeSfid(struct bcm_mini_adapter *ad)
  * Return: int :Classifier table index of matching entry
  */
 static int SearchClsid(struct bcm_mini_adapter *ad,
-		ULONG sf_id,
-		B_UINT16 classifier_id)
+		       ULONG sf_id,
+		       B_UINT16 classifier_id)
 {
 	int i;
 
@@ -113,8 +113,7 @@ static int SearchFreeClsid(struct bcm_mini_adapter *ad /**ad Context*/)
 	return MAX_CLASSIFIERS+1;
 }
 
-static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
-		UINT search_rule_idx)
+static VOID deleteSFBySfid(struct bcm_mini_adapter *ad, UINT search_rule_idx)
 {
 	/* deleting all the packet held in the SF */
 	flush_queue(ad, search_rule_idx);
@@ -129,8 +128,10 @@ static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
 
 static inline VOID
 CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
-		B_UINT8 ip_addr_len, B_UINT8 *ip_addr_mask_src,
-		bool ip_v6, enum bcm_ipaddr_context ip_addr_context)
+		       B_UINT8 ip_addr_len,
+		       B_UINT8 *ip_addr_mask_src,
+		       bool ip_v6,
+		       enum bcm_ipaddr_context ip_addr_context)
 {
 	int i = 0;
 	UINT ip_addr_byte_len = IP_LENGTH_OF_ADDRESS;
@@ -162,26 +163,20 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			classifier_entry->ucIPDestinationAddressLength =
 				ip_addr_len/(ip_addr_byte_len * 2);
 			if (ip_v6) {
-				classifier_ip_addr =
-					st_dest_ip->ucIpv6Address;
-				classifier_ip_mask =
-					st_dest_ip->ucIpv6Mask;
+				classifier_ip_addr = st_dest_ip->ucIpv6Address;
+				classifier_ip_mask = st_dest_ip->ucIpv6Mask;
 			} else {
-				classifier_ip_addr =
-					st_dest_ip->ucIpv4Address;
-				classifier_ip_mask =
-					st_dest_ip->ucIpv4Mask;
+				classifier_ip_addr = st_dest_ip->ucIpv4Address;
+				classifier_ip_mask = st_dest_ip->ucIpv4Mask;
 			}
 		} else if (ip_addr_context == eSrcIpAddress) {
 			classifier_entry->ucIPSourceAddressLength =
 				ip_addr_len/(ip_addr_byte_len * 2);
 			if (ip_v6) {
-				classifier_ip_addr =
-					st_src_ip->ucIpv6Address;
+				classifier_ip_addr = st_src_ip->ucIpv6Address;
 				classifier_ip_mask = st_src_ip->ucIpv6Mask;
 			} else {
-				classifier_ip_addr =
-					st_src_ip->ucIpv4Address;
+				classifier_ip_addr = st_src_ip->ucIpv4Address;
 				classifier_ip_mask = st_src_ip->ucIpv4Mask;
 			}
 		}
@@ -190,11 +185,9 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 				classifier_entry->ucIPDestinationAddressLength);
 		while ((ip_addr_len >= ip_addr_byte_len)
 				&& (i < MAX_IP_RANGE_LENGTH)) {
-			memcpy(classifier_ip_addr +
-				(i * ip_addr_byte_len),
-				(ip_addr_mask_src
-					+ (i * ip_addr_byte_len * 2)),
-				ip_addr_byte_len);
+			memcpy(classifier_ip_addr + (i * ip_addr_byte_len),
+			       (ip_addr_mask_src + (i * ip_addr_byte_len * 2)),
+			       ip_addr_byte_len);
 
 			if (!ip_v6) {
 				if (ip_addr_context == eSrcIpAddress) {
@@ -221,8 +214,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			if (ip_addr_len >= ip_addr_byte_len) {
 				memcpy(classifier_ip_mask +
 					(i * ip_addr_byte_len),
-					(ip_addr_mask_src
-						+ ip_addr_byte_len
+					(ip_addr_mask_src + ip_addr_byte_len
 						+ (i * ip_addr_byte_len * 2)),
 					ip_addr_byte_len);
 
@@ -291,9 +283,9 @@ void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 tid, bool free_a
  * copy classifier rule into the specified SF index
  */
 static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
-		struct bcm_convergence_types *cs_type,
-		UINT search_rule_idx,
-		UINT classifier_idx)
+					  struct bcm_convergence_types *cs_type,
+					  UINT search_rule_idx,
+					  UINT classifier_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	/* VOID *phs_context = NULL; */
@@ -473,7 +465,8 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
-		UINT search_rule_idx, UINT classifier_idx)
+					      UINT search_rule_idx,
+					      UINT classifier_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	B_UINT16 packet_classification_rule_idx;
@@ -508,7 +501,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
-		UINT search_rule_idx)
+			       UINT search_rule_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	int i;
@@ -542,10 +535,10 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to the ad structure */
-			register struct bcm_connect_mgr_params *local_set, /* Pointer to the connection manager parameters structure */
-			register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
-			register UCHAR dsx_type,
-			struct bcm_add_indication_alt *add_indication) {
+			  register struct bcm_connect_mgr_params *local_set, /* Pointer to the connection manager parameters structure */
+			  register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
+			  register UCHAR dsx_type,
+			  struct bcm_add_indication_alt *add_indication) {
 
 	/* UCHAR ucProtocolLength = 0; */
 	ULONG sf_id;
@@ -555,8 +548,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	int i;
 	struct bcm_convergence_types *cs_type = NULL;
 	struct bcm_phs_rule phs_rule;
-	struct bcm_packet_info *curr_packinfo =
-		&ad->PackInfo[search_rule_idx];
+	struct bcm_packet_info *curr_packinfo = &ad->PackInfo[search_rule_idx];
 	USHORT vcid = curr_packinfo->usVCID_Value;
 	UINT gi_value = 0;
 
@@ -676,9 +668,8 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		case eAddClassifier:
 			/* Get a Free Classifier Index From Classifier table for this SF to add the Classifier */
 			/* Contained in this message */
-			classifier_idx = SearchClsid(ad,
-					sf_id,
-					packet_classification_rule_idx);
+			classifier_idx = SearchClsid(ad, sf_id,
+						     packet_classification_rule_idx);
 
 			if (classifier_idx > MAX_CLASSIFIERS) {
 				classifier_idx = SearchFreeClsid(ad);
@@ -693,8 +684,8 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				}
 				/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 				CopyClassifierRuleToSF(ad, cs_type,
-						search_rule_idx,
-						classifier_idx);
+						       search_rule_idx,
+						       classifier_idx);
 			} else {
 				/* This Classifier Already Exists and it is invalid to Add Classifier with existing PCRI */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -708,7 +699,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
 			classifier_idx = SearchClsid(ad, sf_id,
-					packet_classification_rule_idx);
+						     packet_classification_rule_idx);
 			if (classifier_idx > MAX_CLASSIFIERS) {
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -718,13 +709,14 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 			/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 			CopyClassifierRuleToSF(ad, cs_type,
-					search_rule_idx, classifier_idx);
+					       search_rule_idx,
+					       classifier_idx);
 			break;
 		case eDeleteClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
 			classifier_idx = SearchClsid(ad, sf_id,
-					packet_classification_rule_idx);
+						     packet_classification_rule_idx);
 			if (classifier_idx > MAX_CLASSIFIERS)	{
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -735,7 +727,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 			/* Delete This classifier */
 			DeleteClassifierRuleFromSF(ad, search_rule_idx,
-					classifier_idx);
+						   classifier_idx);
 			break;
 		default:
 			/* Invalid Action for classifier */
@@ -1407,7 +1399,8 @@ static VOID DumpCmControlPacket(PVOID buffer)
 }
 
 static inline ULONG RestoreSFParam(struct bcm_mini_adapter *ad,
-		ULONG addr_sf_param_set, PUCHAR dest_buff)
+				   ULONG addr_sf_param_set,
+				   PUCHAR dest_buff)
 {
 	UINT bytes_to_read = sizeof(struct bcm_connect_mgr_params);
 
@@ -1425,8 +1418,9 @@ static inline ULONG RestoreSFParam(struct bcm_mini_adapter *ad,
 	return 1;
 }
 
-static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR src_buff,
-		ULONG addr_sf_param_set)
+static ULONG StoreSFParam(struct bcm_mini_adapter *ad,
+			  PUCHAR src_buff,
+			  ULONG addr_sf_param_set)
 {
 	UINT bytes_to_write = sizeof(struct bcm_connect_mgr_params);
 	int ret = 0;
@@ -1444,7 +1438,8 @@ static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR src_buff,
 }
 
 ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
-		PVOID buffer, UINT *buff_len)
+				    PVOID buffer,
+				    UINT *buff_len)
 {
 	struct bcm_add_indication_alt *add_indication_alt = NULL;
 	struct bcm_add_indication *add_indication = NULL;
@@ -1572,7 +1567,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 
 static inline struct bcm_add_indication_alt
 *RestoreCmControlResponseMessage(register struct bcm_mini_adapter *ad,
-		register PVOID buffer)
+				 register PVOID buffer)
 {
 	ULONG status = 0;
 	struct bcm_add_indication *add_indication = NULL;
@@ -1754,7 +1749,7 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 }
 
 static ULONG GetNextTargetBufferLocation(struct bcm_mini_adapter *ad,
-		B_UINT16 tid)
+					 B_UINT16 tid)
 {
 	ULONG dsx_buf;
 	ULONG idx, max_try;
@@ -1820,7 +1815,7 @@ int FreeadDsxBuffer(struct bcm_mini_adapter *ad)
  * @return - Queue index for the free SFID else returns Invalid Index.
  */
 bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the ad structure */
-				PVOID buffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
+			      PVOID buffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
 {
 	struct bcm_connect_mgr_params *local_set = NULL;
 	struct bcm_add_indication_alt *add_indication = NULL;
@@ -2059,7 +2054,8 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 }
 
 int get_dsx_sf_data_to_application(struct bcm_mini_adapter *ad,
-		UINT sf_id, void __user *user_buffer)
+				   UINT sf_id,
+				   void __user *user_buffer)
 {
 	int status = 0;
 	struct bcm_packet_info *sf_info = NULL;
@@ -2088,7 +2084,7 @@ int get_dsx_sf_data_to_application(struct bcm_mini_adapter *ad,
 }
 
 VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
-		PUINT buff)
+			       PUINT buff)
 {
 	B_UINT32 n_sf_sin_msg = ntohl(*(buff + 1));
 	struct bcm_stim_sfhostnotify *host_info = NULL;

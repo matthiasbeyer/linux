@@ -890,7 +890,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	int i;
 	int n;
 	struct bcm_add_indication_alt *add_indication;
-	UINT nCurClassifierCnt;
+	UINT curr_classifier_cnt;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
 	add_indication = pvBuffer;
@@ -962,15 +962,15 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 			add_indication->sfAuthorizedSet.u8TrafficIndicationPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfAuthorizedSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = add_indication->sfAuthorizedSet.u8TotalClassifiers;
-	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
-		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
+	curr_classifier_cnt = add_indication->sfAuthorizedSet.u8TotalClassifiers;
+	if (curr_classifier_cnt > MAX_CLASSIFIERS_IN_SF)
+		curr_classifier_cnt = MAX_CLASSIFIERS_IN_SF;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "add_indication->sfAuthorizedSet.bValid %d", add_indication->sfAuthorizedSet.bValid);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "add_indication->sfAuthorizedSet.u16MacOverhead %x", add_indication->sfAuthorizedSet.u16MacOverhead);
 	if (!add_indication->sfAuthorizedSet.bValid)
 		add_indication->sfAuthorizedSet.bValid = 1;
-	for (n = 0; n < nCurClassifierCnt; n++) {
+	for (n = 0; n < curr_classifier_cnt; n++) {
 		struct bcm_convergence_types *cs_type = NULL;
 
 		cs_type =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[n];
@@ -1111,11 +1111,11 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 			add_indication->sfAdmittedSet.u8TrafficIndicationPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfAdmittedSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = add_indication->sfAdmittedSet.u8TotalClassifiers;
-	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
-		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
+	curr_classifier_cnt = add_indication->sfAdmittedSet.u8TotalClassifiers;
+	if (curr_classifier_cnt > MAX_CLASSIFIERS_IN_SF)
+		curr_classifier_cnt = MAX_CLASSIFIERS_IN_SF;
 
-	for (n = 0; n < nCurClassifierCnt; n++) {
+	for (n = 0; n < curr_classifier_cnt; n++) {
 		struct bcm_convergence_types *cs_type = NULL;
 
 		cs_type =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[n];
@@ -1248,11 +1248,11 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 			add_indication->sfActiveSet.u8TrafficIndicationPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfActiveSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = add_indication->sfActiveSet.u8TotalClassifiers;
-	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
-		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
+	curr_classifier_cnt = add_indication->sfActiveSet.u8TotalClassifiers;
+	if (curr_classifier_cnt > MAX_CLASSIFIERS_IN_SF)
+		curr_classifier_cnt = MAX_CLASSIFIERS_IN_SF;
 
-	for (n = 0; n < nCurClassifierCnt; n++)	{
+	for (n = 0; n < curr_classifier_cnt; n++)	{
 		struct bcm_convergence_types *cs_type = NULL;
 		struct bcm_packet_class_rules *clsRule = NULL;
 

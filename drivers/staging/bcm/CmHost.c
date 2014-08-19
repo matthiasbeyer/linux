@@ -16,7 +16,7 @@ enum E_CLASSIFIER_ACTION {
 static ULONG GetNextTargetBufferLocation(struct bcm_mini_adapter *ad,
 		B_UINT16 tid);
 static void restore_endianess_of_pstClassifierEntry(
-		struct bcm_classifier_rule *pstClassifierEntry,
+		struct bcm_classifier_rule *classifier_entry,
 		enum bcm_ipaddr_context eIpAddrContext);
 
 static void apply_phs_rule_to_all_classifiers(
@@ -128,7 +128,7 @@ static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
 }
 
 static inline VOID
-CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
+CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		B_UINT8 u8IpAddressLen, B_UINT8 *pu8IpAddressMaskSrc,
 		bool bIpVersion6, enum bcm_ipaddr_context eIpAddrContext)
 {
@@ -148,10 +148,10 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
 			(TOTAL_MASKED_ADDRESS_IN_BYTES)) >= u8IpAddressLen) {
 
 		union u_ip_address *st_dest_ip =
-			&pstClassifierEntry->stDestIpAddress;
+			&classifier_entry->stDestIpAddress;
 
 		union u_ip_address *st_src_ip =
-			&pstClassifierEntry->stSrcIpAddress;
+			&classifier_entry->stSrcIpAddress;
 
 		/*
 		 * checking both the mask and address togethor in Classification.
@@ -159,7 +159,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
 		 * (nSizeOfIPAddressInBytes for address and nSizeOfIPAddressInBytes for mask)
 		 */
 		if (eIpAddrContext == eDestIpAddress) {
-			pstClassifierEntry->ucIPDestinationAddressLength =
+			classifier_entry->ucIPDestinationAddressLength =
 				u8IpAddressLen/(nSizeOfIPAddressInBytes * 2);
 			if (bIpVersion6) {
 				ptrClassifierIpAddress =
@@ -173,7 +173,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
 					st_dest_ip->ucIpv4Mask;
 			}
 		} else if (eIpAddrContext == eSrcIpAddress) {
-			pstClassifierEntry->ucIPSourceAddressLength =
+			classifier_entry->ucIPSourceAddressLength =
 				u8IpAddressLen/(nSizeOfIPAddressInBytes * 2);
 			if (bIpVersion6) {
 				ptrClassifierIpAddress =
@@ -187,7 +187,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
 		}
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Address Length:0x%X\n",
-				pstClassifierEntry->ucIPDestinationAddressLength);
+				classifier_entry->ucIPDestinationAddressLength);
 		while ((u8IpAddressLen >= nSizeOfIPAddressInBytes)
 				&& (i < MAX_IP_RANGE_LENGTH)) {
 			memcpy(ptrClassifierIpAddress +
@@ -250,14 +250,14 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *pstClassifierEntry,
 				u8IpAddressLen -= nSizeOfIPAddressInBytes;
 			}
 			if (u8IpAddressLen == 0)
-				pstClassifierEntry->bDestIpValid = TRUE;
+				classifier_entry->bDestIpValid = TRUE;
 
 			i++;
 		}
 		if (bIpVersion6) {
 			/* Restore EndianNess of Struct */
 			restore_endianess_of_pstClassifierEntry(
-					pstClassifierEntry,
+					classifier_entry,
 					eIpAddrContext
 					);
 		}
@@ -295,7 +295,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		UINT uiSearchRuleIndex,
 		UINT nClassifierIndex)
 {
-	struct bcm_classifier_rule *pstClassifierEntry = NULL;
+	struct bcm_classifier_rule *classifier_entry = NULL;
 	/* VOID *pvPhsContext = NULL; */
 	int i;
 	/* UCHAR ucProtocolLength=0; */
@@ -315,36 +315,36 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 	if (nClassifierIndex > MAX_CLASSIFIERS-1)
 		return;
 
-	pstClassifierEntry = &ad->astClassifierTable[nClassifierIndex];
-	if (pstClassifierEntry) {
+	classifier_entry = &ad->astClassifierTable[nClassifierIndex];
+	if (classifier_entry) {
 		/* Store if Ipv6 */
-		pstClassifierEntry->bIpv6Protocol =
+		classifier_entry->bIpv6Protocol =
 			(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ? TRUE : false;
 
 		/* Destinaiton Port */
-		pstClassifierEntry->ucDestPortRangeLength =
+		classifier_entry->ucDestPortRangeLength =
 			pack_class_rule->u8ProtocolDestPortRangeLength / 4;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Destination Port Range Length:0x%X ",
-				pstClassifierEntry->ucDestPortRangeLength);
+				classifier_entry->ucDestPortRangeLength);
 
 		if (pack_class_rule->u8ProtocolDestPortRangeLength <= MAX_PORT_RANGE) {
-			for (i = 0; i < (pstClassifierEntry->ucDestPortRangeLength); i++) {
-				pstClassifierEntry->usDestPortRangeLo[i] =
+			for (i = 0; i < (classifier_entry->ucDestPortRangeLength); i++) {
+				classifier_entry->usDestPortRangeLo[i] =
 					*((PUSHORT)(pack_class_rule->u8ProtocolDestPortRange+i));
-				pstClassifierEntry->usDestPortRangeHi[i] =
+				classifier_entry->usDestPortRangeHi[i] =
 					*((PUSHORT)(pack_class_rule->u8ProtocolDestPortRange+2+i));
-				pstClassifierEntry->usDestPortRangeLo[i] =
-					ntohs(pstClassifierEntry->usDestPortRangeLo[i]);
+				classifier_entry->usDestPortRangeLo[i] =
+					ntohs(classifier_entry->usDestPortRangeLo[i]);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						CONN_MSG, DBG_LVL_ALL,
 						"Destination Port Range Lo:0x%X ",
-						pstClassifierEntry->usDestPortRangeLo[i]);
-				pstClassifierEntry->usDestPortRangeHi[i] =
-					ntohs(pstClassifierEntry->usDestPortRangeHi[i]);
+						classifier_entry->usDestPortRangeLo[i]);
+				classifier_entry->usDestPortRangeHi[i] =
+					ntohs(classifier_entry->usDestPortRangeHi[i]);
 			}
 		} else {
-			pstClassifierEntry->ucDestPortRangeLength = 0;
+			classifier_entry->ucDestPortRangeLength = 0;
 		}
 
 		/* Source Port */
@@ -352,29 +352,29 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 				"Source Port Range Length:0x%X ",
 				pack_class_rule->u8ProtocolSourcePortRangeLength);
 		if (pack_class_rule->u8ProtocolSourcePortRangeLength <= MAX_PORT_RANGE) {
-			pstClassifierEntry->ucSrcPortRangeLength =
+			classifier_entry->ucSrcPortRangeLength =
 				pack_class_rule->u8ProtocolSourcePortRangeLength/4;
-			for (i = 0; i < (pstClassifierEntry->ucSrcPortRangeLength); i++) {
-				pstClassifierEntry->usSrcPortRangeLo[i] =
+			for (i = 0; i < (classifier_entry->ucSrcPortRangeLength); i++) {
+				classifier_entry->usSrcPortRangeLo[i] =
 					*((PUSHORT)(pack_class_rule->
 							u8ProtocolSourcePortRange+i));
-				pstClassifierEntry->usSrcPortRangeHi[i] =
+				classifier_entry->usSrcPortRangeHi[i] =
 					*((PUSHORT)(pack_class_rule->
 							u8ProtocolSourcePortRange+2+i));
-				pstClassifierEntry->usSrcPortRangeLo[i] =
-					ntohs(pstClassifierEntry->usSrcPortRangeLo[i]);
+				classifier_entry->usSrcPortRangeLo[i] =
+					ntohs(classifier_entry->usSrcPortRangeLo[i]);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						CONN_MSG, DBG_LVL_ALL,
 						"Source Port Range Lo:0x%X ",
-						pstClassifierEntry->usSrcPortRangeLo[i]);
-				pstClassifierEntry->usSrcPortRangeHi[i] =
-					ntohs(pstClassifierEntry->usSrcPortRangeHi[i]);
+						classifier_entry->usSrcPortRangeLo[i]);
+				classifier_entry->usSrcPortRangeHi[i] =
+					ntohs(classifier_entry->usSrcPortRangeHi[i]);
 			}
 		}
 		/* Destination Ip Address and Mask */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Ip Destination Parameters : ");
-		CopyIpAddrToClassifier(pstClassifierEntry,
+		CopyIpAddrToClassifier(classifier_entry,
 				pack_class_rule->u8IPDestinationAddressLength,
 				pack_class_rule->u8IPDestinationAddress,
 				(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ?
@@ -384,7 +384,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Ip Source Parameters : ");
 
-		CopyIpAddrToClassifier(pstClassifierEntry,
+		CopyIpAddrToClassifier(classifier_entry,
 				pack_class_rule->u8IPMaskedSourceAddressLength,
 				pack_class_rule->u8IPMaskedSourceAddress,
 				(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ? TRUE : false,
@@ -395,77 +395,77 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 				"TOS Length:0x%X ",
 				pack_class_rule->u8IPTypeOfServiceLength);
 		if (pack_class_rule->u8IPTypeOfServiceLength == 3) {
-			pstClassifierEntry->ucIPTypeOfServiceLength =
+			classifier_entry->ucIPTypeOfServiceLength =
 				pack_class_rule->u8IPTypeOfServiceLength;
-			pstClassifierEntry->ucTosLow =
+			classifier_entry->ucTosLow =
 				pack_class_rule->u8IPTypeOfService[0];
-			pstClassifierEntry->ucTosHigh =
+			classifier_entry->ucTosHigh =
 				pack_class_rule->u8IPTypeOfService[1];
-			pstClassifierEntry->ucTosMask =
+			classifier_entry->ucTosMask =
 				pack_class_rule->u8IPTypeOfService[2];
-			pstClassifierEntry->bTOSValid = TRUE;
+			classifier_entry->bTOSValid = TRUE;
 		}
 		if (pack_class_rule->u8Protocol == 0) {
 			/* we didn't get protocol field filled in by the BS */
-			pstClassifierEntry->ucProtocolLength = 0;
+			classifier_entry->ucProtocolLength = 0;
 		} else {
-			pstClassifierEntry->ucProtocolLength = 1; /* 1 valid protocol */
+			classifier_entry->ucProtocolLength = 1; /* 1 valid protocol */
 		}
 
-		pstClassifierEntry->ucProtocol[0] = pack_class_rule->u8Protocol;
-		pstClassifierEntry->u8ClassifierRulePriority =
+		classifier_entry->ucProtocol[0] = pack_class_rule->u8Protocol;
+		classifier_entry->u8ClassifierRulePriority =
 			pack_class_rule->u8ClassifierRulePriority;
 
 		/* store the classifier rule ID and set this classifier entry as valid */
-		pstClassifierEntry->ucDirection =
+		classifier_entry->ucDirection =
 			ad->PackInfo[uiSearchRuleIndex].ucDirection;
-		pstClassifierEntry->uiClassifierRuleIndex =
+		classifier_entry->uiClassifierRuleIndex =
 			ntohs(pack_class_rule->u16PacketClassificationRuleIndex);
-		pstClassifierEntry->usVCID_Value =
+		classifier_entry->usVCID_Value =
 			ad->PackInfo[uiSearchRuleIndex].usVCID_Value;
-		pstClassifierEntry->ulSFID =
+		classifier_entry->ulSFID =
 			ad->PackInfo[uiSearchRuleIndex].ulSFID;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Search Index %d Dir: %d, Index: %d, Vcid: %d\n",
 				uiSearchRuleIndex,
-				pstClassifierEntry->ucDirection,
-				pstClassifierEntry->uiClassifierRuleIndex,
-				pstClassifierEntry->usVCID_Value);
+				classifier_entry->ucDirection,
+				classifier_entry->uiClassifierRuleIndex,
+				classifier_entry->usVCID_Value);
 
 		if (pack_class_rule->u8AssociatedPHSI)
-			pstClassifierEntry->u8AssociatedPHSI =
+			classifier_entry->u8AssociatedPHSI =
 				pack_class_rule->u8AssociatedPHSI;
 
 		/* Copy ETH CS Parameters */
-		pstClassifierEntry->ucEthCSSrcMACLen =
+		classifier_entry->ucEthCSSrcMACLen =
 			(pack_class_rule->u8EthernetSourceMACAddressLength);
-		memcpy(pstClassifierEntry->au8EThCSSrcMAC,
+		memcpy(classifier_entry->au8EThCSSrcMAC,
 				pack_class_rule->u8EthernetSourceMACAddress,
 				MAC_ADDRESS_SIZE);
-		memcpy(pstClassifierEntry->au8EThCSSrcMACMask,
+		memcpy(classifier_entry->au8EThCSSrcMACMask,
 				pack_class_rule->u8EthernetSourceMACAddress
 				+ MAC_ADDRESS_SIZE, MAC_ADDRESS_SIZE);
-		pstClassifierEntry->ucEthCSDestMACLen =
+		classifier_entry->ucEthCSDestMACLen =
 			(pack_class_rule->u8EthernetDestMacAddressLength);
-		memcpy(pstClassifierEntry->au8EThCSDestMAC,
+		memcpy(classifier_entry->au8EThCSDestMAC,
 				pack_class_rule->u8EthernetDestMacAddress,
 				MAC_ADDRESS_SIZE);
-		memcpy(pstClassifierEntry->au8EThCSDestMACMask,
+		memcpy(classifier_entry->au8EThCSDestMACMask,
 				pack_class_rule->u8EthernetDestMacAddress
 				+ MAC_ADDRESS_SIZE, MAC_ADDRESS_SIZE);
-		pstClassifierEntry->ucEtherTypeLen =
+		classifier_entry->ucEtherTypeLen =
 			(pack_class_rule->u8EthertypeLength);
-		memcpy(pstClassifierEntry->au8EthCSEtherType,
+		memcpy(classifier_entry->au8EthCSEtherType,
 				pack_class_rule->u8Ethertype,
 				NUM_ETHERTYPE_BYTES);
-		memcpy(pstClassifierEntry->usUserPriority,
+		memcpy(classifier_entry->usUserPriority,
 				&pack_class_rule->u16UserPriority, 2);
-		pstClassifierEntry->usVLANID =
+		classifier_entry->usVLANID =
 			ntohs(pack_class_rule->u16VLANID);
-		pstClassifierEntry->usValidityBitMap =
+		classifier_entry->usValidityBitMap =
 			ntohs(pack_class_rule->u16ValidityBitMap);
 
-		pstClassifierEntry->bUsed = TRUE;
+		classifier_entry->bUsed = TRUE;
 	}
 }
 
@@ -475,7 +475,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 		UINT uiSearchRuleIndex, UINT nClassifierIndex)
 {
-	struct bcm_classifier_rule *pstClassifierEntry = NULL;
+	struct bcm_classifier_rule *classifier_entry = NULL;
 	B_UINT16 u16PacketClassificationRuleIndex;
 	USHORT usVCID;
 	/* VOID *pvPhsContext = NULL; */
@@ -491,11 +491,11 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 
 	u16PacketClassificationRuleIndex =
 		ad->astClassifierTable[nClassifierIndex].uiClassifierRuleIndex;
-	pstClassifierEntry = &ad->astClassifierTable[nClassifierIndex];
-	if (pstClassifierEntry) {
-		pstClassifierEntry->bUsed = false;
-		pstClassifierEntry->uiClassifierRuleIndex = 0;
-		memset(pstClassifierEntry, 0,
+	classifier_entry = &ad->astClassifierTable[nClassifierIndex];
+	if (classifier_entry) {
+		classifier_entry->bUsed = false;
+		classifier_entry->uiClassifierRuleIndex = 0;
+		memset(classifier_entry, 0,
 				sizeof(struct bcm_classifier_rule));
 
 		/* Delete the PHS Rule for this classifier */
@@ -510,7 +510,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 		UINT uiSearchRuleIndex)
 {
-	struct bcm_classifier_rule *pstClassifierEntry = NULL;
+	struct bcm_classifier_rule *classifier_entry = NULL;
 	int i;
 	/* B_UINT16  u16PacketClassificationRuleIndex; */
 	USHORT ulVCID;
@@ -524,9 +524,9 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 
 	for (i = 0; i < MAX_CLASSIFIERS; i++) {
 		if (ad->astClassifierTable[i].usVCID_Value == ulVCID) {
-			pstClassifierEntry = &ad->astClassifierTable[i];
+			classifier_entry = &ad->astClassifierTable[i];
 
-			if (pstClassifierEntry->bUsed)
+			if (classifier_entry->bUsed)
 				DeleteClassifierRuleFromSF(ad,
 						uiSearchRuleIndex, i);
 		}
@@ -2148,12 +2148,12 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 }
 
 static void restore_endianess_of_pstClassifierEntry(
-		struct bcm_classifier_rule *pstClassifierEntry,
+		struct bcm_classifier_rule *classifier_entry,
 		enum bcm_ipaddr_context eIpAddrContext)
 {
 	int i;
-	union u_ip_address *stSrc  = &pstClassifierEntry->stSrcIpAddress;
-	union u_ip_address *stDest = &pstClassifierEntry->stDestIpAddress;
+	union u_ip_address *stSrc  = &classifier_entry->stSrcIpAddress;
+	union u_ip_address *stDest = &classifier_entry->stDestIpAddress;
 
 	for (i = 0; i < MAX_IP_RANGE_LENGTH * 4; i++) {
 		if (eIpAddrContext == eSrcIpAddress) {

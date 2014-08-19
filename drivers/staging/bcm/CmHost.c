@@ -1444,7 +1444,7 @@ static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR src_buff,
 }
 
 ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
-		PVOID buffer, UINT *puBufferLength)
+		PVOID buffer, UINT *buff_len)
 {
 	struct bcm_add_indication_alt *pstAddIndicationAlt = NULL;
 	struct bcm_add_indication *add_indication = NULL;
@@ -1512,7 +1512,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		AddRequest.u16CID = pstAddIndicationAlt->u16CID;
 		AddRequest.u16VCID = pstAddIndicationAlt->u16VCID;
 		AddRequest.psfParameterSet = add_indication->psfAuthorizedSet;
-		(*puBufferLength) = sizeof(struct bcm_add_request);
+		(*buff_len) = sizeof(struct bcm_add_request);
 		memcpy(buffer, &AddRequest, sizeof(struct bcm_add_request));
 		kfree(add_indication);
 		return 1;
@@ -1564,7 +1564,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		(struct bcm_connect_mgr_params *) ntohl(
 				(ULONG)add_indication->psfActiveSet);
 
-	(*puBufferLength) = sizeof(struct bcm_add_indication);
+	(*buff_len) = sizeof(struct bcm_add_indication);
 	*(struct bcm_add_indication *)buffer = *add_indication;
 	kfree(add_indication);
 	return 1;

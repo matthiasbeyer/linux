@@ -264,7 +264,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 	}
 }
 
-void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 TID, bool bFreeAll)
+void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 TID, bool free_all)
 {
 	int i;
 	struct bcm_targetdsx_buffer *curr_buf;
@@ -275,7 +275,7 @@ void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 TID, bool bFreeA
 		if (curr_buf->valid)
 			continue;
 
-		if ((bFreeAll) || (curr_buf->tid == TID)) {
+		if ((free_all) || (curr_buf->tid == TID)) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 					"ClearTargetDSXBuffer: found tid %d buffer cleared %lx\n",
 					TID, curr_buf->ulTargetDsxBuffer);

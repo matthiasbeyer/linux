@@ -1448,7 +1448,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 {
 	struct bcm_add_indication_alt *add_indication_alt = NULL;
 	struct bcm_add_indication *add_indication = NULL;
-	struct bcm_del_request *pstDeletionRequest;
+	struct bcm_del_request *del_request;
 	UINT search_rule_idx;
 	ULONG sf_id;
 
@@ -1459,9 +1459,9 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	 * we can stop the further classifying the pkt for this SF.
 	 */
 	if (add_indication_alt->u8Type == DSD_REQ) {
-		pstDeletionRequest = buffer;
+		del_request = buffer;
 
-		sf_id = ntohl(pstDeletionRequest->u32SFID);
+		sf_id = ntohl(del_request->u32SFID);
 		search_rule_idx = SearchSfid(ad, sf_id);
 
 		if (search_rule_idx < NO_OF_QUEUES) {

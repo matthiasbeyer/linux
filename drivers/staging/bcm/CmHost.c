@@ -476,7 +476,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 		UINT search_rule_idx, UINT classifier_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
-	B_UINT16 u16PacketClassificationRuleIndex;
+	B_UINT16 packet_classification_rule_idx;
 	USHORT usVCID;
 	/* VOID *pvPhsContext = NULL; */
 	/*ULONG ulPhsStatus; */
@@ -489,7 +489,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 	if (usVCID == 0)
 		return;
 
-	u16PacketClassificationRuleIndex =
+	packet_classification_rule_idx =
 		ad->astClassifierTable[classifier_idx].uiClassifierRuleIndex;
 	classifier_entry = &ad->astClassifierTable[classifier_idx];
 	if (classifier_entry) {
@@ -500,7 +500,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 
 		/* Delete the PHS Rule for this classifier */
 		PhsDeleteClassifierRule(&ad->stBCMPhsContext, usVCID,
-				u16PacketClassificationRuleIndex);
+				packet_classification_rule_idx);
 	}
 }
 
@@ -512,7 +512,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	int i;
-	/* B_UINT16  u16PacketClassificationRuleIndex; */
+	/* B_UINT16  packet_classification_rule_idx; */
 	USHORT ulVCID;
 	/* VOID *pvPhsContext = NULL; */
 	/* ULONG ulPhsStatus; */
@@ -551,7 +551,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	ULONG sf_id;
 	UINT classifier_idx = 0;
 	enum E_CLASSIFIER_ACTION eClassifierAction = eInvalidClassifierAction;
-	B_UINT16 u16PacketClassificationRuleIndex = 0;
+	B_UINT16 packet_classification_rule_idx = 0;
 	int i;
 	struct bcm_convergence_types *cs_type = NULL;
 	struct bcm_phs_rule phs_rule;
@@ -670,7 +670,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 		}
 
-		u16PacketClassificationRuleIndex = ntohs(cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
+		packet_classification_rule_idx = ntohs(cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 
 		switch (eClassifierAction) {
 		case eAddClassifier:
@@ -678,7 +678,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			/* Contained in this message */
 			classifier_idx = SearchClsid(ad,
 					sf_id,
-					u16PacketClassificationRuleIndex);
+					packet_classification_rule_idx);
 
 			if (classifier_idx > MAX_CLASSIFIERS) {
 				classifier_idx = SearchFreeClsid(ad);
@@ -701,14 +701,14 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 						CONN_MSG,
 						DBG_LVL_ALL,
 						"CopyToad: Error The Specified Classifier Already Exists and attempted To Add Classifier with Same PCRI : 0x%x\n",
-						u16PacketClassificationRuleIndex);
+						packet_classification_rule_idx);
 			}
 			break;
 		case eReplaceClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
 			classifier_idx = SearchClsid(ad, sf_id,
-					u16PacketClassificationRuleIndex);
+					packet_classification_rule_idx);
 			if (classifier_idx > MAX_CLASSIFIERS) {
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -724,7 +724,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
 			classifier_idx = SearchClsid(ad, sf_id,
-					u16PacketClassificationRuleIndex);
+					packet_classification_rule_idx);
 			if (classifier_idx > MAX_CLASSIFIERS)	{
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -1046,7 +1046,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", cs_type->cCPacketClassificationRule.u16UserPriority);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", cs_type->cCPacketClassificationRule.u16VLANID);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", cs_type->cCPacketClassificationRule.u8AssociatedPHSI);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16PacketClassificationRuleIndex: 0x%X ",
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "packet_classification_rule_idx: 0x%X ",
 				cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParamLength: 0x%X ",
@@ -1186,7 +1186,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", cs_type->cCPacketClassificationRule.u16UserPriority);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", cs_type->cCPacketClassificationRule.u16VLANID);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", cs_type->cCPacketClassificationRule.u8AssociatedPHSI);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16PacketClassificationRuleIndex: 0x%X ",
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "packet_classification_rule_idx: 0x%X ",
 				cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParamLength: 0x%02X",
 				cs_type->cCPacketClassificationRule.u8VendorSpecificClassifierParamLength);
@@ -1375,7 +1375,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 				clsRule->u8AssociatedPHSI);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL,
-				" u16PacketClassificationRuleIndex:0x%X ",
+				" packet_classification_rule_idx:0x%X ",
 				clsRule->u16PacketClassificationRuleIndex);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,

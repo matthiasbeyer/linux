@@ -558,7 +558,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	struct bcm_packet_info *curr_packinfo =
 		&ad->PackInfo[search_rule_idx];
 	USHORT vcid = curr_packinfo->usVCID_Value;
-	UINT UGIValue = 0;
+	UINT gi_value = 0;
 
 	curr_packinfo->bValid = TRUE;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -811,10 +811,10 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 	if ((curr_packinfo->u8QueueType == ERTPS ||
 			curr_packinfo->u8QueueType == UGS))
-		UGIValue = ntohs(local_set->u16UnsolicitedGrantInterval);
+		gi_value = ntohs(local_set->u16UnsolicitedGrantInterval);
 
-	if (UGIValue == 0)
-		UGIValue = DEFAULT_UG_INTERVAL;
+	if (gi_value == 0)
+		gi_value = DEFAULT_UG_INTERVAL;
 
 	/*
 	 * For UGI based connections...
@@ -823,7 +823,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	 * In case of non-UGI based connection, 200 frames worth of data is the max token count at host...
 	 */
 	curr_packinfo->uiMaxBucketSize =
-		(DEFAULT_UGI_FACTOR*curr_packinfo->uiMaxAllowedRate*UGIValue)/1000;
+		(DEFAULT_UGI_FACTOR*curr_packinfo->uiMaxAllowedRate*gi_value)/1000;
 
 	if (curr_packinfo->uiMaxBucketSize < WIMAX_MAX_MTU*8) {
 		UINT UGIFactor = 0;
@@ -832,11 +832,11 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		 * 2. So in case the Bucket count is smaller than MTU, the packets of size (Size > TokenCount), will get dropped.
 		 * 3. We can allow packets of MaxSize from Host->FW that can go out from FW in multiple SDUs by fragmentation at Wimax Layer
 		 */
-		UGIFactor = (curr_packinfo->uiMaxLatency/UGIValue + 1);
+		UGIFactor = (curr_packinfo->uiMaxLatency/gi_value + 1);
 
 		if (UGIFactor > DEFAULT_UGI_FACTOR)
 			curr_packinfo->uiMaxBucketSize =
-				(UGIFactor*curr_packinfo->uiMaxAllowedRate*UGIValue)/1000;
+				(UGIFactor*curr_packinfo->uiMaxAllowedRate*gi_value)/1000;
 
 		if (curr_packinfo->uiMaxBucketSize > WIMAX_MAX_MTU*8)
 			curr_packinfo->uiMaxBucketSize = WIMAX_MAX_MTU*8;
@@ -844,7 +844,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"LAT: %d, UGI: %d\n", curr_packinfo->uiMaxLatency,
-			UGIValue);
+			gi_value);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"uiMaxAllowedRate: 0x%x, u32MaxSustainedTrafficRate: 0x%x ,uiMaxBucketSize: 0x%x",
 			curr_packinfo->uiMaxAllowedRate,

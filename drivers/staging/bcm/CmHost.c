@@ -2152,13 +2152,13 @@ static void restore_endianess_of_classifier_entry(
 		enum bcm_ipaddr_context ip_addr_context)
 {
 	int i;
-	union u_ip_address *stSrc  = &classifier_entry->stSrcIpAddress;
+	union u_ip_address *src = &classifier_entry->stSrcIpAddress;
 	union u_ip_address *stDest = &classifier_entry->stDestIpAddress;
 
 	for (i = 0; i < MAX_IP_RANGE_LENGTH * 4; i++) {
 		if (ip_addr_context == eSrcIpAddress) {
-			stSrc->ulIpv6Addr[i] = ntohl(stSrc->ulIpv6Addr[i]);
-			stSrc->ulIpv6Mask[i] = ntohl(stSrc->ulIpv6Mask[i]);
+			src->ulIpv6Addr[i] = ntohl(src->ulIpv6Addr[i]);
+			src->ulIpv6Mask[i] = ntohl(src->ulIpv6Mask[i]);
 		} else if (ip_addr_context == eDestIpAddress) {
 			stDest->ulIpv6Addr[i] = ntohl(stDest->ulIpv6Addr[i]);
 			stDest->ulIpv6Mask[i] = ntohl(stDest->ulIpv6Mask[i]);

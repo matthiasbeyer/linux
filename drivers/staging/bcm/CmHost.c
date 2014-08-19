@@ -25,7 +25,7 @@ static void apply_phs_rule_to_all_classifiers(
 		USHORT vcid,
 		struct bcm_phs_rule *phs_rule,
 		struct bcm_phs_rules *c_phs_rules,
-		struct bcm_add_indication_alt *pstAddIndication);
+		struct bcm_add_indication_alt *add_indication);
 
 /************************************************************
  * Function - SearchSfid
@@ -545,7 +545,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			register struct bcm_connect_mgr_params *psfLocalSet, /* Pointer to the connection manager parameters structure */
 			register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
 			register UCHAR ucDsxType,
-			struct bcm_add_indication_alt *pstAddIndication) {
+			struct bcm_add_indication_alt *add_indication) {
 
 	/* UCHAR ucProtocolLength = 0; */
 	ULONG ulSFID;
@@ -788,7 +788,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 						vcid,
 						&phs_rule,
 						&psfCSType->cPhsRule,
-						pstAddIndication);
+						add_indication);
 			}
 			break;
 		}
@@ -860,7 +860,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			MASK_DISABLE_HEADER_SUPPRESSION);
 
 	kfree(curr_packinfo->pstSFIndication);
-	curr_packinfo->pstSFIndication = pstAddIndication;
+	curr_packinfo->pstSFIndication = add_indication;
 
 	/* Re Sort the SF list in PackInfo according to Traffic Priority */
 	SortPackInfo(ad);
@@ -889,91 +889,91 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 {
 	int uiLoopIndex;
 	int nIndex;
-	struct bcm_add_indication_alt *pstAddIndication;
+	struct bcm_add_indication_alt *add_indication;
 	UINT nCurClassifierCnt;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	pstAddIndication = pvBuffer;
+	add_indication = pvBuffer;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "======>");
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Type: 0x%X", pstAddIndication->u8Type);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Direction: 0x%X", pstAddIndication->u8Direction);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TID: 0x%X", ntohs(pstAddIndication->u16TID));
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", ntohs(pstAddIndication->u16CID));
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VCID: 0x%X", ntohs(pstAddIndication->u16VCID));
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Type: 0x%X", add_indication->u8Type);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Direction: 0x%X", add_indication->u8Direction);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TID: 0x%X", ntohs(add_indication->u16TID));
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", ntohs(add_indication->u16CID));
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VCID: 0x%X", ntohs(add_indication->u16VCID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " AuthorizedSet--->");
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", htonl(pstAddIndication->sfAuthorizedSet.u32SFID));
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", htons(pstAddIndication->sfAuthorizedSet.u16CID));
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", htonl(add_indication->sfAuthorizedSet.u32SFID));
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", htons(add_indication->sfAuthorizedSet.u16CID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceClassNameLength: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassNameLength);
+			add_indication->sfAuthorizedSet.u8ServiceClassNameLength);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceClassName: 0x%X ,0x%X , 0x%X, 0x%X, 0x%X, 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[0],
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[1],
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[2],
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[3],
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[4],
-			pstAddIndication->sfAuthorizedSet.u8ServiceClassName[5]);
+			add_indication->sfAuthorizedSet.u8ServiceClassName[0],
+			add_indication->sfAuthorizedSet.u8ServiceClassName[1],
+			add_indication->sfAuthorizedSet.u8ServiceClassName[2],
+			add_indication->sfAuthorizedSet.u8ServiceClassName[3],
+			add_indication->sfAuthorizedSet.u8ServiceClassName[4],
+			add_indication->sfAuthorizedSet.u8ServiceClassName[5]);
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%X", pstAddIndication->sfAuthorizedSet.u8MBSService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%X", pstAddIndication->sfAuthorizedSet.u8QosParamSet);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%X", add_indication->sfAuthorizedSet.u8MBSService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%X", add_indication->sfAuthorizedSet.u8QosParamSet);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficPriority: 0x%X, %p",
-			pstAddIndication->sfAuthorizedSet.u8TrafficPriority, &pstAddIndication->sfAuthorizedSet.u8TrafficPriority);
+			add_indication->sfAuthorizedSet.u8TrafficPriority, &add_indication->sfAuthorizedSet.u8TrafficPriority);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxSustainedTrafficRate: 0x%X 0x%p",
-			pstAddIndication->sfAuthorizedSet.u32MaxSustainedTrafficRate,
-			&pstAddIndication->sfAuthorizedSet.u32MaxSustainedTrafficRate);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", pstAddIndication->sfAuthorizedSet.u32MaxTrafficBurst);
+			add_indication->sfAuthorizedSet.u32MaxSustainedTrafficRate,
+			&add_indication->sfAuthorizedSet.u32MaxSustainedTrafficRate);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", add_indication->sfAuthorizedSet.u32MaxTrafficBurst);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MinReservedTrafficRate	: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u32MinReservedTrafficRate);
+			add_indication->sfAuthorizedSet.u32MinReservedTrafficRate);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParamLength: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8VendorSpecificQoSParamLength);
+			add_indication->sfAuthorizedSet.u8VendorSpecificQoSParamLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParam: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8VendorSpecificQoSParam[0]);
+			add_indication->sfAuthorizedSet.u8VendorSpecificQoSParam[0]);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceFlowSchedulingType: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8ServiceFlowSchedulingType);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", pstAddIndication->sfAuthorizedSet.u32ToleratedJitter);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X", pstAddIndication->sfAuthorizedSet.u32MaximumLatency);
+			add_indication->sfAuthorizedSet.u8ServiceFlowSchedulingType);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", add_indication->sfAuthorizedSet.u32ToleratedJitter);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X", add_indication->sfAuthorizedSet.u32MaximumLatency);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8FixedLengthVSVariableLengthSDUIndicator: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8FixedLengthVSVariableLengthSDUIndicator);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%X",	pstAddIndication->sfAuthorizedSet.u8SDUSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TargetSAID: 0x%X", pstAddIndication->sfAuthorizedSet.u16TargetSAID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQEnable: 0x%X", pstAddIndication->sfAuthorizedSet.u8ARQEnable);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQWindowSize: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQWindowSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryTxTimeOut: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQRetryTxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryRxTimeOut: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQRetryRxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockLifeTime: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQBlockLifeTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQSyncLossTimeOut: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQSyncLossTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQDeliverInOrder: 0x%X", pstAddIndication->sfAuthorizedSet.u8ARQDeliverInOrder);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRxPurgeTimeOut: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQRxPurgeTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockSize: 0x%X", pstAddIndication->sfAuthorizedSet.u16ARQBlockSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8CSSpecification: 0x%X",	pstAddIndication->sfAuthorizedSet.u8CSSpecification);
+			add_indication->sfAuthorizedSet.u8FixedLengthVSVariableLengthSDUIndicator);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%X",	add_indication->sfAuthorizedSet.u8SDUSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TargetSAID: 0x%X", add_indication->sfAuthorizedSet.u16TargetSAID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQEnable: 0x%X", add_indication->sfAuthorizedSet.u8ARQEnable);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQWindowSize: 0x%X", add_indication->sfAuthorizedSet.u16ARQWindowSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryTxTimeOut: 0x%X", add_indication->sfAuthorizedSet.u16ARQRetryTxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryRxTimeOut: 0x%X", add_indication->sfAuthorizedSet.u16ARQRetryRxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockLifeTime: 0x%X", add_indication->sfAuthorizedSet.u16ARQBlockLifeTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQSyncLossTimeOut: 0x%X", add_indication->sfAuthorizedSet.u16ARQSyncLossTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQDeliverInOrder: 0x%X", add_indication->sfAuthorizedSet.u8ARQDeliverInOrder);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRxPurgeTimeOut: 0x%X", add_indication->sfAuthorizedSet.u16ARQRxPurgeTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockSize: 0x%X", add_indication->sfAuthorizedSet.u16ARQBlockSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8CSSpecification: 0x%X",	add_indication->sfAuthorizedSet.u8CSSpecification);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TypeOfDataDeliveryService: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8TypeOfDataDeliveryService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16SDUInterArrivalTime: 0x%X", pstAddIndication->sfAuthorizedSet.u16SDUInterArrivalTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TimeBase: 0x%X", pstAddIndication->sfAuthorizedSet.u16TimeBase);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8PagingPreference: 0x%X", pstAddIndication->sfAuthorizedSet.u8PagingPreference);
+			add_indication->sfAuthorizedSet.u8TypeOfDataDeliveryService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16SDUInterArrivalTime: 0x%X", add_indication->sfAuthorizedSet.u16SDUInterArrivalTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TimeBase: 0x%X", add_indication->sfAuthorizedSet.u16TimeBase);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8PagingPreference: 0x%X", add_indication->sfAuthorizedSet.u8PagingPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UnsolicitedPollingInterval: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u16UnsolicitedPollingInterval);
+			add_indication->sfAuthorizedSet.u16UnsolicitedPollingInterval);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "sfAuthorizedSet.u8HARQChannelMapping %x  %x %x ",
-			*(unsigned int *)pstAddIndication->sfAuthorizedSet.u8HARQChannelMapping,
-			*(unsigned int *)&pstAddIndication->sfAuthorizedSet.u8HARQChannelMapping[4],
-			*(USHORT *)&pstAddIndication->sfAuthorizedSet.u8HARQChannelMapping[8]);
+			*(unsigned int *)add_indication->sfAuthorizedSet.u8HARQChannelMapping,
+			*(unsigned int *)&add_indication->sfAuthorizedSet.u8HARQChannelMapping[4],
+			*(USHORT *)&add_indication->sfAuthorizedSet.u8HARQChannelMapping[8]);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficIndicationPreference: 0x%X",
-			pstAddIndication->sfAuthorizedSet.u8TrafficIndicationPreference);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", pstAddIndication->sfAuthorizedSet.u8TotalClassifiers);
+			add_indication->sfAuthorizedSet.u8TrafficIndicationPreference);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfAuthorizedSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = pstAddIndication->sfAuthorizedSet.u8TotalClassifiers;
+	nCurClassifierCnt = add_indication->sfAuthorizedSet.u8TotalClassifiers;
 	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "pstAddIndication->sfAuthorizedSet.bValid %d", pstAddIndication->sfAuthorizedSet.bValid);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "pstAddIndication->sfAuthorizedSet.u16MacOverhead %x", pstAddIndication->sfAuthorizedSet.u16MacOverhead);
-	if (!pstAddIndication->sfAuthorizedSet.bValid)
-		pstAddIndication->sfAuthorizedSet.bValid = 1;
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "add_indication->sfAuthorizedSet.bValid %d", add_indication->sfAuthorizedSet.bValid);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "add_indication->sfAuthorizedSet.u16MacOverhead %x", add_indication->sfAuthorizedSet.u16MacOverhead);
+	if (!add_indication->sfAuthorizedSet.bValid)
+		add_indication->sfAuthorizedSet.bValid = 1;
 	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
 		struct bcm_convergence_types *psfCSType = NULL;
 
-		psfCSType =  &pstAddIndication->sfAuthorizedSet.cConvergenceSLTypes[nIndex];
+		psfCSType =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[nIndex];
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "psfCSType = %p", psfCSType);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "CCPacketClassificationRuleSI====>");
@@ -1063,62 +1063,62 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 #endif
 	}
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "bValid: 0x%02X", pstAddIndication->sfAuthorizedSet.bValid);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "bValid: 0x%02X", add_indication->sfAuthorizedSet.bValid);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "AdmittedSet--->");
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", pstAddIndication->sfAdmittedSet.u32SFID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", pstAddIndication->sfAdmittedSet.u16CID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", add_indication->sfAdmittedSet.u32SFID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", add_indication->sfAdmittedSet.u16CID);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceClassNameLength: 0x%X",
-			pstAddIndication->sfAdmittedSet.u8ServiceClassNameLength);
+			add_indication->sfAdmittedSet.u8ServiceClassNameLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,
 			"u8ServiceClassName: 0x%*ph",
-			6, pstAddIndication->sfAdmittedSet.u8ServiceClassName);
+			6, add_indication->sfAdmittedSet.u8ServiceClassName);
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%02X", pstAddIndication->sfAdmittedSet.u8MBSService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%02X", pstAddIndication->sfAdmittedSet.u8QosParamSet);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficPriority: 0x%02X", pstAddIndication->sfAdmittedSet.u8TrafficPriority);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", pstAddIndication->sfAdmittedSet.u32MaxTrafficBurst);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%02X", add_indication->sfAdmittedSet.u8MBSService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%02X", add_indication->sfAdmittedSet.u8QosParamSet);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficPriority: 0x%02X", add_indication->sfAdmittedSet.u8TrafficPriority);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", add_indication->sfAdmittedSet.u32MaxTrafficBurst);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MinReservedTrafficRate: 0x%X",
-			pstAddIndication->sfAdmittedSet.u32MinReservedTrafficRate);
+			add_indication->sfAdmittedSet.u32MinReservedTrafficRate);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParamLength: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8VendorSpecificQoSParamLength);
+			add_indication->sfAdmittedSet.u8VendorSpecificQoSParamLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParam: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8VendorSpecificQoSParam[0]);
+			add_indication->sfAdmittedSet.u8VendorSpecificQoSParam[0]);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceFlowSchedulingType: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8ServiceFlowSchedulingType);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", pstAddIndication->sfAdmittedSet.u32ToleratedJitter);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X", pstAddIndication->sfAdmittedSet.u32MaximumLatency);
+			add_indication->sfAdmittedSet.u8ServiceFlowSchedulingType);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", add_indication->sfAdmittedSet.u32ToleratedJitter);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X", add_indication->sfAdmittedSet.u32MaximumLatency);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8FixedLengthVSVariableLengthSDUIndicator: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8FixedLengthVSVariableLengthSDUIndicator);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%02X", pstAddIndication->sfAdmittedSet.u8SDUSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TargetSAID: 0x%02X", pstAddIndication->sfAdmittedSet.u16TargetSAID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQEnable: 0x%02X", pstAddIndication->sfAdmittedSet.u8ARQEnable);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQWindowSize: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQWindowSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryTxTimeOut: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQRetryTxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryRxTimeOut: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQRetryRxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockLifeTime: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQBlockLifeTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQSyncLossTimeOut: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQSyncLossTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQDeliverInOrder: 0x%02X", pstAddIndication->sfAdmittedSet.u8ARQDeliverInOrder);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRxPurgeTimeOut: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQRxPurgeTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockSize: 0x%X", pstAddIndication->sfAdmittedSet.u16ARQBlockSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8CSSpecification: 0x%02X", pstAddIndication->sfAdmittedSet.u8CSSpecification);
+			add_indication->sfAdmittedSet.u8FixedLengthVSVariableLengthSDUIndicator);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%02X", add_indication->sfAdmittedSet.u8SDUSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TargetSAID: 0x%02X", add_indication->sfAdmittedSet.u16TargetSAID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQEnable: 0x%02X", add_indication->sfAdmittedSet.u8ARQEnable);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQWindowSize: 0x%X", add_indication->sfAdmittedSet.u16ARQWindowSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryTxTimeOut: 0x%X", add_indication->sfAdmittedSet.u16ARQRetryTxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRetryRxTimeOut: 0x%X", add_indication->sfAdmittedSet.u16ARQRetryRxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockLifeTime: 0x%X", add_indication->sfAdmittedSet.u16ARQBlockLifeTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQSyncLossTimeOut: 0x%X", add_indication->sfAdmittedSet.u16ARQSyncLossTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ARQDeliverInOrder: 0x%02X", add_indication->sfAdmittedSet.u8ARQDeliverInOrder);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQRxPurgeTimeOut: 0x%X", add_indication->sfAdmittedSet.u16ARQRxPurgeTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16ARQBlockSize: 0x%X", add_indication->sfAdmittedSet.u16ARQBlockSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8CSSpecification: 0x%02X", add_indication->sfAdmittedSet.u8CSSpecification);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TypeOfDataDeliveryService: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8TypeOfDataDeliveryService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16SDUInterArrivalTime: 0x%X", pstAddIndication->sfAdmittedSet.u16SDUInterArrivalTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TimeBase: 0x%X", pstAddIndication->sfAdmittedSet.u16TimeBase);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8PagingPreference: 0x%X", pstAddIndication->sfAdmittedSet.u8PagingPreference);
+			add_indication->sfAdmittedSet.u8TypeOfDataDeliveryService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16SDUInterArrivalTime: 0x%X", add_indication->sfAdmittedSet.u16SDUInterArrivalTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16TimeBase: 0x%X", add_indication->sfAdmittedSet.u16TimeBase);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8PagingPreference: 0x%X", add_indication->sfAdmittedSet.u8PagingPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficIndicationPreference: 0x%02X",
-			pstAddIndication->sfAdmittedSet.u8TrafficIndicationPreference);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", pstAddIndication->sfAdmittedSet.u8TotalClassifiers);
+			add_indication->sfAdmittedSet.u8TrafficIndicationPreference);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfAdmittedSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = pstAddIndication->sfAdmittedSet.u8TotalClassifiers;
+	nCurClassifierCnt = add_indication->sfAdmittedSet.u8TotalClassifiers;
 	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
 	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
 		struct bcm_convergence_types *psfCSType = NULL;
 
-		psfCSType =  &pstAddIndication->sfAdmittedSet.cConvergenceSLTypes[nIndex];
+		psfCSType =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[nIndex];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " CCPacketClassificationRuleSI====>");
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ClassifierRulePriority: 0x%02X ",
 				psfCSType->cCPacketClassificationRule.u8ClassifierRulePriority);
@@ -1202,53 +1202,53 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 #endif
 	}
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "bValid: 0x%X", pstAddIndication->sfAdmittedSet.bValid);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "bValid: 0x%X", add_indication->sfAdmittedSet.bValid);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " ActiveSet--->");
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", pstAddIndication->sfActiveSet.u32SFID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", pstAddIndication->sfActiveSet.u16CID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceClassNameLength: 0x%X", pstAddIndication->sfActiveSet.u8ServiceClassNameLength);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32SFID: 0x%X", add_indication->sfActiveSet.u32SFID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16CID: 0x%X", add_indication->sfActiveSet.u16CID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceClassNameLength: 0x%X", add_indication->sfActiveSet.u8ServiceClassNameLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,
 			"u8ServiceClassName: 0x%*ph",
-			6, pstAddIndication->sfActiveSet.u8ServiceClassName);
+			6, add_indication->sfActiveSet.u8ServiceClassName);
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%02X", pstAddIndication->sfActiveSet.u8MBSService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%02X", pstAddIndication->sfActiveSet.u8QosParamSet);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficPriority: 0x%02X", pstAddIndication->sfActiveSet.u8TrafficPriority);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", pstAddIndication->sfActiveSet.u32MaxTrafficBurst);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8MBSService: 0x%02X", add_indication->sfActiveSet.u8MBSService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8QosParamSet: 0x%02X", add_indication->sfActiveSet.u8QosParamSet);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8TrafficPriority: 0x%02X", add_indication->sfActiveSet.u8TrafficPriority);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaxTrafficBurst: 0x%X", add_indication->sfActiveSet.u32MaxTrafficBurst);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MinReservedTrafficRate: 0x%X",
-			pstAddIndication->sfActiveSet.u32MinReservedTrafficRate);
+			add_indication->sfActiveSet.u32MinReservedTrafficRate);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParamLength: 0x%02X",
-			pstAddIndication->sfActiveSet.u8VendorSpecificQoSParamLength);
+			add_indication->sfActiveSet.u8VendorSpecificQoSParamLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificQoSParam: 0x%02X",
-			pstAddIndication->sfActiveSet.u8VendorSpecificQoSParam[0]);
+			add_indication->sfActiveSet.u8VendorSpecificQoSParam[0]);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ServiceFlowSchedulingType: 0x%02X",
-			pstAddIndication->sfActiveSet.u8ServiceFlowSchedulingType);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", pstAddIndication->sfActiveSet.u32ToleratedJitter);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X",	pstAddIndication->sfActiveSet.u32MaximumLatency);
+			add_indication->sfActiveSet.u8ServiceFlowSchedulingType);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32ToleratedJitter: 0x%X", add_indication->sfActiveSet.u32ToleratedJitter);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u32MaximumLatency: 0x%X",	add_indication->sfActiveSet.u32MaximumLatency);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8FixedLengthVSVariableLengthSDUIndicator: 0x%02X",
-			pstAddIndication->sfActiveSet.u8FixedLengthVSVariableLengthSDUIndicator);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%X",	pstAddIndication->sfActiveSet.u8SDUSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16TargetSAID: 0x%X", pstAddIndication->sfActiveSet.u16TargetSAID);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8ARQEnable: 0x%X", pstAddIndication->sfActiveSet.u8ARQEnable);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQWindowSize: 0x%X", pstAddIndication->sfActiveSet.u16ARQWindowSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRetryTxTimeOut: 0x%X", pstAddIndication->sfActiveSet.u16ARQRetryTxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRetryRxTimeOut: 0x%X", pstAddIndication->sfActiveSet.u16ARQRetryRxTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQBlockLifeTime: 0x%X", pstAddIndication->sfActiveSet.u16ARQBlockLifeTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQSyncLossTimeOut: 0x%X", pstAddIndication->sfActiveSet.u16ARQSyncLossTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8ARQDeliverInOrder: 0x%X", pstAddIndication->sfActiveSet.u8ARQDeliverInOrder);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRxPurgeTimeOut: 0x%X", pstAddIndication->sfActiveSet.u16ARQRxPurgeTimeOut);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQBlockSize: 0x%X", pstAddIndication->sfActiveSet.u16ARQBlockSize);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8CSSpecification: 0x%X", pstAddIndication->sfActiveSet.u8CSSpecification);
+			add_indication->sfActiveSet.u8FixedLengthVSVariableLengthSDUIndicator);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8SDUSize: 0x%X",	add_indication->sfActiveSet.u8SDUSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16TargetSAID: 0x%X", add_indication->sfActiveSet.u16TargetSAID);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8ARQEnable: 0x%X", add_indication->sfActiveSet.u8ARQEnable);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQWindowSize: 0x%X", add_indication->sfActiveSet.u16ARQWindowSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRetryTxTimeOut: 0x%X", add_indication->sfActiveSet.u16ARQRetryTxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRetryRxTimeOut: 0x%X", add_indication->sfActiveSet.u16ARQRetryRxTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQBlockLifeTime: 0x%X", add_indication->sfActiveSet.u16ARQBlockLifeTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQSyncLossTimeOut: 0x%X", add_indication->sfActiveSet.u16ARQSyncLossTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8ARQDeliverInOrder: 0x%X", add_indication->sfActiveSet.u8ARQDeliverInOrder);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQRxPurgeTimeOut: 0x%X", add_indication->sfActiveSet.u16ARQRxPurgeTimeOut);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16ARQBlockSize: 0x%X", add_indication->sfActiveSet.u16ARQBlockSize);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8CSSpecification: 0x%X", add_indication->sfActiveSet.u8CSSpecification);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8TypeOfDataDeliveryService: 0x%X",
-			pstAddIndication->sfActiveSet.u8TypeOfDataDeliveryService);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16SDUInterArrivalTime: 0x%X", pstAddIndication->sfActiveSet.u16SDUInterArrivalTime);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16TimeBase: 0x%X", pstAddIndication->sfActiveSet.u16TimeBase);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8PagingPreference: 0x%X", pstAddIndication->sfActiveSet.u8PagingPreference);
+			add_indication->sfActiveSet.u8TypeOfDataDeliveryService);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16SDUInterArrivalTime: 0x%X", add_indication->sfActiveSet.u16SDUInterArrivalTime);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u16TimeBase: 0x%X", add_indication->sfActiveSet.u16TimeBase);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8PagingPreference: 0x%X", add_indication->sfActiveSet.u8PagingPreference);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " u8TrafficIndicationPreference: 0x%X",
-			pstAddIndication->sfActiveSet.u8TrafficIndicationPreference);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", pstAddIndication->sfActiveSet.u8TotalClassifiers);
+			add_indication->sfActiveSet.u8TrafficIndicationPreference);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " Total Classifiers Received: 0x%X", add_indication->sfActiveSet.u8TotalClassifiers);
 
-	nCurClassifierCnt = pstAddIndication->sfActiveSet.u8TotalClassifiers;
+	nCurClassifierCnt = add_indication->sfActiveSet.u8TotalClassifiers;
 	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
@@ -1256,7 +1256,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 		struct bcm_convergence_types *psfCSType = NULL;
 		struct bcm_packet_class_rules *clsRule = NULL;
 
-		psfCSType = &pstAddIndication->sfActiveSet.cConvergenceSLTypes[nIndex];
+		psfCSType = &add_indication->sfActiveSet.cConvergenceSLTypes[nIndex];
 		clsRule	= &psfCSType->cCPacketClassificationRule;
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
@@ -1403,7 +1403,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	}
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,
-			" bValid: 0x%X", pstAddIndication->sfActiveSet.bValid);
+			" bValid: 0x%X", add_indication->sfActiveSet.bValid);
 }
 
 static inline ULONG RestoreSFParam(struct bcm_mini_adapter *ad,
@@ -1447,7 +1447,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		PVOID pvBuffer, UINT *puBufferLength)
 {
 	struct bcm_add_indication_alt *pstAddIndicationAlt = NULL;
-	struct bcm_add_indication *pstAddIndication = NULL;
+	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_del_request *pstDeletionRequest;
 	UINT search_rule_idx;
 	ULONG ulSFID;
@@ -1478,30 +1478,30 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	}
 	/* For DSA_REQ, only up to "psfAuthorizedSet" parameter should be accessed by driver! */
 
-	pstAddIndication = kmalloc(sizeof(struct bcm_add_indication),
+	add_indication = kmalloc(sizeof(struct bcm_add_indication),
 			GFP_KERNEL);
-	if (pstAddIndication == NULL)
+	if (add_indication == NULL)
 		return 0;
 
 	/* AUTHORIZED SET */
-	pstAddIndication->psfAuthorizedSet = (struct bcm_connect_mgr_params *)
+	add_indication->psfAuthorizedSet = (struct bcm_connect_mgr_params *)
 			GetNextTargetBufferLocation(ad,
 					pstAddIndicationAlt->u16TID);
-	if (!pstAddIndication->psfAuthorizedSet) {
-		kfree(pstAddIndication);
+	if (!add_indication->psfAuthorizedSet) {
+		kfree(add_indication);
 		return 0;
 	}
 
 	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfAuthorizedSet,
-				(ULONG)pstAddIndication->psfAuthorizedSet) != 1) {
-		kfree(pstAddIndication);
+				(ULONG)add_indication->psfAuthorizedSet) != 1) {
+		kfree(add_indication);
 		return 0;
 	}
 
 	/* this can't possibly be right */
-	pstAddIndication->psfAuthorizedSet =
+	add_indication->psfAuthorizedSet =
 		(struct bcm_connect_mgr_params *) ntohl(
-				(ULONG)pstAddIndication->psfAuthorizedSet);
+				(ULONG)add_indication->psfAuthorizedSet);
 
 	if (pstAddIndicationAlt->u8Type == DSA_REQ) {
 		struct bcm_add_request AddRequest;
@@ -1511,62 +1511,62 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		AddRequest.u16TID = pstAddIndicationAlt->u16TID;
 		AddRequest.u16CID = pstAddIndicationAlt->u16CID;
 		AddRequest.u16VCID = pstAddIndicationAlt->u16VCID;
-		AddRequest.psfParameterSet = pstAddIndication->psfAuthorizedSet;
+		AddRequest.psfParameterSet = add_indication->psfAuthorizedSet;
 		(*puBufferLength) = sizeof(struct bcm_add_request);
 		memcpy(pvBuffer, &AddRequest, sizeof(struct bcm_add_request));
-		kfree(pstAddIndication);
+		kfree(add_indication);
 		return 1;
 	}
 
 	/* Since it's not DSA_REQ, we can access all field in pstAddIndicationAlt */
 	/* We need to extract the structure from the buffer and pack it differently */
 
-	pstAddIndication->u8Type = pstAddIndicationAlt->u8Type;
-	pstAddIndication->eConnectionDir = pstAddIndicationAlt->u8Direction;
-	pstAddIndication->u16TID = pstAddIndicationAlt->u16TID;
-	pstAddIndication->u16CID = pstAddIndicationAlt->u16CID;
-	pstAddIndication->u16VCID = pstAddIndicationAlt->u16VCID;
-	pstAddIndication->u8CC = pstAddIndicationAlt->u8CC;
+	add_indication->u8Type = pstAddIndicationAlt->u8Type;
+	add_indication->eConnectionDir = pstAddIndicationAlt->u8Direction;
+	add_indication->u16TID = pstAddIndicationAlt->u16TID;
+	add_indication->u16CID = pstAddIndicationAlt->u16CID;
+	add_indication->u16VCID = pstAddIndicationAlt->u16VCID;
+	add_indication->u8CC = pstAddIndicationAlt->u8CC;
 
 	/* ADMITTED SET */
-	pstAddIndication->psfAdmittedSet = (struct bcm_connect_mgr_params *)
+	add_indication->psfAdmittedSet = (struct bcm_connect_mgr_params *)
 		GetNextTargetBufferLocation(ad,
 				pstAddIndicationAlt->u16TID);
-	if (!pstAddIndication->psfAdmittedSet) {
-		kfree(pstAddIndication);
+	if (!add_indication->psfAdmittedSet) {
+		kfree(add_indication);
 		return 0;
 	}
 	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfAdmittedSet,
-				(ULONG)pstAddIndication->psfAdmittedSet) != 1) {
-		kfree(pstAddIndication);
+				(ULONG)add_indication->psfAdmittedSet) != 1) {
+		kfree(add_indication);
 		return 0;
 	}
 
-	pstAddIndication->psfAdmittedSet =
+	add_indication->psfAdmittedSet =
 		(struct bcm_connect_mgr_params *) ntohl(
-				(ULONG) pstAddIndication->psfAdmittedSet);
+				(ULONG) add_indication->psfAdmittedSet);
 
 	/* ACTIVE SET */
-	pstAddIndication->psfActiveSet = (struct bcm_connect_mgr_params *)
+	add_indication->psfActiveSet = (struct bcm_connect_mgr_params *)
 		GetNextTargetBufferLocation(ad,
 				pstAddIndicationAlt->u16TID);
-	if (!pstAddIndication->psfActiveSet) {
-		kfree(pstAddIndication);
+	if (!add_indication->psfActiveSet) {
+		kfree(add_indication);
 		return 0;
 	}
 	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfActiveSet,
-				(ULONG)pstAddIndication->psfActiveSet) != 1) {
-		kfree(pstAddIndication);
+				(ULONG)add_indication->psfActiveSet) != 1) {
+		kfree(add_indication);
 		return 0;
 	}
 
-	pstAddIndication->psfActiveSet =
+	add_indication->psfActiveSet =
 		(struct bcm_connect_mgr_params *) ntohl(
-				(ULONG)pstAddIndication->psfActiveSet);
+				(ULONG)add_indication->psfActiveSet);
 
 	(*puBufferLength) = sizeof(struct bcm_add_indication);
-	*(struct bcm_add_indication *)pvBuffer = *pstAddIndication;
-	kfree(pstAddIndication);
+	*(struct bcm_add_indication *)pvBuffer = *add_indication;
+	kfree(add_indication);
 	return 1;
 }
 
@@ -1575,15 +1575,15 @@ static inline struct bcm_add_indication_alt
 		register PVOID pvBuffer)
 {
 	ULONG ulStatus = 0;
-	struct bcm_add_indication *pstAddIndication = NULL;
+	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_add_indication_alt *pstAddIndicationDest = NULL;
 
-	pstAddIndication = pvBuffer;
+	add_indication = pvBuffer;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"=====>");
-	if ((pstAddIndication->u8Type == DSD_REQ) ||
-		(pstAddIndication->u8Type == DSD_RSP) ||
-		(pstAddIndication->u8Type == DSD_ACK))
+	if ((add_indication->u8Type == DSD_REQ) ||
+		(add_indication->u8Type == DSD_RSP) ||
+		(add_indication->u8Type == DSD_ACK))
 		return pvBuffer;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -1606,40 +1606,40 @@ static inline struct bcm_add_indication_alt
 	}
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-u8Type : 0x%X",
-			pstAddIndication->u8Type);
+			add_indication->u8Type);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-u8Direction : 0x%X",
-			pstAddIndication->eConnectionDir);
+			add_indication->eConnectionDir);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-u8TID : 0x%X",
-			ntohs(pstAddIndication->u16TID));
+			ntohs(add_indication->u16TID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-u8CID : 0x%X",
-			ntohs(pstAddIndication->u16CID));
+			ntohs(add_indication->u16CID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-u16VCID : 0x%X",
-			ntohs(pstAddIndication->u16VCID));
+			ntohs(add_indication->u16VCID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-autorized set loc : %p",
-			pstAddIndication->psfAuthorizedSet);
+			add_indication->psfAuthorizedSet);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-admitted set loc : %p",
-			pstAddIndication->psfAdmittedSet);
+			add_indication->psfAdmittedSet);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"AddIndication-Active set loc : %p",
-			pstAddIndication->psfActiveSet);
+			add_indication->psfActiveSet);
 
-	pstAddIndicationDest->u8Type = pstAddIndication->u8Type;
-	pstAddIndicationDest->u8Direction = pstAddIndication->eConnectionDir;
-	pstAddIndicationDest->u16TID = pstAddIndication->u16TID;
-	pstAddIndicationDest->u16CID = pstAddIndication->u16CID;
-	pstAddIndicationDest->u16VCID = pstAddIndication->u16VCID;
-	pstAddIndicationDest->u8CC = pstAddIndication->u8CC;
+	pstAddIndicationDest->u8Type = add_indication->u8Type;
+	pstAddIndicationDest->u8Direction = add_indication->eConnectionDir;
+	pstAddIndicationDest->u16TID = add_indication->u16TID;
+	pstAddIndicationDest->u16CID = add_indication->u16CID;
+	pstAddIndicationDest->u16VCID = add_indication->u16VCID;
+	pstAddIndicationDest->u8CC = add_indication->u8CC;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Active Set ");
 	ulStatus = RestoreSFParam(ad,
-			(ULONG)pstAddIndication->psfActiveSet,
+			(ULONG)add_indication->psfActiveSet,
 			(PUCHAR)&pstAddIndicationDest->sfActiveSet);
 	if (ulStatus != 1)
 		goto failed_restore_sf_param;
@@ -1651,7 +1651,7 @@ static inline struct bcm_add_indication_alt
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Admitted Set ");
 	ulStatus = RestoreSFParam(ad,
-			(ULONG)pstAddIndication->psfAdmittedSet,
+			(ULONG)add_indication->psfAdmittedSet,
 			(PUCHAR)&pstAddIndicationDest->sfAdmittedSet);
 	if (ulStatus != 1)
 		goto failed_restore_sf_param;
@@ -1663,7 +1663,7 @@ static inline struct bcm_add_indication_alt
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Authorized Set ");
 	ulStatus = RestoreSFParam(ad,
-			(ULONG)pstAddIndication->psfAuthorizedSet,
+			(ULONG)add_indication->psfAuthorizedSet,
 			(PUCHAR)&pstAddIndicationDest->sfAuthorizedSet);
 	if (ulStatus != 1)
 		goto failed_restore_sf_param;
@@ -1823,7 +1823,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				PVOID pvBuffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
 {
 	struct bcm_connect_mgr_params *psfLocalSet = NULL;
-	struct bcm_add_indication_alt *pstAddIndication = NULL;
+	struct bcm_add_indication_alt *add_indication = NULL;
 	struct bcm_change_indication *pstChangeIndication = NULL;
 	struct bcm_leader *pLeader = NULL;
 	INT search_rule_idx = 0;
@@ -1833,74 +1833,74 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	 * Otherwise the message contains a target address from where we need to
 	 * read out the rest of the service flow param structure
 	 */
-	pstAddIndication = RestoreCmControlResponseMessage(ad, pvBuffer);
-	if (pstAddIndication == NULL) {
+	add_indication = RestoreCmControlResponseMessage(ad, pvBuffer);
+	if (add_indication == NULL) {
 		ClearTargetDSXBuffer(ad, ((struct bcm_add_indication *)pvBuffer)->u16TID, false);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Error in restoring Service Flow param structure from DSx message");
 		return false;
 	}
 
-	DumpCmControlPacket(pstAddIndication);
+	DumpCmControlPacket(add_indication);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "====>");
 	pLeader = (struct bcm_leader *)ad->caDsxReqResp;
 
 	pLeader->Status = CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ;
 	pLeader->Vcid = 0;
 
-	ClearTargetDSXBuffer(ad, pstAddIndication->u16TID, false);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "### TID RECEIVED %d\n", pstAddIndication->u16TID);
-	switch (pstAddIndication->u8Type) {
+	ClearTargetDSXBuffer(ad, add_indication->u16TID, false);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "### TID RECEIVED %d\n", add_indication->u16TID);
+	switch (add_indication->u8Type) {
 	case DSA_REQ:
 		pLeader->PLength = sizeof(struct bcm_add_indication_alt);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "Sending DSA Response....\n");
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSA RESPONSE TO MAC %d", pLeader->PLength);
 		*((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))
-			= *pstAddIndication;
+			= *add_indication;
 		((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSA_RSP;
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, " VCID = %x", ntohs(pstAddIndication->u16VCID));
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, " VCID = %x", ntohs(add_indication->u16VCID));
 		CopyBufferToControlPacket(ad, (PVOID)ad->caDsxReqResp);
-		kfree(pstAddIndication);
+		kfree(add_indication);
 		break;
 	case DSA_RSP:
 		pLeader->PLength = sizeof(struct bcm_add_indication_alt);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSA ACK TO MAC %d",
 				pLeader->PLength);
 		*((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))
-			= *pstAddIndication;
+			= *add_indication;
 		((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSA_ACK;
 		/* FALLTHROUGH */
 	case DSA_ACK:
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "VCID:0x%X",
-				ntohs(pstAddIndication->u16VCID));
+				ntohs(add_indication->u16VCID));
 		search_rule_idx = SearchFreeSfid(ad);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "search_rule_idx:0x%X ",
 				search_rule_idx);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "Direction:0x%X ",
-				pstAddIndication->u8Direction);
+				add_indication->u8Direction);
 		if (search_rule_idx < NO_OF_QUEUES) {
 			ad->PackInfo[search_rule_idx].ucDirection =
-				pstAddIndication->u8Direction;
+				add_indication->u8Direction;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "bValid:0x%X ",
-					pstAddIndication->sfActiveSet.bValid);
-			if (pstAddIndication->sfActiveSet.bValid == TRUE)
+					add_indication->sfActiveSet.bValid);
+			if (add_indication->sfActiveSet.bValid == TRUE)
 				ad->PackInfo[search_rule_idx].bActiveSet = TRUE;
 
-			if (pstAddIndication->sfAuthorizedSet.bValid == TRUE)
+			if (add_indication->sfAuthorizedSet.bValid == TRUE)
 				ad->PackInfo[search_rule_idx].bAuthorizedSet = TRUE;
 
-			if (pstAddIndication->sfAdmittedSet.bValid == TRUE)
+			if (add_indication->sfAdmittedSet.bValid == TRUE)
 				ad->PackInfo[search_rule_idx].bAdmittedSet = TRUE;
 
-			if (pstAddIndication->sfActiveSet.bValid == false) {
+			if (add_indication->sfActiveSet.bValid == false) {
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bActivateRequestSent = false;
-				if (pstAddIndication->sfAdmittedSet.bValid)
-					psfLocalSet = &pstAddIndication->sfAdmittedSet;
-				else if (pstAddIndication->sfAuthorizedSet.bValid)
-					psfLocalSet = &pstAddIndication->sfAuthorizedSet;
+				if (add_indication->sfAdmittedSet.bValid)
+					psfLocalSet = &add_indication->sfAdmittedSet;
+				else if (add_indication->sfAuthorizedSet.bValid)
+					psfLocalSet = &add_indication->sfAuthorizedSet;
 			} else {
-				psfLocalSet = &pstAddIndication->sfActiveSet;
+				psfLocalSet = &add_indication->sfActiveSet;
 				ad->PackInfo[search_rule_idx].bActive = TRUE;
 			}
 
@@ -1909,17 +1909,17 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bValid = false;
 				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
-				kfree(pstAddIndication);
-			} else if (psfLocalSet->bValid && (pstAddIndication->u8CC == 0)) {
+				kfree(add_indication);
+			} else if (psfLocalSet->bValid && (add_indication->u8CC == 0)) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSA ACK");
-				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(pstAddIndication->u16VCID);
-				ad->PackInfo[search_rule_idx].usCID = ntohs(pstAddIndication->u16CID);
+				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(add_indication->u16VCID);
+				ad->PackInfo[search_rule_idx].usCID = ntohs(add_indication->u16CID);
 
-				if (UPLINK_DIR == pstAddIndication->u8Direction)
+				if (UPLINK_DIR == add_indication->u8Direction)
 					atomic_set(&ad->PackInfo[search_rule_idx].uiPerSFTxResourceCount, DEFAULT_PERSFCOUNT);
 
-				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSA_ACK, pstAddIndication);
-				/* don't free pstAddIndication */
+				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSA_ACK, add_indication);
+				/* don't free add_indication */
 
 				/* Inside CopyToAdapter, Sorting of all the SFs take place.
 				 * Hence any access to the newly added SF through search_rule_idx is invalid.
@@ -1928,8 +1928,8 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				/* *(PULONG)(((PUCHAR)pvBuffer)+1)=psfLocalSet->u32SFID; */
 				memcpy((((PUCHAR)pvBuffer)+1), &psfLocalSet->u32SFID, 4);
 
-				if (pstAddIndication->sfActiveSet.bValid == TRUE) {
-					if (UPLINK_DIR == pstAddIndication->u8Direction) {
+				if (add_indication->sfActiveSet.bValid == TRUE) {
+					if (UPLINK_DIR == add_indication->u8Direction) {
 						if (!ad->LinkUpStatus) {
 							netif_carrier_on(ad->dev);
 							netif_start_queue(ad->dev);
@@ -1946,34 +1946,34 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bValid = false;
 				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
-				kfree(pstAddIndication);
+				kfree(add_indication);
 			}
 		} else {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "DSA ACK did not get valid SFID");
-			kfree(pstAddIndication);
+			kfree(add_indication);
 			return false;
 		}
 		break;
 	case DSC_REQ:
 		pLeader->PLength = sizeof(struct bcm_change_indication);
-		pstChangeIndication = (struct bcm_change_indication *)pstAddIndication;
+		pstChangeIndication = (struct bcm_change_indication *)add_indication;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC RESPONSE TO MAC %d", pLeader->PLength);
 
 		*((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *pstChangeIndication;
 		((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSC_RSP;
 
 		CopyBufferToControlPacket(ad, (PVOID)ad->caDsxReqResp);
-		kfree(pstAddIndication);
+		kfree(add_indication);
 		break;
 	case DSC_RSP:
 		pLeader->PLength = sizeof(struct bcm_change_indication);
-		pstChangeIndication = (struct bcm_change_indication *)pstAddIndication;
+		pstChangeIndication = (struct bcm_change_indication *)add_indication;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC ACK TO MAC %d", pLeader->PLength);
 		*((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *pstChangeIndication;
 		((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSC_ACK;
 		/* FALLTHROUGH */
 	case DSC_ACK:
-		pstChangeIndication = (struct bcm_change_indication *)pstAddIndication;
+		pstChangeIndication = (struct bcm_change_indication *)add_indication;
 		search_rule_idx = SearchSfid(ad, ntohl(pstChangeIndication->sfActiveSet.u32SFID));
 		if (search_rule_idx > NO_OF_QUEUES-1)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "SF doesn't exist for which DSC_ACK is received");
@@ -2007,31 +2007,31 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bValid = false;
 				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
-				kfree(pstAddIndication);
+				kfree(add_indication);
 			} else if (psfLocalSet->bValid && (pstChangeIndication->u8CC == 0)) {
 				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(pstChangeIndication->u16VCID);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "CC field is %d bvalid = %d\n",
 						pstChangeIndication->u8CC, psfLocalSet->bValid);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "VCID= %d\n", ntohs(pstChangeIndication->u16VCID));
 				ad->PackInfo[search_rule_idx].usCID = ntohs(pstChangeIndication->u16CID);
-				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSC_ACK, pstAddIndication);
+				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSC_ACK, add_indication);
 
 				*(PULONG)(((PUCHAR)pvBuffer)+1) = psfLocalSet->u32SFID;
 			} else if (pstChangeIndication->u8CC == 6) {
 				deleteSFBySfid(ad, search_rule_idx);
-				kfree(pstAddIndication);
+				kfree(add_indication);
 			}
 		} else {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "DSC ACK did not get valid SFID");
-			kfree(pstAddIndication);
+			kfree(add_indication);
 			return false;
 		}
 		break;
 	case DSD_REQ:
 		pLeader->PLength = sizeof(struct bcm_del_indication);
-		*((struct bcm_del_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *((struct bcm_del_indication *)pstAddIndication);
+		*((struct bcm_del_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *((struct bcm_del_indication *)add_indication);
 
-		ulSFID = ntohl(((struct bcm_del_indication *)pstAddIndication)->u32SFID);
+		ulSFID = ntohl(((struct bcm_del_indication *)add_indication)->u32SFID);
 		search_rule_idx = SearchSfid(ad, ulSFID);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSD - Removing connection %x", search_rule_idx);
 
@@ -2052,7 +2052,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSD ACK Rcd, let App handle it\n");
 		break;
 	default:
-		kfree(pstAddIndication);
+		kfree(add_indication);
 		return false;
 	}
 	return TRUE;
@@ -2172,12 +2172,12 @@ static void apply_phs_rule_to_all_classifiers(
 		USHORT vcid,
 		struct bcm_phs_rule *phs_rule,
 		struct bcm_phs_rules *c_phs_rules,
-		struct bcm_add_indication_alt *pstAddIndication)
+		struct bcm_add_indication_alt *add_indication)
 {
 	unsigned int uiClassifierIndex = 0;
 	struct bcm_classifier_rule *curr_classifier = NULL;
 
-	if (pstAddIndication->u8Direction == UPLINK_DIR) {
+	if (add_indication->u8Direction == UPLINK_DIR) {
 		for (uiClassifierIndex = 0; uiClassifierIndex < MAX_CLASSIFIERS; uiClassifierIndex++) {
 			curr_classifier =
 				&ad->astClassifierTable[uiClassifierIndex];

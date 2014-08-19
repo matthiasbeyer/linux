@@ -129,7 +129,7 @@ static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
 
 static inline VOID
 CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
-		B_UINT8 ip_addr_len, B_UINT8 *pu8IpAddressMaskSrc,
+		B_UINT8 ip_addr_len, B_UINT8 *ip_addr_mask_src,
 		bool bIpVersion6, enum bcm_ipaddr_context ip_addr_context)
 {
 	int i = 0;
@@ -192,7 +192,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 				&& (i < MAX_IP_RANGE_LENGTH)) {
 			memcpy(ptrClassifierIpAddress +
 				(i * nSizeOfIPAddressInBytes),
-				(pu8IpAddressMaskSrc
+				(ip_addr_mask_src
 					+ (i * nSizeOfIPAddressInBytes * 2)),
 				nSizeOfIPAddressInBytes);
 
@@ -221,7 +221,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			if (ip_addr_len >= nSizeOfIPAddressInBytes) {
 				memcpy(ptrClassifierIpMask +
 					(i * nSizeOfIPAddressInBytes),
-					(pu8IpAddressMaskSrc
+					(ip_addr_mask_src
 						+ nSizeOfIPAddressInBytes
 						+ (i * nSizeOfIPAddressInBytes * 2)),
 					nSizeOfIPAddressInBytes);

@@ -2088,21 +2088,21 @@ int get_dsx_sf_data_to_application(struct bcm_mini_adapter *ad,
 }
 
 VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
-		PUINT puiBuffer)
+		PUINT buff)
 {
-	B_UINT32 u32NumofSFsinMsg = ntohl(*(puiBuffer + 1));
+	B_UINT32 u32NumofSFsinMsg = ntohl(*(buff + 1));
 	struct bcm_stim_sfhostnotify *pHostInfo = NULL;
 	UINT search_rule_idx = 0;
 	ULONG sf_id = 0;
 
-	puiBuffer += 2;
+	buff += 2;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"u32NumofSFsinMsg: 0x%x\n", u32NumofSFsinMsg);
 
 	while (u32NumofSFsinMsg != 0 && u32NumofSFsinMsg < NO_OF_QUEUES) {
 		u32NumofSFsinMsg--;
-		pHostInfo = (struct bcm_stim_sfhostnotify *)puiBuffer;
-		puiBuffer = (PUINT)(pHostInfo + 1);
+		pHostInfo = (struct bcm_stim_sfhostnotify *)buff;
+		buff = (PUINT)(pHostInfo + 1);
 
 		sf_id = ntohl(pHostInfo->SFID);
 		search_rule_idx = SearchSfid(ad, sf_id);

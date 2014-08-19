@@ -1698,7 +1698,7 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 	ULONG target_dsx_buffers_base = 0;
 	ULONG n_target_buffs;
 	ULONG i;
-	int Status;
+	int status;
 
 	if (!ad) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -1716,9 +1716,9 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 			"Reading DSX buffer From Target location %x ",
 			DSX_MESSAGE_EXCHANGE_BUFFER);
 
-	Status = rdmalt(ad, DSX_MESSAGE_EXCHANGE_BUFFER,
+	status = rdmalt(ad, DSX_MESSAGE_EXCHANGE_BUFFER,
 			(PUINT)&target_dsx_buffers_base, sizeof(UINT));
-	if (Status < 0) {
+	if (status < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"RDM failed!!");
 		return 0;

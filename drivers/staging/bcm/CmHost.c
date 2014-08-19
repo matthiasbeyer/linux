@@ -2091,7 +2091,7 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 		PUINT buff)
 {
 	B_UINT32 n_sf_sin_msg = ntohl(*(buff + 1));
-	struct bcm_stim_sfhostnotify *pHostInfo = NULL;
+	struct bcm_stim_sfhostnotify *host_info = NULL;
 	UINT search_rule_idx = 0;
 	ULONG sf_id = 0;
 
@@ -2101,10 +2101,10 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 
 	while (n_sf_sin_msg != 0 && n_sf_sin_msg < NO_OF_QUEUES) {
 		n_sf_sin_msg--;
-		pHostInfo = (struct bcm_stim_sfhostnotify *)buff;
-		buff = (PUINT)(pHostInfo + 1);
+		host_info = (struct bcm_stim_sfhostnotify *)buff;
+		buff = (PUINT)(host_info + 1);
 
-		sf_id = ntohl(pHostInfo->SFID);
+		sf_id = ntohl(host_info->SFID);
 		search_rule_idx = SearchSfid(ad, sf_id);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"SFID: 0x%lx\n", sf_id);
@@ -2118,7 +2118,7 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 			continue;
 		}
 
-		if (pHostInfo->RetainSF == false) {
+		if (host_info->RetainSF == false) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL, "Going to Delete SF");
 			deleteSFBySfid(ad, search_rule_idx);
@@ -2126,20 +2126,20 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 			struct bcm_packet_info *packinfo =
 				&ad->PackInfo[search_rule_idx];
 
-			packinfo->usVCID_Value = ntohs(pHostInfo->VCID);
-			packinfo->usCID = ntohs(pHostInfo->newCID);
+			packinfo->usVCID_Value = ntohs(host_info->VCID);
+			packinfo->usCID = ntohs(host_info->newCID);
 			packinfo->bActive = false;
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL,
-					"pHostInfo->QoSParamSet: 0x%x\n",
-					pHostInfo->QoSParamSet);
+					"host_info->QoSParamSet: 0x%x\n",
+					host_info->QoSParamSet);
 
-			if (pHostInfo->QoSParamSet & 0x1)
+			if (host_info->QoSParamSet & 0x1)
 				packinfo->bAuthorizedSet = TRUE;
-			if (pHostInfo->QoSParamSet & 0x2)
+			if (host_info->QoSParamSet & 0x2)
 				packinfo->bAdmittedSet = TRUE;
-			if (pHostInfo->QoSParamSet & 0x4) {
+			if (host_info->QoSParamSet & 0x4) {
 				packinfo->bActiveSet = TRUE;
 				packinfo->bActive = TRUE;
 			}

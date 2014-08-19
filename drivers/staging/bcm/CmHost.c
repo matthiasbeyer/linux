@@ -1695,7 +1695,7 @@ failed_restore_sf_param:
 
 ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 {
-	ULONG ulTargetDsxBuffersBase = 0;
+	ULONG target_dsx_buffers_base = 0;
 	ULONG ulCntTargetBuffers;
 	ULONG i;
 	int Status;
@@ -1717,7 +1717,7 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 			DSX_MESSAGE_EXCHANGE_BUFFER);
 
 	Status = rdmalt(ad, DSX_MESSAGE_EXCHANGE_BUFFER,
-			(PUINT)&ulTargetDsxBuffersBase, sizeof(UINT));
+			(PUINT)&target_dsx_buffers_base, sizeof(UINT));
 	if (Status < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"RDM failed!!");
@@ -1726,9 +1726,9 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Base Address Of DSX  Target Buffer : 0x%lx",
-			ulTargetDsxBuffersBase);
+			target_dsx_buffers_base);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-			"Tgt Buffer is Now %lx :", ulTargetDsxBuffersBase);
+			"Tgt Buffer is Now %lx :", target_dsx_buffers_base);
 	ulCntTargetBuffers = DSX_MESSAGE_EXCHANGE_BUFFER_SIZE /
 		sizeof(struct bcm_connect_mgr_params);
 
@@ -1741,10 +1741,10 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 			ad->ulTotalTargetBuffersAvailable);
 
 	for (i = 0; i < ad->ulTotalTargetBuffersAvailable; i++) {
-		ad->astTargetDsxBuffer[i].ulTargetDsxBuffer = ulTargetDsxBuffersBase;
+		ad->astTargetDsxBuffer[i].ulTargetDsxBuffer = target_dsx_buffers_base;
 		ad->astTargetDsxBuffer[i].valid = 1;
 		ad->astTargetDsxBuffer[i].tid = 0;
-		ulTargetDsxBuffersBase += sizeof(struct bcm_connect_mgr_params);
+		target_dsx_buffers_base += sizeof(struct bcm_connect_mgr_params);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "  Target DSX Buffer %lx setup at 0x%lx",
 				i, ad->astTargetDsxBuffer[i].ulTargetDsxBuffer);
 	}

@@ -34,17 +34,17 @@ static void apply_phs_rule_to_all_classifiers(
  *  specified SFID as input parameter.
  *
  * Parameters -	ad: Pointer to the ad structure
- *  uiSfid : Given SFID for matching
+ *  sf_id : Given SFID for matching
  *
  * Returns - Queue index for this SFID(If matched)
  *  Else Invalid Queue Index(If Not matched)
  ************************************************************/
-int SearchSfid(struct bcm_mini_adapter *ad, UINT uiSfid)
+int SearchSfid(struct bcm_mini_adapter *ad, UINT sf_id)
 {
 	int i;
 
 	for (i = (NO_OF_QUEUES-1); i >= 0; i--)
-		if (ad->PackInfo[i].ulSFID == uiSfid)
+		if (ad->PackInfo[i].ulSFID == sf_id)
 			return i;
 
 	return NO_OF_QUEUES+1;

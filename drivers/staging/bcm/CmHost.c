@@ -2153,15 +2153,15 @@ static void restore_endianess_of_classifier_entry(
 {
 	int i;
 	union u_ip_address *src = &classifier_entry->stSrcIpAddress;
-	union u_ip_address *stDest = &classifier_entry->stDestIpAddress;
+	union u_ip_address *dest = &classifier_entry->stDestIpAddress;
 
 	for (i = 0; i < MAX_IP_RANGE_LENGTH * 4; i++) {
 		if (ip_addr_context == eSrcIpAddress) {
 			src->ulIpv6Addr[i] = ntohl(src->ulIpv6Addr[i]);
 			src->ulIpv6Mask[i] = ntohl(src->ulIpv6Mask[i]);
 		} else if (ip_addr_context == eDestIpAddress) {
-			stDest->ulIpv6Addr[i] = ntohl(stDest->ulIpv6Addr[i]);
-			stDest->ulIpv6Mask[i] = ntohl(stDest->ulIpv6Mask[i]);
+			dest->ulIpv6Addr[i] = ntohl(dest->ulIpv6Addr[i]);
+			dest->ulIpv6Mask[i] = ntohl(dest->ulIpv6Mask[i]);
 		}
 	}
 }

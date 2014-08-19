@@ -22,7 +22,7 @@ static void restore_endianess_of_classifier_entry(
 static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,
 		register UINT search_rule_idx,
-		USHORT uVCID,
+		USHORT vcid,
 		struct bcm_phs_rule *sPhsRule,
 		struct bcm_phs_rules *cPhsRule,
 		struct bcm_add_indication_alt *pstAddIndication);
@@ -557,7 +557,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	struct bcm_phs_rule sPhsRule;
 	struct bcm_packet_info *curr_packinfo =
 		&ad->PackInfo[search_rule_idx];
-	USHORT uVCID = curr_packinfo->usVCID_Value;
+	USHORT vcid = curr_packinfo->usVCID_Value;
 	UINT UGIValue = 0;
 
 	curr_packinfo->bValid = TRUE;
@@ -755,10 +755,10 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL,
 					"Deleting All PHS Rules For VCID: 0x%X\n",
-					uVCID);
+					vcid);
 
 			/* Delete All the PHS rules for this Service flow */
-			PhsDeleteSFRules(&ad->stBCMPhsContext, uVCID);
+			PhsDeleteSFRules(&ad->stBCMPhsContext, vcid);
 			break;
 		case eDeletePHSRule:
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
@@ -767,7 +767,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 			if (psfCSType->cPhsRule.u8PHSI)
 				PhsDeletePHSRule(&ad->stBCMPhsContext,
-						uVCID,
+						vcid,
 						psfCSType->cCPacketClassificationRule.u8AssociatedPHSI);
 
 			break;
@@ -785,7 +785,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				/* Apply This PHS Rule to all classifiers whose Associated PHSI Match */
 				apply_phs_rule_to_all_classifiers(ad,
 						search_rule_idx,
-						uVCID,
+						vcid,
 						&sPhsRule,
 						&psfCSType->cPhsRule,
 						pstAddIndication);
@@ -2169,7 +2169,7 @@ static void restore_endianess_of_classifier_entry(
 static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,		/* <Pointer to the ad structure */
 		register UINT search_rule_idx,			/* <Index of Queue, to which this data belongs */
-		USHORT uVCID,
+		USHORT vcid,
 		struct bcm_phs_rule *sPhsRule,
 		struct bcm_phs_rules *cPhsRule,
 		struct bcm_add_indication_alt *pstAddIndication)
@@ -2209,7 +2209,7 @@ static void apply_phs_rule_to_all_classifiers(
 
 				PhsUpdateClassifierRule(
 					&ad->stBCMPhsContext,
-					uVCID,
+					vcid,
 					curr_classifier->uiClassifierRuleIndex,
 					sPhsRule,
 					curr_classifier->u8AssociatedPHSI);
@@ -2246,7 +2246,7 @@ static void apply_phs_rule_to_all_classifiers(
 		 */
 		PhsUpdateClassifierRule(
 			&ad->stBCMPhsContext,
-			uVCID,
+			vcid,
 			sPhsRule->u8PHSI,
 			sPhsRule,
 			sPhsRule->u8PHSI);

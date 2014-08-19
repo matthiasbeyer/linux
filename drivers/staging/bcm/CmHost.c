@@ -80,7 +80,7 @@ static int SearchFreeSfid(struct bcm_mini_adapter *ad)
  * Return: int :Classifier table index of matching entry
  */
 static int SearchClsid(struct bcm_mini_adapter *ad,
-		ULONG ulSFID,
+		ULONG sf_id,
 		B_UINT16 uiClassifierID)
 {
 	int i;
@@ -89,7 +89,7 @@ static int SearchClsid(struct bcm_mini_adapter *ad,
 		if ((ad->astClassifierTable[i].bUsed) &&
 			(ad->astClassifierTable[i].uiClassifierRuleIndex
 				== uiClassifierID) &&
-			(ad->astClassifierTable[i].ulSFID == ulSFID))
+			(ad->astClassifierTable[i].ulSFID == sf_id))
 			return i;
 	}
 
@@ -548,7 +548,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			struct bcm_add_indication_alt *add_indication) {
 
 	/* UCHAR ucProtocolLength = 0; */
-	ULONG ulSFID;
+	ULONG sf_id;
 	UINT nClassifierIndex = 0;
 	enum E_CLASSIFIER_ACTION eClassifierAction = eInvalidClassifierAction;
 	B_UINT16 u16PacketClassificationRuleIndex = 0;
@@ -568,7 +568,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Updating Queue %d", search_rule_idx);
 
-	ulSFID = ntohl(psfLocalSet->u32SFID);
+	sf_id = ntohl(psfLocalSet->u32SFID);
 	/* Store IP Version used */
 	/* Get The Version Of IP used (IPv6 or IPv4) from CSSpecification field of SF */
 
@@ -677,7 +677,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			/* Get a Free Classifier Index From Classifier table for this SF to add the Classifier */
 			/* Contained in this message */
 			nClassifierIndex = SearchClsid(ad,
-					ulSFID,
+					sf_id,
 					u16PacketClassificationRuleIndex);
 
 			if (nClassifierIndex > MAX_CLASSIFIERS) {
@@ -707,7 +707,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		case eReplaceClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
-			nClassifierIndex = SearchClsid(ad, ulSFID,
+			nClassifierIndex = SearchClsid(ad, sf_id,
 					u16PacketClassificationRuleIndex);
 			if (nClassifierIndex > MAX_CLASSIFIERS) {
 				/* Failed To search the classifier */
@@ -723,7 +723,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		case eDeleteClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
-			nClassifierIndex = SearchClsid(ad, ulSFID,
+			nClassifierIndex = SearchClsid(ad, sf_id,
 					u16PacketClassificationRuleIndex);
 			if (nClassifierIndex > MAX_CLASSIFIERS)	{
 				/* Failed To search the classifier */
@@ -1450,7 +1450,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_del_request *pstDeletionRequest;
 	UINT search_rule_idx;
-	ULONG ulSFID;
+	ULONG sf_id;
 
 	pstAddIndicationAlt = pvBuffer;
 
@@ -1461,8 +1461,8 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	if (pstAddIndicationAlt->u8Type == DSD_REQ) {
 		pstDeletionRequest = pvBuffer;
 
-		ulSFID = ntohl(pstDeletionRequest->u32SFID);
-		search_rule_idx = SearchSfid(ad, ulSFID);
+		sf_id = ntohl(pstDeletionRequest->u32SFID);
+		search_rule_idx = SearchSfid(ad, sf_id);
 
 		if (search_rule_idx < NO_OF_QUEUES) {
 			deleteSFBySfid(ad, search_rule_idx);
@@ -1827,7 +1827,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	struct bcm_change_indication *pstChangeIndication = NULL;
 	struct bcm_leader *pLeader = NULL;
 	INT search_rule_idx = 0;
-	ULONG ulSFID;
+	ULONG sf_id;
 
 	/*
 	 * Otherwise the message contains a target address from where we need to
@@ -2031,8 +2031,8 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		pLeader->PLength = sizeof(struct bcm_del_indication);
 		*((struct bcm_del_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *((struct bcm_del_indication *)add_indication);
 
-		ulSFID = ntohl(((struct bcm_del_indication *)add_indication)->u32SFID);
-		search_rule_idx = SearchSfid(ad, ulSFID);
+		sf_id = ntohl(((struct bcm_del_indication *)add_indication)->u32SFID);
+		search_rule_idx = SearchSfid(ad, sf_id);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSD - Removing connection %x", search_rule_idx);
 
 		if (search_rule_idx < NO_OF_QUEUES) {
@@ -2093,7 +2093,7 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 	B_UINT32 u32NumofSFsinMsg = ntohl(*(puiBuffer + 1));
 	struct bcm_stim_sfhostnotify *pHostInfo = NULL;
 	UINT search_rule_idx = 0;
-	ULONG ulSFID = 0;
+	ULONG sf_id = 0;
 
 	puiBuffer += 2;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -2104,17 +2104,17 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 		pHostInfo = (struct bcm_stim_sfhostnotify *)puiBuffer;
 		puiBuffer = (PUINT)(pHostInfo + 1);
 
-		ulSFID = ntohl(pHostInfo->SFID);
-		search_rule_idx = SearchSfid(ad, ulSFID);
+		sf_id = ntohl(pHostInfo->SFID);
+		search_rule_idx = SearchSfid(ad, sf_id);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-				"SFID: 0x%lx\n", ulSFID);
+				"SFID: 0x%lx\n", sf_id);
 
 		if (search_rule_idx >= NO_OF_QUEUES
 				|| search_rule_idx == HiPriority) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL,
 					"The SFID <%lx> doesn't exist in host entry or is Invalid\n",
-					ulSFID);
+					sf_id);
 			continue;
 		}
 

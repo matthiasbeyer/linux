@@ -130,7 +130,7 @@ static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
 static inline VOID
 CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		B_UINT8 ip_addr_len, B_UINT8 *ip_addr_mask_src,
-		bool bIpVersion6, enum bcm_ipaddr_context ip_addr_context)
+		bool ip_v6, enum bcm_ipaddr_context ip_addr_context)
 {
 	int i = 0;
 	UINT nSizeOfIPAddressInBytes = IP_LENGTH_OF_ADDRESS;
@@ -138,13 +138,13 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 	UCHAR *ptrClassifierIpMask = NULL;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	if (bIpVersion6)
+	if (ip_v6)
 		nSizeOfIPAddressInBytes = IPV6_ADDRESS_SIZEINBYTES;
 
 	/* Destination Ip Address */
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Ip Address Range Length:0x%X ", ip_addr_len);
-	if ((bIpVersion6 ? (IPV6_ADDRESS_SIZEINBYTES * MAX_IP_RANGE_LENGTH * 2) :
+	if ((ip_v6 ? (IPV6_ADDRESS_SIZEINBYTES * MAX_IP_RANGE_LENGTH * 2) :
 			(TOTAL_MASKED_ADDRESS_IN_BYTES)) >= ip_addr_len) {
 
 		union u_ip_address *st_dest_ip =
@@ -161,7 +161,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		if (ip_addr_context == eDestIpAddress) {
 			classifier_entry->ucIPDestinationAddressLength =
 				ip_addr_len/(nSizeOfIPAddressInBytes * 2);
-			if (bIpVersion6) {
+			if (ip_v6) {
 				ptrClassifierIpAddress =
 					st_dest_ip->ucIpv6Address;
 				ptrClassifierIpMask =
@@ -175,7 +175,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		} else if (ip_addr_context == eSrcIpAddress) {
 			classifier_entry->ucIPSourceAddressLength =
 				ip_addr_len/(nSizeOfIPAddressInBytes * 2);
-			if (bIpVersion6) {
+			if (ip_v6) {
 				ptrClassifierIpAddress =
 					st_src_ip->ucIpv6Address;
 				ptrClassifierIpMask = st_src_ip->ucIpv6Mask;
@@ -196,7 +196,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 					+ (i * nSizeOfIPAddressInBytes * 2)),
 				nSizeOfIPAddressInBytes);
 
-			if (!bIpVersion6) {
+			if (!ip_v6) {
 				if (ip_addr_context == eSrcIpAddress) {
 					st_src_ip->ulIpv4Addr[i] =
 						ntohl(st_src_ip->ulIpv4Addr[i]);
@@ -226,7 +226,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 						+ (i * nSizeOfIPAddressInBytes * 2)),
 					nSizeOfIPAddressInBytes);
 
-				if (!bIpVersion6) {
+				if (!ip_v6) {
 					if (ip_addr_context == eSrcIpAddress) {
 						st_src_ip->ulIpv4Mask[i] =
 							ntohl(st_src_ip->ulIpv4Mask[i]);
@@ -254,7 +254,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 
 			i++;
 		}
-		if (bIpVersion6) {
+		if (ip_v6) {
 			/* Restore EndianNess of Struct */
 			restore_endianess_of_classifier_entry(
 					classifier_entry,

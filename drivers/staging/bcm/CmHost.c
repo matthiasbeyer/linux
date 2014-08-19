@@ -1574,7 +1574,7 @@ static inline struct bcm_add_indication_alt
 *RestoreCmControlResponseMessage(register struct bcm_mini_adapter *ad,
 		register PVOID buffer)
 {
-	ULONG ulStatus = 0;
+	ULONG status = 0;
 	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_add_indication_alt *pstAddIndicationDest = NULL;
 
@@ -1638,10 +1638,10 @@ static inline struct bcm_add_indication_alt
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Active Set ");
-	ulStatus = RestoreSFParam(ad,
+	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfActiveSet,
 			(PUCHAR)&pstAddIndicationDest->sfActiveSet);
-	if (ulStatus != 1)
+	if (status != 1)
 		goto failed_restore_sf_param;
 
 	if (pstAddIndicationDest->sfActiveSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
@@ -1650,10 +1650,10 @@ static inline struct bcm_add_indication_alt
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Admitted Set ");
-	ulStatus = RestoreSFParam(ad,
+	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfAdmittedSet,
 			(PUCHAR)&pstAddIndicationDest->sfAdmittedSet);
-	if (ulStatus != 1)
+	if (status != 1)
 		goto failed_restore_sf_param;
 
 	if (pstAddIndicationDest->sfAdmittedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
@@ -1662,10 +1662,10 @@ static inline struct bcm_add_indication_alt
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Authorized Set ");
-	ulStatus = RestoreSFParam(ad,
+	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfAuthorizedSet,
 			(PUCHAR)&pstAddIndicationDest->sfAuthorizedSet);
-	if (ulStatus != 1)
+	if (status != 1)
 		goto failed_restore_sf_param;
 
 	if (pstAddIndicationDest->sfAuthorizedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)

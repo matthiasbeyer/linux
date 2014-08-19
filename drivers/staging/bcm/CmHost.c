@@ -1428,13 +1428,13 @@ static inline ULONG RestoreSFParam(struct bcm_mini_adapter *ad,
 static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR src_buff,
 		ULONG addr_sf_param_set)
 {
-	UINT nBytesToWrite = sizeof(struct bcm_connect_mgr_params);
+	UINT bytes_to_write = sizeof(struct bcm_connect_mgr_params);
 	int ret = 0;
 
 	if (addr_sf_param_set == 0 || NULL == src_buff)
 		return 0;
 
-	ret = wrm(ad, addr_sf_param_set, (u8 *)src_buff, nBytesToWrite);
+	ret = wrm(ad, addr_sf_param_set, (u8 *)src_buff, bytes_to_write);
 	if (ret < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"%s:%d WRM failed", __func__, __LINE__);

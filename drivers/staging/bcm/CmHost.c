@@ -2174,13 +2174,13 @@ static void apply_phs_rule_to_all_classifiers(
 		struct bcm_phs_rules *c_phs_rules,
 		struct bcm_add_indication_alt *add_indication)
 {
-	unsigned int uiClassifierIndex = 0;
+	unsigned int i = 0;
 	struct bcm_classifier_rule *curr_classifier = NULL;
 
 	if (add_indication->u8Direction == UPLINK_DIR) {
-		for (uiClassifierIndex = 0; uiClassifierIndex < MAX_CLASSIFIERS; uiClassifierIndex++) {
+		for (i = 0; i < MAX_CLASSIFIERS; i++) {
 			curr_classifier =
-				&ad->astClassifierTable[uiClassifierIndex];
+				&ad->astClassifierTable[i];
 			if ((curr_classifier->bUsed) &&
 				(curr_classifier->ulSFID == ad->PackInfo[search_rule_idx].ulSFID) &&
 				(curr_classifier->u8AssociatedPHSI == c_phs_rules->u8PHSI)) {

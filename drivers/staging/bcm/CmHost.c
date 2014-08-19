@@ -24,7 +24,7 @@ static void apply_phs_rule_to_all_classifiers(
 		register UINT search_rule_idx,
 		USHORT vcid,
 		struct bcm_phs_rule *phs_rule,
-		struct bcm_phs_rules *cPhsRule,
+		struct bcm_phs_rules *c_phs_rules,
 		struct bcm_add_indication_alt *pstAddIndication);
 
 /************************************************************
@@ -2171,7 +2171,7 @@ static void apply_phs_rule_to_all_classifiers(
 		register UINT search_rule_idx,			/* <Index of Queue, to which this data belongs */
 		USHORT vcid,
 		struct bcm_phs_rule *phs_rule,
-		struct bcm_phs_rules *cPhsRule,
+		struct bcm_phs_rules *c_phs_rules,
 		struct bcm_add_indication_alt *pstAddIndication)
 {
 	unsigned int uiClassifierIndex = 0;
@@ -2183,21 +2183,21 @@ static void apply_phs_rule_to_all_classifiers(
 				&ad->astClassifierTable[uiClassifierIndex];
 			if ((curr_classifier->bUsed) &&
 				(curr_classifier->ulSFID == ad->PackInfo[search_rule_idx].ulSFID) &&
-				(curr_classifier->u8AssociatedPHSI == cPhsRule->u8PHSI)) {
+				(curr_classifier->u8AssociatedPHSI == c_phs_rules->u8PHSI)) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-						"Adding PHS Rule For Classifier: 0x%x cPhsRule.u8PHSI: 0x%x\n",
+						"Adding PHS Rule For Classifier: 0x%x c_phs_rules.u8PHSI: 0x%x\n",
 						curr_classifier->uiClassifierRuleIndex,
-						cPhsRule->u8PHSI);
+						c_phs_rules->u8PHSI);
 				/* Update The PHS Rule for this classifier as Associated PHSI id defined */
 
 				/* Copy the PHS Rule */
-				phs_rule->u8PHSI = cPhsRule->u8PHSI;
-				phs_rule->u8PHSFLength = cPhsRule->u8PHSFLength;
-				phs_rule->u8PHSMLength = cPhsRule->u8PHSMLength;
-				phs_rule->u8PHSS = cPhsRule->u8PHSS;
-				phs_rule->u8PHSV = cPhsRule->u8PHSV;
-				memcpy(phs_rule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
-				memcpy(phs_rule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
+				phs_rule->u8PHSI = c_phs_rules->u8PHSI;
+				phs_rule->u8PHSFLength = c_phs_rules->u8PHSFLength;
+				phs_rule->u8PHSMLength = c_phs_rules->u8PHSMLength;
+				phs_rule->u8PHSS = c_phs_rules->u8PHSS;
+				phs_rule->u8PHSV = c_phs_rules->u8PHSV;
+				memcpy(phs_rule->u8PHSF, c_phs_rules->u8PHSF, MAX_PHS_LENGTHS);
+				memcpy(phs_rule->u8PHSM, c_phs_rules->u8PHSM, MAX_PHS_LENGTHS);
 				phs_rule->u8RefCnt = 0;
 				phs_rule->bUnclassifiedPHSRule = false;
 				phs_rule->PHSModifiedBytes = 0;
@@ -2225,13 +2225,13 @@ static void apply_phs_rule_to_all_classifiers(
 		/* Error PHS Rule specified in signaling could not be applied to any classifier */
 
 		/* Copy the PHS Rule */
-		phs_rule->u8PHSI = cPhsRule->u8PHSI;
-		phs_rule->u8PHSFLength = cPhsRule->u8PHSFLength;
-		phs_rule->u8PHSMLength = cPhsRule->u8PHSMLength;
-		phs_rule->u8PHSS = cPhsRule->u8PHSS;
-		phs_rule->u8PHSV = cPhsRule->u8PHSV;
-		memcpy(phs_rule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
-		memcpy(phs_rule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
+		phs_rule->u8PHSI = c_phs_rules->u8PHSI;
+		phs_rule->u8PHSFLength = c_phs_rules->u8PHSFLength;
+		phs_rule->u8PHSMLength = c_phs_rules->u8PHSMLength;
+		phs_rule->u8PHSS = c_phs_rules->u8PHSS;
+		phs_rule->u8PHSV = c_phs_rules->u8PHSV;
+		memcpy(phs_rule->u8PHSF, c_phs_rules->u8PHSF, MAX_PHS_LENGTHS);
+		memcpy(phs_rule->u8PHSM, c_phs_rules->u8PHSM, MAX_PHS_LENGTHS);
 		phs_rule->u8RefCnt = 0;
 		phs_rule->bUnclassifiedPHSRule = TRUE;
 		phs_rule->PHSModifiedBytes = 0;

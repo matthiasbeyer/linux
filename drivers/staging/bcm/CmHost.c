@@ -23,7 +23,7 @@ static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,
 		register UINT search_rule_idx,
 		USHORT vcid,
-		struct bcm_phs_rule *sPhsRule,
+		struct bcm_phs_rule *phs_rule,
 		struct bcm_phs_rules *cPhsRule,
 		struct bcm_add_indication_alt *pstAddIndication);
 
@@ -554,7 +554,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	B_UINT16 u16PacketClassificationRuleIndex = 0;
 	int i;
 	struct bcm_convergence_types *psfCSType = NULL;
-	struct bcm_phs_rule sPhsRule;
+	struct bcm_phs_rule phs_rule;
 	struct bcm_packet_info *curr_packinfo =
 		&ad->PackInfo[search_rule_idx];
 	USHORT vcid = curr_packinfo->usVCID_Value;
@@ -786,7 +786,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				apply_phs_rule_to_all_classifiers(ad,
 						search_rule_idx,
 						vcid,
-						&sPhsRule,
+						&phs_rule,
 						&psfCSType->cPhsRule,
 						pstAddIndication);
 			}
@@ -2170,7 +2170,7 @@ static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,		/* <Pointer to the ad structure */
 		register UINT search_rule_idx,			/* <Index of Queue, to which this data belongs */
 		USHORT vcid,
-		struct bcm_phs_rule *sPhsRule,
+		struct bcm_phs_rule *phs_rule,
 		struct bcm_phs_rules *cPhsRule,
 		struct bcm_add_indication_alt *pstAddIndication)
 {
@@ -2191,18 +2191,18 @@ static void apply_phs_rule_to_all_classifiers(
 				/* Update The PHS Rule for this classifier as Associated PHSI id defined */
 
 				/* Copy the PHS Rule */
-				sPhsRule->u8PHSI = cPhsRule->u8PHSI;
-				sPhsRule->u8PHSFLength = cPhsRule->u8PHSFLength;
-				sPhsRule->u8PHSMLength = cPhsRule->u8PHSMLength;
-				sPhsRule->u8PHSS = cPhsRule->u8PHSS;
-				sPhsRule->u8PHSV = cPhsRule->u8PHSV;
-				memcpy(sPhsRule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
-				memcpy(sPhsRule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
-				sPhsRule->u8RefCnt = 0;
-				sPhsRule->bUnclassifiedPHSRule = false;
-				sPhsRule->PHSModifiedBytes = 0;
-				sPhsRule->PHSModifiedNumPackets = 0;
-				sPhsRule->PHSErrorNumPackets = 0;
+				phs_rule->u8PHSI = cPhsRule->u8PHSI;
+				phs_rule->u8PHSFLength = cPhsRule->u8PHSFLength;
+				phs_rule->u8PHSMLength = cPhsRule->u8PHSMLength;
+				phs_rule->u8PHSS = cPhsRule->u8PHSS;
+				phs_rule->u8PHSV = cPhsRule->u8PHSV;
+				memcpy(phs_rule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
+				memcpy(phs_rule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
+				phs_rule->u8RefCnt = 0;
+				phs_rule->bUnclassifiedPHSRule = false;
+				phs_rule->PHSModifiedBytes = 0;
+				phs_rule->PHSModifiedNumPackets = 0;
+				phs_rule->PHSErrorNumPackets = 0;
 
 				/* bPHSRuleAssociated = TRUE; */
 				/* Store The PHS Rule for this classifier */
@@ -2211,13 +2211,13 @@ static void apply_phs_rule_to_all_classifiers(
 					&ad->stBCMPhsContext,
 					vcid,
 					curr_classifier->uiClassifierRuleIndex,
-					sPhsRule,
+					phs_rule,
 					curr_classifier->u8AssociatedPHSI);
 
 				/* Update PHS Rule For the Classifier */
-				if (sPhsRule->u8PHSI) {
-					curr_classifier->u32PHSRuleID = sPhsRule->u8PHSI;
-					memcpy(&curr_classifier->sPhsRule, sPhsRule, sizeof(struct bcm_phs_rule));
+				if (phs_rule->u8PHSI) {
+					curr_classifier->u32PHSRuleID = phs_rule->u8PHSI;
+					memcpy(&curr_classifier->sPhsRule, phs_rule, sizeof(struct bcm_phs_rule));
 				}
 			}
 		}
@@ -2225,18 +2225,18 @@ static void apply_phs_rule_to_all_classifiers(
 		/* Error PHS Rule specified in signaling could not be applied to any classifier */
 
 		/* Copy the PHS Rule */
-		sPhsRule->u8PHSI = cPhsRule->u8PHSI;
-		sPhsRule->u8PHSFLength = cPhsRule->u8PHSFLength;
-		sPhsRule->u8PHSMLength = cPhsRule->u8PHSMLength;
-		sPhsRule->u8PHSS = cPhsRule->u8PHSS;
-		sPhsRule->u8PHSV = cPhsRule->u8PHSV;
-		memcpy(sPhsRule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
-		memcpy(sPhsRule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
-		sPhsRule->u8RefCnt = 0;
-		sPhsRule->bUnclassifiedPHSRule = TRUE;
-		sPhsRule->PHSModifiedBytes = 0;
-		sPhsRule->PHSModifiedNumPackets = 0;
-		sPhsRule->PHSErrorNumPackets = 0;
+		phs_rule->u8PHSI = cPhsRule->u8PHSI;
+		phs_rule->u8PHSFLength = cPhsRule->u8PHSFLength;
+		phs_rule->u8PHSMLength = cPhsRule->u8PHSMLength;
+		phs_rule->u8PHSS = cPhsRule->u8PHSS;
+		phs_rule->u8PHSV = cPhsRule->u8PHSV;
+		memcpy(phs_rule->u8PHSF, cPhsRule->u8PHSF, MAX_PHS_LENGTHS);
+		memcpy(phs_rule->u8PHSM, cPhsRule->u8PHSM, MAX_PHS_LENGTHS);
+		phs_rule->u8RefCnt = 0;
+		phs_rule->bUnclassifiedPHSRule = TRUE;
+		phs_rule->PHSModifiedBytes = 0;
+		phs_rule->PHSModifiedNumPackets = 0;
+		phs_rule->PHSErrorNumPackets = 0;
 		/* Store The PHS Rule for this classifier */
 
 		/*
@@ -2247,8 +2247,8 @@ static void apply_phs_rule_to_all_classifiers(
 		PhsUpdateClassifierRule(
 			&ad->stBCMPhsContext,
 			vcid,
-			sPhsRule->u8PHSI,
-			sPhsRule,
-			sPhsRule->u8PHSI);
+			phs_rule->u8PHSI,
+			phs_rule,
+			phs_rule->u8PHSI);
 	}
 }

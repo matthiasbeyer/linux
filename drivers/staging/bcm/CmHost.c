@@ -134,7 +134,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 {
 	int i = 0;
 	UINT ip_addr_byte_len = IP_LENGTH_OF_ADDRESS;
-	UCHAR *ptrClassifierIpAddress = NULL;
+	UCHAR *classifier_ip_addr = NULL;
 	UCHAR *ptrClassifierIpMask = NULL;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
@@ -162,12 +162,12 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			classifier_entry->ucIPDestinationAddressLength =
 				ip_addr_len/(ip_addr_byte_len * 2);
 			if (ip_v6) {
-				ptrClassifierIpAddress =
+				classifier_ip_addr =
 					st_dest_ip->ucIpv6Address;
 				ptrClassifierIpMask =
 					st_dest_ip->ucIpv6Mask;
 			} else {
-				ptrClassifierIpAddress =
+				classifier_ip_addr =
 					st_dest_ip->ucIpv4Address;
 				ptrClassifierIpMask =
 					st_dest_ip->ucIpv4Mask;
@@ -176,11 +176,11 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			classifier_entry->ucIPSourceAddressLength =
 				ip_addr_len/(ip_addr_byte_len * 2);
 			if (ip_v6) {
-				ptrClassifierIpAddress =
+				classifier_ip_addr =
 					st_src_ip->ucIpv6Address;
 				ptrClassifierIpMask = st_src_ip->ucIpv6Mask;
 			} else {
-				ptrClassifierIpAddress =
+				classifier_ip_addr =
 					st_src_ip->ucIpv4Address;
 				ptrClassifierIpMask = st_src_ip->ucIpv4Mask;
 			}
@@ -190,7 +190,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 				classifier_entry->ucIPDestinationAddressLength);
 		while ((ip_addr_len >= ip_addr_byte_len)
 				&& (i < MAX_IP_RANGE_LENGTH)) {
-			memcpy(ptrClassifierIpAddress +
+			memcpy(classifier_ip_addr +
 				(i * ip_addr_byte_len),
 				(ip_addr_mask_src
 					+ (i * ip_addr_byte_len * 2)),

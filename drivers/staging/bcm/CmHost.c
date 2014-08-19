@@ -293,7 +293,7 @@ void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 tid, bool free_a
 static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		struct bcm_convergence_types *cs_type,
 		UINT search_rule_idx,
-		UINT nClassifierIndex)
+		UINT classifier_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	/* VOID *pvPhsContext = NULL; */
@@ -305,17 +305,17 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		&cs_type->cCPacketClassificationRule;
 
 	if (ad->PackInfo[search_rule_idx].usVCID_Value == 0 ||
-		nClassifierIndex > (MAX_CLASSIFIERS-1))
+		classifier_idx > (MAX_CLASSIFIERS-1))
 		return;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Storing Classifier Rule Index : %X",
 			ntohs(pack_class_rule->u16PacketClassificationRuleIndex));
 
-	if (nClassifierIndex > MAX_CLASSIFIERS-1)
+	if (classifier_idx > MAX_CLASSIFIERS-1)
 		return;
 
-	classifier_entry = &ad->astClassifierTable[nClassifierIndex];
+	classifier_entry = &ad->astClassifierTable[classifier_idx];
 	if (classifier_entry) {
 		/* Store if Ipv6 */
 		classifier_entry->bIpv6Protocol =
@@ -473,7 +473,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
-		UINT search_rule_idx, UINT nClassifierIndex)
+		UINT search_rule_idx, UINT classifier_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	B_UINT16 u16PacketClassificationRuleIndex;
@@ -483,15 +483,15 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 
 	usVCID = ad->PackInfo[search_rule_idx].usVCID_Value;
 
-	if (nClassifierIndex > MAX_CLASSIFIERS-1)
+	if (classifier_idx > MAX_CLASSIFIERS-1)
 		return;
 
 	if (usVCID == 0)
 		return;
 
 	u16PacketClassificationRuleIndex =
-		ad->astClassifierTable[nClassifierIndex].uiClassifierRuleIndex;
-	classifier_entry = &ad->astClassifierTable[nClassifierIndex];
+		ad->astClassifierTable[classifier_idx].uiClassifierRuleIndex;
+	classifier_entry = &ad->astClassifierTable[classifier_idx];
 	if (classifier_entry) {
 		classifier_entry->bUsed = false;
 		classifier_entry->uiClassifierRuleIndex = 0;
@@ -549,7 +549,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 	/* UCHAR ucProtocolLength = 0; */
 	ULONG sf_id;
-	UINT nClassifierIndex = 0;
+	UINT classifier_idx = 0;
 	enum E_CLASSIFIER_ACTION eClassifierAction = eInvalidClassifierAction;
 	B_UINT16 u16PacketClassificationRuleIndex = 0;
 	int i;
@@ -676,13 +676,13 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		case eAddClassifier:
 			/* Get a Free Classifier Index From Classifier table for this SF to add the Classifier */
 			/* Contained in this message */
-			nClassifierIndex = SearchClsid(ad,
+			classifier_idx = SearchClsid(ad,
 					sf_id,
 					u16PacketClassificationRuleIndex);
 
-			if (nClassifierIndex > MAX_CLASSIFIERS) {
-				nClassifierIndex = SearchFreeClsid(ad);
-				if (nClassifierIndex > MAX_CLASSIFIERS) {
+			if (classifier_idx > MAX_CLASSIFIERS) {
+				classifier_idx = SearchFreeClsid(ad);
+				if (classifier_idx > MAX_CLASSIFIERS) {
 					/* Failed To get a free Entry */
 					BCM_DEBUG_PRINT(ad,
 							DBG_TYPE_OTHERS,
@@ -694,7 +694,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 				CopyClassifierRuleToSF(ad, cs_type,
 						search_rule_idx,
-						nClassifierIndex);
+						classifier_idx);
 			} else {
 				/* This Classifier Already Exists and it is invalid to Add Classifier with existing PCRI */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
@@ -707,9 +707,9 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		case eReplaceClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
-			nClassifierIndex = SearchClsid(ad, sf_id,
+			classifier_idx = SearchClsid(ad, sf_id,
 					u16PacketClassificationRuleIndex);
-			if (nClassifierIndex > MAX_CLASSIFIERS) {
+			if (classifier_idx > MAX_CLASSIFIERS) {
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						CONN_MSG, DBG_LVL_ALL,
@@ -718,14 +718,14 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 			/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 			CopyClassifierRuleToSF(ad, cs_type,
-					search_rule_idx, nClassifierIndex);
+					search_rule_idx, classifier_idx);
 			break;
 		case eDeleteClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
 			/* with the new classifier Contained in this message */
-			nClassifierIndex = SearchClsid(ad, sf_id,
+			classifier_idx = SearchClsid(ad, sf_id,
 					u16PacketClassificationRuleIndex);
-			if (nClassifierIndex > MAX_CLASSIFIERS)	{
+			if (classifier_idx > MAX_CLASSIFIERS)	{
 				/* Failed To search the classifier */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						CONN_MSG, DBG_LVL_ALL,
@@ -735,7 +735,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 			/* Delete This classifier */
 			DeleteClassifierRuleFromSF(ad, search_rule_idx,
-					nClassifierIndex);
+					classifier_idx);
 			break;
 		default:
 			/* Invalid Action for classifier */

@@ -477,16 +477,16 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	B_UINT16 packet_classification_rule_idx;
-	USHORT usVCID;
+	USHORT vcid;
 	/* VOID *pvPhsContext = NULL; */
 	/*ULONG ulPhsStatus; */
 
-	usVCID = ad->PackInfo[search_rule_idx].usVCID_Value;
+	vcid = ad->PackInfo[search_rule_idx].usVCID_Value;
 
 	if (classifier_idx > MAX_CLASSIFIERS-1)
 		return;
 
-	if (usVCID == 0)
+	if (vcid == 0)
 		return;
 
 	packet_classification_rule_idx =
@@ -499,7 +499,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 				sizeof(struct bcm_classifier_rule));
 
 		/* Delete the PHS Rule for this classifier */
-		PhsDeleteClassifierRule(&ad->stBCMPhsContext, usVCID,
+		PhsDeleteClassifierRule(&ad->stBCMPhsContext, vcid,
 				packet_classification_rule_idx);
 	}
 }

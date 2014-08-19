@@ -17,7 +17,7 @@ static ULONG GetNextTargetBufferLocation(struct bcm_mini_adapter *ad,
 		B_UINT16 tid);
 static void restore_endianess_of_classifier_entry(
 		struct bcm_classifier_rule *classifier_entry,
-		enum bcm_ipaddr_context eIpAddrContext);
+		enum bcm_ipaddr_context ip_addr_context);
 
 static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,
@@ -130,7 +130,7 @@ static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
 static inline VOID
 CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		B_UINT8 u8IpAddressLen, B_UINT8 *pu8IpAddressMaskSrc,
-		bool bIpVersion6, enum bcm_ipaddr_context eIpAddrContext)
+		bool bIpVersion6, enum bcm_ipaddr_context ip_addr_context)
 {
 	int i = 0;
 	UINT nSizeOfIPAddressInBytes = IP_LENGTH_OF_ADDRESS;
@@ -158,7 +158,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		 * So length will be : TotalLengthInBytes/nSizeOfIPAddressInBytes * 2
 		 * (nSizeOfIPAddressInBytes for address and nSizeOfIPAddressInBytes for mask)
 		 */
-		if (eIpAddrContext == eDestIpAddress) {
+		if (ip_addr_context == eDestIpAddress) {
 			classifier_entry->ucIPDestinationAddressLength =
 				u8IpAddressLen/(nSizeOfIPAddressInBytes * 2);
 			if (bIpVersion6) {
@@ -172,7 +172,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 				ptrClassifierIpMask =
 					st_dest_ip->ucIpv4Mask;
 			}
-		} else if (eIpAddrContext == eSrcIpAddress) {
+		} else if (ip_addr_context == eSrcIpAddress) {
 			classifier_entry->ucIPSourceAddressLength =
 				u8IpAddressLen/(nSizeOfIPAddressInBytes * 2);
 			if (bIpVersion6) {
@@ -197,7 +197,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 				nSizeOfIPAddressInBytes);
 
 			if (!bIpVersion6) {
-				if (eIpAddrContext == eSrcIpAddress) {
+				if (ip_addr_context == eSrcIpAddress) {
 					st_src_ip->ulIpv4Addr[i] =
 						ntohl(st_src_ip->ulIpv4Addr[i]);
 					BCM_DEBUG_PRINT(ad,
@@ -206,7 +206,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 							DBG_LVL_ALL,
 							"Src Ip Address:0x%luX ",
 							st_src_ip->ulIpv4Addr[i]);
-				} else if (eIpAddrContext == eDestIpAddress) {
+				} else if (ip_addr_context == eDestIpAddress) {
 					st_dest_ip->ulIpv4Addr[i] =
 						ntohl(st_dest_ip->ulIpv4Addr[i]);
 					BCM_DEBUG_PRINT(ad,
@@ -227,7 +227,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 					nSizeOfIPAddressInBytes);
 
 				if (!bIpVersion6) {
-					if (eIpAddrContext == eSrcIpAddress) {
+					if (ip_addr_context == eSrcIpAddress) {
 						st_src_ip->ulIpv4Mask[i] =
 							ntohl(st_src_ip->ulIpv4Mask[i]);
 						BCM_DEBUG_PRINT(ad,
@@ -236,7 +236,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 								DBG_LVL_ALL,
 								"Src Ip Mask Address:0x%luX ",
 								st_src_ip->ulIpv4Mask[i]);
-					} else if (eIpAddrContext == eDestIpAddress) {
+					} else if (ip_addr_context == eDestIpAddress) {
 						st_dest_ip->ulIpv4Mask[i] =
 							ntohl(st_dest_ip->ulIpv4Mask[i]);
 						BCM_DEBUG_PRINT(ad,
@@ -258,7 +258,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 			/* Restore EndianNess of Struct */
 			restore_endianess_of_classifier_entry(
 					classifier_entry,
-					eIpAddrContext
+					ip_addr_context
 					);
 		}
 	}
@@ -2149,17 +2149,17 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 
 static void restore_endianess_of_classifier_entry(
 		struct bcm_classifier_rule *classifier_entry,
-		enum bcm_ipaddr_context eIpAddrContext)
+		enum bcm_ipaddr_context ip_addr_context)
 {
 	int i;
 	union u_ip_address *stSrc  = &classifier_entry->stSrcIpAddress;
 	union u_ip_address *stDest = &classifier_entry->stDestIpAddress;
 
 	for (i = 0; i < MAX_IP_RANGE_LENGTH * 4; i++) {
-		if (eIpAddrContext == eSrcIpAddress) {
+		if (ip_addr_context == eSrcIpAddress) {
 			stSrc->ulIpv6Addr[i] = ntohl(stSrc->ulIpv6Addr[i]);
 			stSrc->ulIpv6Mask[i] = ntohl(stSrc->ulIpv6Mask[i]);
-		} else if (eIpAddrContext == eDestIpAddress) {
+		} else if (ip_addr_context == eDestIpAddress) {
 			stDest->ulIpv6Addr[i] = ntohl(stDest->ulIpv6Addr[i]);
 			stDest->ulIpv6Mask[i] = ntohl(stDest->ulIpv6Mask[i]);
 		}

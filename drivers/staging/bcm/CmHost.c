@@ -1825,7 +1825,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	struct bcm_connect_mgr_params *local_set = NULL;
 	struct bcm_add_indication_alt *add_indication = NULL;
 	struct bcm_change_indication *pstChangeIndication = NULL;
-	struct bcm_leader *pLeader = NULL;
+	struct bcm_leader *leader = NULL;
 	INT search_rule_idx = 0;
 	ULONG sf_id;
 
@@ -1842,18 +1842,18 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 
 	DumpCmControlPacket(add_indication);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "====>");
-	pLeader = (struct bcm_leader *)ad->caDsxReqResp;
+	leader = (struct bcm_leader *)ad->caDsxReqResp;
 
-	pLeader->Status = CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ;
-	pLeader->Vcid = 0;
+	leader->Status = CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ;
+	leader->Vcid = 0;
 
 	ClearTargetDSXBuffer(ad, add_indication->u16TID, false);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "### TID RECEIVED %d\n", add_indication->u16TID);
 	switch (add_indication->u8Type) {
 	case DSA_REQ:
-		pLeader->PLength = sizeof(struct bcm_add_indication_alt);
+		leader->PLength = sizeof(struct bcm_add_indication_alt);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "Sending DSA Response....\n");
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSA RESPONSE TO MAC %d", pLeader->PLength);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSA RESPONSE TO MAC %d", leader->PLength);
 		*((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))
 			= *add_indication;
 		((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSA_RSP;
@@ -1863,9 +1863,9 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		kfree(add_indication);
 		break;
 	case DSA_RSP:
-		pLeader->PLength = sizeof(struct bcm_add_indication_alt);
+		leader->PLength = sizeof(struct bcm_add_indication_alt);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSA ACK TO MAC %d",
-				pLeader->PLength);
+				leader->PLength);
 		*((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))
 			= *add_indication;
 		((struct bcm_add_indication_alt *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSA_ACK;
@@ -1955,9 +1955,9 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		}
 		break;
 	case DSC_REQ:
-		pLeader->PLength = sizeof(struct bcm_change_indication);
+		leader->PLength = sizeof(struct bcm_change_indication);
 		pstChangeIndication = (struct bcm_change_indication *)add_indication;
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC RESPONSE TO MAC %d", pLeader->PLength);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC RESPONSE TO MAC %d", leader->PLength);
 
 		*((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *pstChangeIndication;
 		((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSC_RSP;
@@ -1966,9 +1966,9 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		kfree(add_indication);
 		break;
 	case DSC_RSP:
-		pLeader->PLength = sizeof(struct bcm_change_indication);
+		leader->PLength = sizeof(struct bcm_change_indication);
 		pstChangeIndication = (struct bcm_change_indication *)add_indication;
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC ACK TO MAC %d", pLeader->PLength);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "SENDING DSC ACK TO MAC %d", leader->PLength);
 		*((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *pstChangeIndication;
 		((struct bcm_change_indication *)&(ad->caDsxReqResp[LEADER_SIZE]))->u8Type = DSC_ACK;
 		/* FALLTHROUGH */
@@ -2028,7 +2028,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		}
 		break;
 	case DSD_REQ:
-		pLeader->PLength = sizeof(struct bcm_del_indication);
+		leader->PLength = sizeof(struct bcm_del_indication);
 		*((struct bcm_del_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *((struct bcm_del_indication *)add_indication);
 
 		sf_id = ntohl(((struct bcm_del_indication *)add_indication)->u32SFID);

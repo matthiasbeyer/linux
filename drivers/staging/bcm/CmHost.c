@@ -1446,19 +1446,19 @@ static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR src_buff,
 ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		PVOID buffer, UINT *buff_len)
 {
-	struct bcm_add_indication_alt *pstAddIndicationAlt = NULL;
+	struct bcm_add_indication_alt *add_indication_alt = NULL;
 	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_del_request *pstDeletionRequest;
 	UINT search_rule_idx;
 	ULONG sf_id;
 
-	pstAddIndicationAlt = buffer;
+	add_indication_alt = buffer;
 
 	/*
 	 * In case of DSD Req By MS, we should immediately delete this SF so that
 	 * we can stop the further classifying the pkt for this SF.
 	 */
-	if (pstAddIndicationAlt->u8Type == DSD_REQ) {
+	if (add_indication_alt->u8Type == DSD_REQ) {
 		pstDeletionRequest = buffer;
 
 		sf_id = ntohl(pstDeletionRequest->u32SFID);
@@ -1471,8 +1471,8 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		return 1;
 	}
 
-	if ((pstAddIndicationAlt->u8Type == DSD_RSP) ||
-		(pstAddIndicationAlt->u8Type == DSD_ACK)) {
+	if ((add_indication_alt->u8Type == DSD_RSP) ||
+		(add_indication_alt->u8Type == DSD_ACK)) {
 		/* No Special handling send the message as it is */
 		return 1;
 	}
@@ -1486,13 +1486,13 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	/* AUTHORIZED SET */
 	add_indication->psfAuthorizedSet = (struct bcm_connect_mgr_params *)
 			GetNextTargetBufferLocation(ad,
-					pstAddIndicationAlt->u16TID);
+					add_indication_alt->u16TID);
 	if (!add_indication->psfAuthorizedSet) {
 		kfree(add_indication);
 		return 0;
 	}
 
-	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfAuthorizedSet,
+	if (StoreSFParam(ad, (PUCHAR)&add_indication_alt->sfAuthorizedSet,
 				(ULONG)add_indication->psfAuthorizedSet) != 1) {
 		kfree(add_indication);
 		return 0;
@@ -1503,14 +1503,14 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		(struct bcm_connect_mgr_params *) ntohl(
 				(ULONG)add_indication->psfAuthorizedSet);
 
-	if (pstAddIndicationAlt->u8Type == DSA_REQ) {
+	if (add_indication_alt->u8Type == DSA_REQ) {
 		struct bcm_add_request AddRequest;
 
-		AddRequest.u8Type = pstAddIndicationAlt->u8Type;
-		AddRequest.eConnectionDir = pstAddIndicationAlt->u8Direction;
-		AddRequest.u16TID = pstAddIndicationAlt->u16TID;
-		AddRequest.u16CID = pstAddIndicationAlt->u16CID;
-		AddRequest.u16VCID = pstAddIndicationAlt->u16VCID;
+		AddRequest.u8Type = add_indication_alt->u8Type;
+		AddRequest.eConnectionDir = add_indication_alt->u8Direction;
+		AddRequest.u16TID = add_indication_alt->u16TID;
+		AddRequest.u16CID = add_indication_alt->u16CID;
+		AddRequest.u16VCID = add_indication_alt->u16VCID;
 		AddRequest.psfParameterSet = add_indication->psfAuthorizedSet;
 		(*buff_len) = sizeof(struct bcm_add_request);
 		memcpy(buffer, &AddRequest, sizeof(struct bcm_add_request));
@@ -1518,25 +1518,25 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		return 1;
 	}
 
-	/* Since it's not DSA_REQ, we can access all field in pstAddIndicationAlt */
+	/* Since it's not DSA_REQ, we can access all field in add_indication_alt */
 	/* We need to extract the structure from the buffer and pack it differently */
 
-	add_indication->u8Type = pstAddIndicationAlt->u8Type;
-	add_indication->eConnectionDir = pstAddIndicationAlt->u8Direction;
-	add_indication->u16TID = pstAddIndicationAlt->u16TID;
-	add_indication->u16CID = pstAddIndicationAlt->u16CID;
-	add_indication->u16VCID = pstAddIndicationAlt->u16VCID;
-	add_indication->u8CC = pstAddIndicationAlt->u8CC;
+	add_indication->u8Type = add_indication_alt->u8Type;
+	add_indication->eConnectionDir = add_indication_alt->u8Direction;
+	add_indication->u16TID = add_indication_alt->u16TID;
+	add_indication->u16CID = add_indication_alt->u16CID;
+	add_indication->u16VCID = add_indication_alt->u16VCID;
+	add_indication->u8CC = add_indication_alt->u8CC;
 
 	/* ADMITTED SET */
 	add_indication->psfAdmittedSet = (struct bcm_connect_mgr_params *)
 		GetNextTargetBufferLocation(ad,
-				pstAddIndicationAlt->u16TID);
+				add_indication_alt->u16TID);
 	if (!add_indication->psfAdmittedSet) {
 		kfree(add_indication);
 		return 0;
 	}
-	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfAdmittedSet,
+	if (StoreSFParam(ad, (PUCHAR)&add_indication_alt->sfAdmittedSet,
 				(ULONG)add_indication->psfAdmittedSet) != 1) {
 		kfree(add_indication);
 		return 0;
@@ -1549,12 +1549,12 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	/* ACTIVE SET */
 	add_indication->psfActiveSet = (struct bcm_connect_mgr_params *)
 		GetNextTargetBufferLocation(ad,
-				pstAddIndicationAlt->u16TID);
+				add_indication_alt->u16TID);
 	if (!add_indication->psfActiveSet) {
 		kfree(add_indication);
 		return 0;
 	}
-	if (StoreSFParam(ad, (PUCHAR)&pstAddIndicationAlt->sfActiveSet,
+	if (StoreSFParam(ad, (PUCHAR)&add_indication_alt->sfActiveSet,
 				(ULONG)add_indication->psfActiveSet) != 1) {
 		kfree(add_indication);
 		return 0;

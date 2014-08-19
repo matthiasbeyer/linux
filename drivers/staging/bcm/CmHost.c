@@ -542,7 +542,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to the ad structure */
-			register struct bcm_connect_mgr_params *psfLocalSet, /* Pointer to the connection manager parameters structure */
+			register struct bcm_connect_mgr_params *local_set, /* Pointer to the connection manager parameters structure */
 			register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
 			register UCHAR ucDsxType,
 			struct bcm_add_indication_alt *add_indication) {
@@ -564,11 +564,11 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Search Rule Index = %d\n", search_rule_idx);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-			"%s: SFID= %x ", __func__, ntohl(psfLocalSet->u32SFID));
+			"%s: SFID= %x ", __func__, ntohl(local_set->u32SFID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Updating Queue %d", search_rule_idx);
 
-	sf_id = ntohl(psfLocalSet->u32SFID);
+	sf_id = ntohl(local_set->u32SFID);
 	/* Store IP Version used */
 	/* Get The Version Of IP used (IPv6 or IPv4) from CSSpecification field of SF */
 
@@ -578,8 +578,8 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	/* Enable IP/ETh CS Support As Required */
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"CopyToad : u8CSSpecification : %X\n",
-			psfLocalSet->u8CSSpecification);
-	switch (psfLocalSet->u8CSSpecification) {
+			local_set->u8CSSpecification);
+	switch (local_set->u8CSSpecification) {
 	case eCSPacketIPV4:
 		curr_packinfo->bIPCSSupport = IPV4_CS;
 		break;
@@ -624,25 +624,25 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	if (!ad->bETHCSEnabled)
 		curr_packinfo->bEthCSSupport = 0;
 
-	if (psfLocalSet->u8ServiceClassNameLength > 0 && psfLocalSet->u8ServiceClassNameLength < 32)
+	if (local_set->u8ServiceClassNameLength > 0 && local_set->u8ServiceClassNameLength < 32)
 		memcpy(curr_packinfo->ucServiceClassName,
-				psfLocalSet->u8ServiceClassName,
-				psfLocalSet->u8ServiceClassNameLength);
+				local_set->u8ServiceClassName,
+				local_set->u8ServiceClassNameLength);
 
-	curr_packinfo->u8QueueType = psfLocalSet->u8ServiceFlowSchedulingType;
+	curr_packinfo->u8QueueType = local_set->u8ServiceFlowSchedulingType;
 
 	if (curr_packinfo->u8QueueType == BE && curr_packinfo->ucDirection)
 		ad->usBestEffortQueueIndex = search_rule_idx;
 
-	curr_packinfo->ulSFID = ntohl(psfLocalSet->u32SFID);
+	curr_packinfo->ulSFID = ntohl(local_set->u32SFID);
 
-	curr_packinfo->u8TrafficPriority = psfLocalSet->u8TrafficPriority;
+	curr_packinfo->u8TrafficPriority = local_set->u8TrafficPriority;
 
 	/* copy all the classifier in the Service Flow param  structure */
-	for (i = 0; i < psfLocalSet->u8TotalClassifiers; i++) {
+	for (i = 0; i < local_set->u8TotalClassifiers; i++) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Classifier index =%d", i);
-		cs_type = &psfLocalSet->cConvergenceSLTypes[i];
+		cs_type = &local_set->cConvergenceSLTypes[i];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Classifier index =%d", i);
 
@@ -744,8 +744,8 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	}
 
 	/* Repeat parsing Classification Entries to process PHS Rules */
-	for (i = 0; i < psfLocalSet->u8TotalClassifiers; i++) {
-		cs_type = &psfLocalSet->cConvergenceSLTypes[i];
+	for (i = 0; i < local_set->u8TotalClassifiers; i++) {
+		cs_type = &local_set->cConvergenceSLTypes[i];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"cs_type->u8PhsDSCAction : 0x%x\n",
 				cs_type->u8PhsDSCAction);
@@ -794,24 +794,24 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		}
 	}
 
-	if (psfLocalSet->u32MaxSustainedTrafficRate == 0) {
+	if (local_set->u32MaxSustainedTrafficRate == 0) {
 		/* No Rate Limit . Set Max Sustained Traffic Rate to Maximum */
 		curr_packinfo->uiMaxAllowedRate = WIMAX_MAX_ALLOWED_RATE;
-	} else if (ntohl(psfLocalSet->u32MaxSustainedTrafficRate) > WIMAX_MAX_ALLOWED_RATE) {
+	} else if (ntohl(local_set->u32MaxSustainedTrafficRate) > WIMAX_MAX_ALLOWED_RATE) {
 		/* Too large Allowed Rate specified. Limiting to Wi Max  Allowed rate */
 		curr_packinfo->uiMaxAllowedRate = WIMAX_MAX_ALLOWED_RATE;
 	} else {
 		curr_packinfo->uiMaxAllowedRate =
-			ntohl(psfLocalSet->u32MaxSustainedTrafficRate);
+			ntohl(local_set->u32MaxSustainedTrafficRate);
 	}
 
-	curr_packinfo->uiMaxLatency = ntohl(psfLocalSet->u32MaximumLatency);
+	curr_packinfo->uiMaxLatency = ntohl(local_set->u32MaximumLatency);
 	if (curr_packinfo->uiMaxLatency == 0) /* 0 should be treated as infinite */
 		curr_packinfo->uiMaxLatency = MAX_LATENCY_ALLOWED;
 
 	if ((curr_packinfo->u8QueueType == ERTPS ||
 			curr_packinfo->u8QueueType == UGS))
-		UGIValue = ntohs(psfLocalSet->u16UnsolicitedGrantInterval);
+		UGIValue = ntohs(local_set->u16UnsolicitedGrantInterval);
 
 	if (UGIValue == 0)
 		UGIValue = DEFAULT_UG_INTERVAL;
@@ -848,15 +848,15 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"uiMaxAllowedRate: 0x%x, u32MaxSustainedTrafficRate: 0x%x ,uiMaxBucketSize: 0x%x",
 			curr_packinfo->uiMaxAllowedRate,
-			ntohl(psfLocalSet->u32MaxSustainedTrafficRate),
+			ntohl(local_set->u32MaxSustainedTrafficRate),
 			curr_packinfo->uiMaxBucketSize);
 
 	/* copy the extended SF Parameters to Support MIBS */
-	CopyMIBSExtendedSFParameters(ad, psfLocalSet, search_rule_idx);
+	CopyMIBSExtendedSFParameters(ad, local_set, search_rule_idx);
 
 	/* store header suppression enabled flag per SF */
 	curr_packinfo->bHeaderSuppressionEnabled =
-		!(psfLocalSet->u8RequesttransmissionPolicy &
+		!(local_set->u8RequesttransmissionPolicy &
 			MASK_DISABLE_HEADER_SUPPRESSION);
 
 	kfree(curr_packinfo->pstSFIndication);
@@ -1822,7 +1822,7 @@ int FreeadDsxBuffer(struct bcm_mini_adapter *ad)
 bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the ad structure */
 				PVOID pvBuffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
 {
-	struct bcm_connect_mgr_params *psfLocalSet = NULL;
+	struct bcm_connect_mgr_params *local_set = NULL;
 	struct bcm_add_indication_alt *add_indication = NULL;
 	struct bcm_change_indication *pstChangeIndication = NULL;
 	struct bcm_leader *pLeader = NULL;
@@ -1896,21 +1896,21 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bActivateRequestSent = false;
 				if (add_indication->sfAdmittedSet.bValid)
-					psfLocalSet = &add_indication->sfAdmittedSet;
+					local_set = &add_indication->sfAdmittedSet;
 				else if (add_indication->sfAuthorizedSet.bValid)
-					psfLocalSet = &add_indication->sfAuthorizedSet;
+					local_set = &add_indication->sfAuthorizedSet;
 			} else {
-				psfLocalSet = &add_indication->sfActiveSet;
+				local_set = &add_indication->sfActiveSet;
 				ad->PackInfo[search_rule_idx].bActive = TRUE;
 			}
 
-			if (!psfLocalSet) {
+			if (!local_set) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "No set is valid\n");
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bValid = false;
 				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
 				kfree(add_indication);
-			} else if (psfLocalSet->bValid && (add_indication->u8CC == 0)) {
+			} else if (local_set->bValid && (add_indication->u8CC == 0)) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSA ACK");
 				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(add_indication->u16VCID);
 				ad->PackInfo[search_rule_idx].usCID = ntohs(add_indication->u16CID);
@@ -1918,15 +1918,15 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				if (UPLINK_DIR == add_indication->u8Direction)
 					atomic_set(&ad->PackInfo[search_rule_idx].uiPerSFTxResourceCount, DEFAULT_PERSFCOUNT);
 
-				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSA_ACK, add_indication);
+				CopyToAdapter(ad, local_set, search_rule_idx, DSA_ACK, add_indication);
 				/* don't free add_indication */
 
 				/* Inside CopyToAdapter, Sorting of all the SFs take place.
 				 * Hence any access to the newly added SF through search_rule_idx is invalid.
 				 * SHOULD BE STRICTLY AVOIDED.
 				 */
-				/* *(PULONG)(((PUCHAR)pvBuffer)+1)=psfLocalSet->u32SFID; */
-				memcpy((((PUCHAR)pvBuffer)+1), &psfLocalSet->u32SFID, 4);
+				/* *(PULONG)(((PUCHAR)pvBuffer)+1)=local_set->u32SFID; */
+				memcpy((((PUCHAR)pvBuffer)+1), &local_set->u32SFID, 4);
 
 				if (add_indication->sfActiveSet.bValid == TRUE) {
 					if (UPLINK_DIR == add_indication->u8Direction) {
@@ -1994,29 +1994,29 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].bActivateRequestSent = false;
 
 				if (pstChangeIndication->sfAdmittedSet.bValid)
-					psfLocalSet = &pstChangeIndication->sfAdmittedSet;
+					local_set = &pstChangeIndication->sfAdmittedSet;
 				else if (pstChangeIndication->sfAuthorizedSet.bValid)
-					psfLocalSet = &pstChangeIndication->sfAuthorizedSet;
+					local_set = &pstChangeIndication->sfAuthorizedSet;
 			} else {
-				psfLocalSet = &pstChangeIndication->sfActiveSet;
+				local_set = &pstChangeIndication->sfActiveSet;
 				ad->PackInfo[search_rule_idx].bActive = TRUE;
 			}
 
-			if (!psfLocalSet) {
+			if (!local_set) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "No set is valid\n");
 				ad->PackInfo[search_rule_idx].bActive = false;
 				ad->PackInfo[search_rule_idx].bValid = false;
 				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
 				kfree(add_indication);
-			} else if (psfLocalSet->bValid && (pstChangeIndication->u8CC == 0)) {
+			} else if (local_set->bValid && (pstChangeIndication->u8CC == 0)) {
 				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(pstChangeIndication->u16VCID);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "CC field is %d bvalid = %d\n",
-						pstChangeIndication->u8CC, psfLocalSet->bValid);
+						pstChangeIndication->u8CC, local_set->bValid);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "VCID= %d\n", ntohs(pstChangeIndication->u16VCID));
 				ad->PackInfo[search_rule_idx].usCID = ntohs(pstChangeIndication->u16CID);
-				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSC_ACK, add_indication);
+				CopyToAdapter(ad, local_set, search_rule_idx, DSC_ACK, add_indication);
 
-				*(PULONG)(((PUCHAR)pvBuffer)+1) = psfLocalSet->u32SFID;
+				*(PULONG)(((PUCHAR)pvBuffer)+1) = local_set->u32SFID;
 			} else if (pstChangeIndication->u8CC == 6) {
 				deleteSFBySfid(ad, search_rule_idx);
 				kfree(add_indication);

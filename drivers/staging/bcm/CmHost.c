@@ -544,7 +544,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to the ad structure */
 			register struct bcm_connect_mgr_params *local_set, /* Pointer to the connection manager parameters structure */
 			register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
-			register UCHAR ucDsxType,
+			register UCHAR dsx_type,
 			struct bcm_add_indication_alt *add_indication) {
 
 	/* UCHAR ucProtocolLength = 0; */
@@ -652,9 +652,9 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 		if (cs_type->cCPacketClassificationRule.u8ClassifierRulePriority)
 			curr_packinfo->bClassifierPriority = TRUE;
 
-		if (ucDsxType == DSA_ACK) {
+		if (dsx_type == DSA_ACK) {
 			eClassifierAction = eAddClassifier;
-		} else if (ucDsxType == DSC_ACK) {
+		} else if (dsx_type == DSC_ACK) {
 			switch (cs_type->u8ClassfierDSCAction) {
 			case 0: /* DSC Add Classifier */
 				eClassifierAction = eAddClassifier;
@@ -772,7 +772,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 			break;
 		default:
-			if (ucDsxType == DSC_ACK) {
+			if (dsx_type == DSC_ACK) {
 				/* BCM_DEBUG_PRINT(CONN_MSG,("Invalid PHS DSC Action For DSC\n",cs_type->cPhsRule.u8PHSI)); */
 				break; /* FOr DSC ACK Case PHS DSC Action must be in valid set */
 			}

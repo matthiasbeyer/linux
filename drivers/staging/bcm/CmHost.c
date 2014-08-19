@@ -299,7 +299,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 	/* VOID *phs_context = NULL; */
 	int i;
 	/* UCHAR ucProtocolLength=0; */
-	/* ULONG ulPhsStatus; */
+	/* ULONG phs_status; */
 
 	struct bcm_packet_class_rules *pack_class_rule =
 		&cs_type->cCPacketClassificationRule;
@@ -479,7 +479,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 	B_UINT16 packet_classification_rule_idx;
 	USHORT vcid;
 	/* VOID *phs_context = NULL; */
-	/*ULONG ulPhsStatus; */
+	/*ULONG phs_status; */
 
 	vcid = ad->PackInfo[search_rule_idx].usVCID_Value;
 
@@ -515,7 +515,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 	/* B_UINT16  packet_classification_rule_idx; */
 	USHORT ulVCID;
 	/* VOID *phs_context = NULL; */
-	/* ULONG ulPhsStatus; */
+	/* ULONG phs_status; */
 
 	ulVCID = ad->PackInfo[search_rule_idx].usVCID_Value;
 

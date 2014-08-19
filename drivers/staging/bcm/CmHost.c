@@ -1407,34 +1407,34 @@ static VOID DumpCmControlPacket(PVOID buffer)
 }
 
 static inline ULONG RestoreSFParam(struct bcm_mini_adapter *ad,
-		ULONG ulAddrSFParamSet, PUCHAR pucDestBuffer)
+		ULONG addr_sf_param_set, PUCHAR pucDestBuffer)
 {
 	UINT  nBytesToRead = sizeof(struct bcm_connect_mgr_params);
 
-	if (ulAddrSFParamSet == 0 || NULL == pucDestBuffer) {
+	if (addr_sf_param_set == 0 || NULL == pucDestBuffer) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Got Param address as 0!!");
 		return 0;
 	}
-	ulAddrSFParamSet = ntohl(ulAddrSFParamSet);
+	addr_sf_param_set = ntohl(addr_sf_param_set);
 
 	/* Read out the SF Param Set At the indicated Location */
-	if (rdm(ad, ulAddrSFParamSet, (PUCHAR)pucDestBuffer, nBytesToRead) < 0)
+	if (rdm(ad, addr_sf_param_set, (PUCHAR)pucDestBuffer, nBytesToRead) < 0)
 		return STATUS_FAILURE;
 
 	return 1;
 }
 
 static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR pucSrcBuffer,
-		ULONG ulAddrSFParamSet)
+		ULONG addr_sf_param_set)
 {
 	UINT nBytesToWrite = sizeof(struct bcm_connect_mgr_params);
 	int ret = 0;
 
-	if (ulAddrSFParamSet == 0 || NULL == pucSrcBuffer)
+	if (addr_sf_param_set == 0 || NULL == pucSrcBuffer)
 		return 0;
 
-	ret = wrm(ad, ulAddrSFParamSet, (u8 *)pucSrcBuffer, nBytesToWrite);
+	ret = wrm(ad, addr_sf_param_set, (u8 *)pucSrcBuffer, nBytesToWrite);
 	if (ret < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"%s:%d WRM failed", __func__, __LINE__);

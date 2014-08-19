@@ -1696,7 +1696,7 @@ failed_restore_sf_param:
 ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 {
 	ULONG target_dsx_buffers_base = 0;
-	ULONG ulCntTargetBuffers;
+	ULONG n_target_buffs;
 	ULONG i;
 	int Status;
 
@@ -1729,12 +1729,12 @@ ULONG SetUpTargetDsxBuffers(struct bcm_mini_adapter *ad)
 			target_dsx_buffers_base);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Tgt Buffer is Now %lx :", target_dsx_buffers_base);
-	ulCntTargetBuffers = DSX_MESSAGE_EXCHANGE_BUFFER_SIZE /
+	n_target_buffs = DSX_MESSAGE_EXCHANGE_BUFFER_SIZE /
 		sizeof(struct bcm_connect_mgr_params);
 
 	ad->ulTotalTargetBuffersAvailable =
-		ulCntTargetBuffers > MAX_TARGET_DSX_BUFFERS ?
-		MAX_TARGET_DSX_BUFFERS : ulCntTargetBuffers;
+		n_target_buffs > MAX_TARGET_DSX_BUFFERS ?
+		MAX_TARGET_DSX_BUFFERS : n_target_buffs;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			" Total Target DSX Buffer setup %lx ",

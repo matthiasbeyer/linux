@@ -2062,7 +2062,7 @@ int get_dsx_sf_data_to_application(struct bcm_mini_adapter *ad,
 		UINT sf_id, void __user *user_buffer)
 {
 	int status = 0;
-	struct bcm_packet_info *psSfInfo = NULL;
+	struct bcm_packet_info *sf_info = NULL;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"status =%d", status);
@@ -2074,9 +2074,9 @@ int get_dsx_sf_data_to_application(struct bcm_mini_adapter *ad,
 	}
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"status =%d", status);
-	psSfInfo = &ad->PackInfo[status];
-	if (psSfInfo->pstSFIndication
-			&& copy_to_user(user_buffer, psSfInfo->pstSFIndication,
+	sf_info = &ad->PackInfo[status];
+	if (sf_info->pstSFIndication
+			&& copy_to_user(user_buffer, sf_info->pstSFIndication,
 				sizeof(struct bcm_add_indication_alt))) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 				"copy to user failed SFID %d, present in queue !!!",

@@ -880,12 +880,12 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
  * Description - This routinue Dumps the Contents of the AddIndication
  *  Structure in the Connection Management Control Packet
  *
- * Parameter - pvBuffer: Pointer to the buffer containing the
+ * Parameter - buffer: Pointer to the buffer containing the
  *  AddIndication data.
  *
  * Returns - None
  *************************************************************************/
-static VOID DumpCmControlPacket(PVOID pvBuffer)
+static VOID DumpCmControlPacket(PVOID buffer)
 {
 	int i;
 	int n;
@@ -893,7 +893,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	UINT curr_classifier_cnt;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	add_indication = pvBuffer;
+	add_indication = buffer;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "======>");
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Type: 0x%X", add_indication->u8Type);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Direction: 0x%X", add_indication->u8Direction);
@@ -1444,7 +1444,7 @@ static ULONG StoreSFParam(struct bcm_mini_adapter *ad, PUCHAR pucSrcBuffer,
 }
 
 ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
-		PVOID pvBuffer, UINT *puBufferLength)
+		PVOID buffer, UINT *puBufferLength)
 {
 	struct bcm_add_indication_alt *pstAddIndicationAlt = NULL;
 	struct bcm_add_indication *add_indication = NULL;
@@ -1452,14 +1452,14 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	UINT search_rule_idx;
 	ULONG sf_id;
 
-	pstAddIndicationAlt = pvBuffer;
+	pstAddIndicationAlt = buffer;
 
 	/*
 	 * In case of DSD Req By MS, we should immediately delete this SF so that
 	 * we can stop the further classifying the pkt for this SF.
 	 */
 	if (pstAddIndicationAlt->u8Type == DSD_REQ) {
-		pstDeletionRequest = pvBuffer;
+		pstDeletionRequest = buffer;
 
 		sf_id = ntohl(pstDeletionRequest->u32SFID);
 		search_rule_idx = SearchSfid(ad, sf_id);
@@ -1513,7 +1513,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		AddRequest.u16VCID = pstAddIndicationAlt->u16VCID;
 		AddRequest.psfParameterSet = add_indication->psfAuthorizedSet;
 		(*puBufferLength) = sizeof(struct bcm_add_request);
-		memcpy(pvBuffer, &AddRequest, sizeof(struct bcm_add_request));
+		memcpy(buffer, &AddRequest, sizeof(struct bcm_add_request));
 		kfree(add_indication);
 		return 1;
 	}
@@ -1565,26 +1565,26 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 				(ULONG)add_indication->psfActiveSet);
 
 	(*puBufferLength) = sizeof(struct bcm_add_indication);
-	*(struct bcm_add_indication *)pvBuffer = *add_indication;
+	*(struct bcm_add_indication *)buffer = *add_indication;
 	kfree(add_indication);
 	return 1;
 }
 
 static inline struct bcm_add_indication_alt
 *RestoreCmControlResponseMessage(register struct bcm_mini_adapter *ad,
-		register PVOID pvBuffer)
+		register PVOID buffer)
 {
 	ULONG ulStatus = 0;
 	struct bcm_add_indication *add_indication = NULL;
 	struct bcm_add_indication_alt *pstAddIndicationDest = NULL;
 
-	add_indication = pvBuffer;
+	add_indication = buffer;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"=====>");
 	if ((add_indication->u8Type == DSD_REQ) ||
 		(add_indication->u8Type == DSD_RSP) ||
 		(add_indication->u8Type == DSD_ACK))
-		return pvBuffer;
+		return buffer;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Inside RestoreCmControlResponseMessage ");
@@ -1820,7 +1820,7 @@ int FreeadDsxBuffer(struct bcm_mini_adapter *ad)
  * @return - Queue index for the free SFID else returns Invalid Index.
  */
 bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the ad structure */
-				PVOID pvBuffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
+				PVOID buffer /* Starting Address of the Buffer, that contains the AddIndication Data */)
 {
 	struct bcm_connect_mgr_params *local_set = NULL;
 	struct bcm_add_indication_alt *add_indication = NULL;
@@ -1833,9 +1833,9 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	 * Otherwise the message contains a target address from where we need to
 	 * read out the rest of the service flow param structure
 	 */
-	add_indication = RestoreCmControlResponseMessage(ad, pvBuffer);
+	add_indication = RestoreCmControlResponseMessage(ad, buffer);
 	if (add_indication == NULL) {
-		ClearTargetDSXBuffer(ad, ((struct bcm_add_indication *)pvBuffer)->u16TID, false);
+		ClearTargetDSXBuffer(ad, ((struct bcm_add_indication *)buffer)->u16TID, false);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Error in restoring Service Flow param structure from DSx message");
 		return false;
 	}
@@ -1925,8 +1925,8 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				 * Hence any access to the newly added SF through search_rule_idx is invalid.
 				 * SHOULD BE STRICTLY AVOIDED.
 				 */
-				/* *(PULONG)(((PUCHAR)pvBuffer)+1)=local_set->u32SFID; */
-				memcpy((((PUCHAR)pvBuffer)+1), &local_set->u32SFID, 4);
+				/* *(PULONG)(((PUCHAR)buffer)+1)=local_set->u32SFID; */
+				memcpy((((PUCHAR)buffer)+1), &local_set->u32SFID, 4);
 
 				if (add_indication->sfActiveSet.bValid == TRUE) {
 					if (UPLINK_DIR == add_indication->u8Direction) {
@@ -2016,7 +2016,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 				ad->PackInfo[search_rule_idx].usCID = ntohs(pstChangeIndication->u16CID);
 				CopyToAdapter(ad, local_set, search_rule_idx, DSC_ACK, add_indication);
 
-				*(PULONG)(((PUCHAR)pvBuffer)+1) = local_set->u32SFID;
+				*(PULONG)(((PUCHAR)buffer)+1) = local_set->u32SFID;
 			} else if (pstChangeIndication->u8CC == 6) {
 				deleteSFBySfid(ad, search_rule_idx);
 				kfree(add_indication);

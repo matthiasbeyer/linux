@@ -21,7 +21,7 @@ static void restore_endianess_of_classifier_entry(
 
 static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,
-		register UINT uiSearchRuleIndex,
+		register UINT search_rule_idx,
 		USHORT uVCID,
 		struct bcm_phs_rule *sPhsRule,
 		struct bcm_phs_rules *cPhsRule,
@@ -114,16 +114,16 @@ static int SearchFreeClsid(struct bcm_mini_adapter *ad /**ad Context*/)
 }
 
 static VOID deleteSFBySfid(struct bcm_mini_adapter *ad,
-		UINT uiSearchRuleIndex)
+		UINT search_rule_idx)
 {
 	/* deleting all the packet held in the SF */
-	flush_queue(ad, uiSearchRuleIndex);
+	flush_queue(ad, search_rule_idx);
 
 	/* Deleting the all classifiers for this SF */
-	DeleteAllClassifiersForSF(ad, uiSearchRuleIndex);
+	DeleteAllClassifiersForSF(ad, search_rule_idx);
 
 	/* Resetting only MIBS related entries in the SF */
-	memset((PVOID)&ad->PackInfo[uiSearchRuleIndex], 0,
+	memset((PVOID)&ad->PackInfo[search_rule_idx], 0,
 			sizeof(struct bcm_mibs_table));
 }
 
@@ -292,7 +292,7 @@ void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 TID, bool bFreeA
  */
 static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		struct bcm_convergence_types *psfCSType,
-		UINT uiSearchRuleIndex,
+		UINT search_rule_idx,
 		UINT nClassifierIndex)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
@@ -304,7 +304,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 	struct bcm_packet_class_rules *pack_class_rule =
 		&psfCSType->cCPacketClassificationRule;
 
-	if (ad->PackInfo[uiSearchRuleIndex].usVCID_Value == 0 ||
+	if (ad->PackInfo[search_rule_idx].usVCID_Value == 0 ||
 		nClassifierIndex > (MAX_CLASSIFIERS-1))
 		return;
 
@@ -319,7 +319,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 	if (classifier_entry) {
 		/* Store if Ipv6 */
 		classifier_entry->bIpv6Protocol =
-			(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ? TRUE : false;
+			(ad->PackInfo[search_rule_idx].ucIpVersion == IPV6) ? TRUE : false;
 
 		/* Destinaiton Port */
 		classifier_entry->ucDestPortRangeLength =
@@ -377,7 +377,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		CopyIpAddrToClassifier(classifier_entry,
 				pack_class_rule->u8IPDestinationAddressLength,
 				pack_class_rule->u8IPDestinationAddress,
-				(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ?
+				(ad->PackInfo[search_rule_idx].ucIpVersion == IPV6) ?
 			TRUE : false, eDestIpAddress);
 
 		/* Source Ip Address and Mask */
@@ -387,7 +387,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 		CopyIpAddrToClassifier(classifier_entry,
 				pack_class_rule->u8IPMaskedSourceAddressLength,
 				pack_class_rule->u8IPMaskedSourceAddress,
-				(ad->PackInfo[uiSearchRuleIndex].ucIpVersion == IPV6) ? TRUE : false,
+				(ad->PackInfo[search_rule_idx].ucIpVersion == IPV6) ? TRUE : false,
 				eSrcIpAddress);
 
 		/* TOS */
@@ -418,16 +418,16 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 
 		/* store the classifier rule ID and set this classifier entry as valid */
 		classifier_entry->ucDirection =
-			ad->PackInfo[uiSearchRuleIndex].ucDirection;
+			ad->PackInfo[search_rule_idx].ucDirection;
 		classifier_entry->uiClassifierRuleIndex =
 			ntohs(pack_class_rule->u16PacketClassificationRuleIndex);
 		classifier_entry->usVCID_Value =
-			ad->PackInfo[uiSearchRuleIndex].usVCID_Value;
+			ad->PackInfo[search_rule_idx].usVCID_Value;
 		classifier_entry->ulSFID =
-			ad->PackInfo[uiSearchRuleIndex].ulSFID;
+			ad->PackInfo[search_rule_idx].ulSFID;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Search Index %d Dir: %d, Index: %d, Vcid: %d\n",
-				uiSearchRuleIndex,
+				search_rule_idx,
 				classifier_entry->ucDirection,
 				classifier_entry->uiClassifierRuleIndex,
 				classifier_entry->usVCID_Value);
@@ -473,7 +473,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
-		UINT uiSearchRuleIndex, UINT nClassifierIndex)
+		UINT search_rule_idx, UINT nClassifierIndex)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	B_UINT16 u16PacketClassificationRuleIndex;
@@ -481,7 +481,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
 	/* VOID *pvPhsContext = NULL; */
 	/*ULONG ulPhsStatus; */
 
-	usVCID = ad->PackInfo[uiSearchRuleIndex].usVCID_Value;
+	usVCID = ad->PackInfo[search_rule_idx].usVCID_Value;
 
 	if (nClassifierIndex > MAX_CLASSIFIERS-1)
 		return;
@@ -508,7 +508,7 @@ static inline VOID DeleteClassifierRuleFromSF(struct bcm_mini_adapter *ad,
  * @ingroup ctrl_pkt_functions
  */
 VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
-		UINT uiSearchRuleIndex)
+		UINT search_rule_idx)
 {
 	struct bcm_classifier_rule *classifier_entry = NULL;
 	int i;
@@ -517,7 +517,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 	/* VOID *pvPhsContext = NULL; */
 	/* ULONG ulPhsStatus; */
 
-	ulVCID = ad->PackInfo[uiSearchRuleIndex].usVCID_Value;
+	ulVCID = ad->PackInfo[search_rule_idx].usVCID_Value;
 
 	if (ulVCID == 0)
 		return;
@@ -528,7 +528,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
 
 			if (classifier_entry->bUsed)
 				DeleteClassifierRuleFromSF(ad,
-						uiSearchRuleIndex, i);
+						search_rule_idx, i);
 		}
 	}
 
@@ -543,7 +543,7 @@ VOID DeleteAllClassifiersForSF(struct bcm_mini_adapter *ad,
  */
 static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to the ad structure */
 			register struct bcm_connect_mgr_params *psfLocalSet, /* Pointer to the connection manager parameters structure */
-			register UINT uiSearchRuleIndex, /* <Index of Queue, to which this data belongs */
+			register UINT search_rule_idx, /* <Index of Queue, to which this data belongs */
 			register UCHAR ucDsxType,
 			struct bcm_add_indication_alt *pstAddIndication) {
 
@@ -556,17 +556,17 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	struct bcm_convergence_types *psfCSType = NULL;
 	struct bcm_phs_rule sPhsRule;
 	struct bcm_packet_info *curr_packinfo =
-		&ad->PackInfo[uiSearchRuleIndex];
+		&ad->PackInfo[search_rule_idx];
 	USHORT uVCID = curr_packinfo->usVCID_Value;
 	UINT UGIValue = 0;
 
 	curr_packinfo->bValid = TRUE;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-			"Search Rule Index = %d\n", uiSearchRuleIndex);
+			"Search Rule Index = %d\n", search_rule_idx);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"%s: SFID= %x ", __func__, ntohl(psfLocalSet->u32SFID));
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-			"Updating Queue %d", uiSearchRuleIndex);
+			"Updating Queue %d", search_rule_idx);
 
 	ulSFID = ntohl(psfLocalSet->u32SFID);
 	/* Store IP Version used */
@@ -609,7 +609,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"CopyToad : Queue No : %X ETH CS Support :  %X  , IP CS Support : %X\n",
-			uiSearchRuleIndex,
+			search_rule_idx,
 			curr_packinfo->bEthCSSupport,
 			curr_packinfo->bIPCSSupport);
 
@@ -632,7 +632,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	curr_packinfo->u8QueueType = psfLocalSet->u8ServiceFlowSchedulingType;
 
 	if (curr_packinfo->u8QueueType == BE && curr_packinfo->ucDirection)
-		ad->usBestEffortQueueIndex = uiSearchRuleIndex;
+		ad->usBestEffortQueueIndex = search_rule_idx;
 
 	curr_packinfo->ulSFID = ntohl(psfLocalSet->u32SFID);
 
@@ -693,7 +693,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				}
 				/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 				CopyClassifierRuleToSF(ad, psfCSType,
-						uiSearchRuleIndex,
+						search_rule_idx,
 						nClassifierIndex);
 			} else {
 				/* This Classifier Already Exists and it is invalid to Add Classifier with existing PCRI */
@@ -718,7 +718,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 			/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
 			CopyClassifierRuleToSF(ad, psfCSType,
-					uiSearchRuleIndex, nClassifierIndex);
+					search_rule_idx, nClassifierIndex);
 			break;
 		case eDeleteClassifier:
 			/* Get the Classifier Index From Classifier table for this SF and replace existing  Classifier */
@@ -734,7 +734,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 
 			/* Delete This classifier */
-			DeleteClassifierRuleFromSF(ad, uiSearchRuleIndex,
+			DeleteClassifierRuleFromSF(ad, search_rule_idx,
 					nClassifierIndex);
 			break;
 		default:
@@ -784,7 +784,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			if (psfCSType->cPhsRule.u8PHSI)	{
 				/* Apply This PHS Rule to all classifiers whose Associated PHSI Match */
 				apply_phs_rule_to_all_classifiers(ad,
-						uiSearchRuleIndex,
+						search_rule_idx,
 						uVCID,
 						&sPhsRule,
 						&psfCSType->cPhsRule,
@@ -852,7 +852,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			curr_packinfo->uiMaxBucketSize);
 
 	/* copy the extended SF Parameters to Support MIBS */
-	CopyMIBSExtendedSFParameters(ad, psfLocalSet, uiSearchRuleIndex);
+	CopyMIBSExtendedSFParameters(ad, psfLocalSet, search_rule_idx);
 
 	/* store header suppression enabled flag per SF */
 	curr_packinfo->bHeaderSuppressionEnabled =
@@ -1449,7 +1449,7 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 	struct bcm_add_indication_alt *pstAddIndicationAlt = NULL;
 	struct bcm_add_indication *pstAddIndication = NULL;
 	struct bcm_del_request *pstDeletionRequest;
-	UINT uiSearchRuleIndex;
+	UINT search_rule_idx;
 	ULONG ulSFID;
 
 	pstAddIndicationAlt = pvBuffer;
@@ -1462,10 +1462,10 @@ ULONG StoreCmControlResponseMessage(struct bcm_mini_adapter *ad,
 		pstDeletionRequest = pvBuffer;
 
 		ulSFID = ntohl(pstDeletionRequest->u32SFID);
-		uiSearchRuleIndex = SearchSfid(ad, ulSFID);
+		search_rule_idx = SearchSfid(ad, ulSFID);
 
-		if (uiSearchRuleIndex < NO_OF_QUEUES) {
-			deleteSFBySfid(ad, uiSearchRuleIndex);
+		if (search_rule_idx < NO_OF_QUEUES) {
+			deleteSFBySfid(ad, search_rule_idx);
 			ad->u32TotalDSD++;
 		}
 		return 1;
@@ -1826,7 +1826,7 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	struct bcm_add_indication_alt *pstAddIndication = NULL;
 	struct bcm_change_indication *pstChangeIndication = NULL;
 	struct bcm_leader *pLeader = NULL;
-	INT uiSearchRuleIndex = 0;
+	INT search_rule_idx = 0;
 	ULONG ulSFID;
 
 	/*
@@ -1873,56 +1873,56 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 	case DSA_ACK:
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "VCID:0x%X",
 				ntohs(pstAddIndication->u16VCID));
-		uiSearchRuleIndex = SearchFreeSfid(ad);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "uiSearchRuleIndex:0x%X ",
-				uiSearchRuleIndex);
+		search_rule_idx = SearchFreeSfid(ad);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "search_rule_idx:0x%X ",
+				search_rule_idx);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "Direction:0x%X ",
 				pstAddIndication->u8Direction);
-		if (uiSearchRuleIndex < NO_OF_QUEUES) {
-			ad->PackInfo[uiSearchRuleIndex].ucDirection =
+		if (search_rule_idx < NO_OF_QUEUES) {
+			ad->PackInfo[search_rule_idx].ucDirection =
 				pstAddIndication->u8Direction;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "bValid:0x%X ",
 					pstAddIndication->sfActiveSet.bValid);
 			if (pstAddIndication->sfActiveSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bActiveSet = TRUE;
+				ad->PackInfo[search_rule_idx].bActiveSet = TRUE;
 
 			if (pstAddIndication->sfAuthorizedSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bAuthorizedSet = TRUE;
+				ad->PackInfo[search_rule_idx].bAuthorizedSet = TRUE;
 
 			if (pstAddIndication->sfAdmittedSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bAdmittedSet = TRUE;
+				ad->PackInfo[search_rule_idx].bAdmittedSet = TRUE;
 
 			if (pstAddIndication->sfActiveSet.bValid == false) {
-				ad->PackInfo[uiSearchRuleIndex].bActive = false;
-				ad->PackInfo[uiSearchRuleIndex].bActivateRequestSent = false;
+				ad->PackInfo[search_rule_idx].bActive = false;
+				ad->PackInfo[search_rule_idx].bActivateRequestSent = false;
 				if (pstAddIndication->sfAdmittedSet.bValid)
 					psfLocalSet = &pstAddIndication->sfAdmittedSet;
 				else if (pstAddIndication->sfAuthorizedSet.bValid)
 					psfLocalSet = &pstAddIndication->sfAuthorizedSet;
 			} else {
 				psfLocalSet = &pstAddIndication->sfActiveSet;
-				ad->PackInfo[uiSearchRuleIndex].bActive = TRUE;
+				ad->PackInfo[search_rule_idx].bActive = TRUE;
 			}
 
 			if (!psfLocalSet) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "No set is valid\n");
-				ad->PackInfo[uiSearchRuleIndex].bActive = false;
-				ad->PackInfo[uiSearchRuleIndex].bValid = false;
-				ad->PackInfo[uiSearchRuleIndex].usVCID_Value = 0;
+				ad->PackInfo[search_rule_idx].bActive = false;
+				ad->PackInfo[search_rule_idx].bValid = false;
+				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
 				kfree(pstAddIndication);
 			} else if (psfLocalSet->bValid && (pstAddIndication->u8CC == 0)) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSA ACK");
-				ad->PackInfo[uiSearchRuleIndex].usVCID_Value = ntohs(pstAddIndication->u16VCID);
-				ad->PackInfo[uiSearchRuleIndex].usCID = ntohs(pstAddIndication->u16CID);
+				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(pstAddIndication->u16VCID);
+				ad->PackInfo[search_rule_idx].usCID = ntohs(pstAddIndication->u16CID);
 
 				if (UPLINK_DIR == pstAddIndication->u8Direction)
-					atomic_set(&ad->PackInfo[uiSearchRuleIndex].uiPerSFTxResourceCount, DEFAULT_PERSFCOUNT);
+					atomic_set(&ad->PackInfo[search_rule_idx].uiPerSFTxResourceCount, DEFAULT_PERSFCOUNT);
 
-				CopyToAdapter(ad, psfLocalSet, uiSearchRuleIndex, DSA_ACK, pstAddIndication);
+				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSA_ACK, pstAddIndication);
 				/* don't free pstAddIndication */
 
 				/* Inside CopyToAdapter, Sorting of all the SFs take place.
-				 * Hence any access to the newly added SF through uiSearchRuleIndex is invalid.
+				 * Hence any access to the newly added SF through search_rule_idx is invalid.
 				 * SHOULD BE STRICTLY AVOIDED.
 				 */
 				/* *(PULONG)(((PUCHAR)pvBuffer)+1)=psfLocalSet->u32SFID; */
@@ -1943,9 +1943,9 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 					}
 				}
 			} else {
-				ad->PackInfo[uiSearchRuleIndex].bActive = false;
-				ad->PackInfo[uiSearchRuleIndex].bValid = false;
-				ad->PackInfo[uiSearchRuleIndex].usVCID_Value = 0;
+				ad->PackInfo[search_rule_idx].bActive = false;
+				ad->PackInfo[search_rule_idx].bValid = false;
+				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
 				kfree(pstAddIndication);
 			}
 		} else {
@@ -1974,24 +1974,24 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		/* FALLTHROUGH */
 	case DSC_ACK:
 		pstChangeIndication = (struct bcm_change_indication *)pstAddIndication;
-		uiSearchRuleIndex = SearchSfid(ad, ntohl(pstChangeIndication->sfActiveSet.u32SFID));
-		if (uiSearchRuleIndex > NO_OF_QUEUES-1)
+		search_rule_idx = SearchSfid(ad, ntohl(pstChangeIndication->sfActiveSet.u32SFID));
+		if (search_rule_idx > NO_OF_QUEUES-1)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "SF doesn't exist for which DSC_ACK is received");
 
-		if (uiSearchRuleIndex < NO_OF_QUEUES) {
-			ad->PackInfo[uiSearchRuleIndex].ucDirection = pstChangeIndication->u8Direction;
+		if (search_rule_idx < NO_OF_QUEUES) {
+			ad->PackInfo[search_rule_idx].ucDirection = pstChangeIndication->u8Direction;
 			if (pstChangeIndication->sfActiveSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bActiveSet = TRUE;
+				ad->PackInfo[search_rule_idx].bActiveSet = TRUE;
 
 			if (pstChangeIndication->sfAuthorizedSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bAuthorizedSet = TRUE;
+				ad->PackInfo[search_rule_idx].bAuthorizedSet = TRUE;
 
 			if (pstChangeIndication->sfAdmittedSet.bValid == TRUE)
-				ad->PackInfo[uiSearchRuleIndex].bAdmittedSet = TRUE;
+				ad->PackInfo[search_rule_idx].bAdmittedSet = TRUE;
 
 			if (pstChangeIndication->sfActiveSet.bValid == false) {
-				ad->PackInfo[uiSearchRuleIndex].bActive = false;
-				ad->PackInfo[uiSearchRuleIndex].bActivateRequestSent = false;
+				ad->PackInfo[search_rule_idx].bActive = false;
+				ad->PackInfo[search_rule_idx].bActivateRequestSent = false;
 
 				if (pstChangeIndication->sfAdmittedSet.bValid)
 					psfLocalSet = &pstChangeIndication->sfAdmittedSet;
@@ -1999,26 +1999,26 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 					psfLocalSet = &pstChangeIndication->sfAuthorizedSet;
 			} else {
 				psfLocalSet = &pstChangeIndication->sfActiveSet;
-				ad->PackInfo[uiSearchRuleIndex].bActive = TRUE;
+				ad->PackInfo[search_rule_idx].bActive = TRUE;
 			}
 
 			if (!psfLocalSet) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "No set is valid\n");
-				ad->PackInfo[uiSearchRuleIndex].bActive = false;
-				ad->PackInfo[uiSearchRuleIndex].bValid = false;
-				ad->PackInfo[uiSearchRuleIndex].usVCID_Value = 0;
+				ad->PackInfo[search_rule_idx].bActive = false;
+				ad->PackInfo[search_rule_idx].bValid = false;
+				ad->PackInfo[search_rule_idx].usVCID_Value = 0;
 				kfree(pstAddIndication);
 			} else if (psfLocalSet->bValid && (pstChangeIndication->u8CC == 0)) {
-				ad->PackInfo[uiSearchRuleIndex].usVCID_Value = ntohs(pstChangeIndication->u16VCID);
+				ad->PackInfo[search_rule_idx].usVCID_Value = ntohs(pstChangeIndication->u16VCID);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "CC field is %d bvalid = %d\n",
 						pstChangeIndication->u8CC, psfLocalSet->bValid);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "VCID= %d\n", ntohs(pstChangeIndication->u16VCID));
-				ad->PackInfo[uiSearchRuleIndex].usCID = ntohs(pstChangeIndication->u16CID);
-				CopyToAdapter(ad, psfLocalSet, uiSearchRuleIndex, DSC_ACK, pstAddIndication);
+				ad->PackInfo[search_rule_idx].usCID = ntohs(pstChangeIndication->u16CID);
+				CopyToAdapter(ad, psfLocalSet, search_rule_idx, DSC_ACK, pstAddIndication);
 
 				*(PULONG)(((PUCHAR)pvBuffer)+1) = psfLocalSet->u32SFID;
 			} else if (pstChangeIndication->u8CC == 6) {
-				deleteSFBySfid(ad, uiSearchRuleIndex);
+				deleteSFBySfid(ad, search_rule_idx);
 				kfree(pstAddIndication);
 			}
 		} else {
@@ -2032,12 +2032,12 @@ bool CmControlResponseMessage(struct bcm_mini_adapter *ad,  /* <Pointer to the a
 		*((struct bcm_del_indication *)&(ad->caDsxReqResp[LEADER_SIZE])) = *((struct bcm_del_indication *)pstAddIndication);
 
 		ulSFID = ntohl(((struct bcm_del_indication *)pstAddIndication)->u32SFID);
-		uiSearchRuleIndex = SearchSfid(ad, ulSFID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSD - Removing connection %x", uiSearchRuleIndex);
+		search_rule_idx = SearchSfid(ad, ulSFID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL, "DSD - Removing connection %x", search_rule_idx);
 
-		if (uiSearchRuleIndex < NO_OF_QUEUES) {
+		if (search_rule_idx < NO_OF_QUEUES) {
 			/* Delete All Classifiers Associated with this SFID */
-			deleteSFBySfid(ad, uiSearchRuleIndex);
+			deleteSFBySfid(ad, search_rule_idx);
 			ad->u32TotalDSD++;
 		}
 
@@ -2092,7 +2092,7 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 {
 	B_UINT32 u32NumofSFsinMsg = ntohl(*(puiBuffer + 1));
 	struct bcm_stim_sfhostnotify *pHostInfo = NULL;
-	UINT uiSearchRuleIndex = 0;
+	UINT search_rule_idx = 0;
 	ULONG ulSFID = 0;
 
 	puiBuffer += 2;
@@ -2105,12 +2105,12 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 		puiBuffer = (PUINT)(pHostInfo + 1);
 
 		ulSFID = ntohl(pHostInfo->SFID);
-		uiSearchRuleIndex = SearchSfid(ad, ulSFID);
+		search_rule_idx = SearchSfid(ad, ulSFID);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"SFID: 0x%lx\n", ulSFID);
 
-		if (uiSearchRuleIndex >= NO_OF_QUEUES
-				|| uiSearchRuleIndex == HiPriority) {
+		if (search_rule_idx >= NO_OF_QUEUES
+				|| search_rule_idx == HiPriority) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL,
 					"The SFID <%lx> doesn't exist in host entry or is Invalid\n",
@@ -2121,10 +2121,10 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 		if (pHostInfo->RetainSF == false) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL, "Going to Delete SF");
-			deleteSFBySfid(ad, uiSearchRuleIndex);
+			deleteSFBySfid(ad, search_rule_idx);
 		} else {
 			struct bcm_packet_info *packinfo =
-				&ad->PackInfo[uiSearchRuleIndex];
+				&ad->PackInfo[search_rule_idx];
 
 			packinfo->usVCID_Value = ntohs(pHostInfo->VCID);
 			packinfo->usCID = ntohs(pHostInfo->newCID);
@@ -2168,7 +2168,7 @@ static void restore_endianess_of_classifier_entry(
 
 static void apply_phs_rule_to_all_classifiers(
 		register struct bcm_mini_adapter *ad,		/* <Pointer to the ad structure */
-		register UINT uiSearchRuleIndex,			/* <Index of Queue, to which this data belongs */
+		register UINT search_rule_idx,			/* <Index of Queue, to which this data belongs */
 		USHORT uVCID,
 		struct bcm_phs_rule *sPhsRule,
 		struct bcm_phs_rules *cPhsRule,
@@ -2182,7 +2182,7 @@ static void apply_phs_rule_to_all_classifiers(
 			curr_classifier =
 				&ad->astClassifierTable[uiClassifierIndex];
 			if ((curr_classifier->bUsed) &&
-				(curr_classifier->ulSFID == ad->PackInfo[uiSearchRuleIndex].ulSFID) &&
+				(curr_classifier->ulSFID == ad->PackInfo[search_rule_idx].ulSFID) &&
 				(curr_classifier->u8AssociatedPHSI == cPhsRule->u8PHSI)) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 						"Adding PHS Rule For Classifier: 0x%x cPhsRule.u8PHSI: 0x%x\n",

@@ -1576,7 +1576,7 @@ static inline struct bcm_add_indication_alt
 {
 	ULONG status = 0;
 	struct bcm_add_indication *add_indication = NULL;
-	struct bcm_add_indication_alt *pstAddIndicationDest = NULL;
+	struct bcm_add_indication_alt *add_indication_dest = NULL;
 
 	add_indication = buffer;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -1592,11 +1592,11 @@ static inline struct bcm_add_indication_alt
 	 * Need to Allocate memory to contain the SUPER Large structures
 	 * Our driver can't create these structures on Stack :(
 	 */
-	pstAddIndicationDest = kmalloc(sizeof(struct bcm_add_indication_alt),
+	add_indication_dest = kmalloc(sizeof(struct bcm_add_indication_alt),
 			GFP_KERNEL);
 
-	if (pstAddIndicationDest) {
-		memset(pstAddIndicationDest, 0,
+	if (add_indication_dest) {
+		memset(add_indication_dest, 0,
 				sizeof(struct bcm_add_indication_alt));
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
@@ -1629,47 +1629,47 @@ static inline struct bcm_add_indication_alt
 			"AddIndication-Active set loc : %p",
 			add_indication->psfActiveSet);
 
-	pstAddIndicationDest->u8Type = add_indication->u8Type;
-	pstAddIndicationDest->u8Direction = add_indication->eConnectionDir;
-	pstAddIndicationDest->u16TID = add_indication->u16TID;
-	pstAddIndicationDest->u16CID = add_indication->u16CID;
-	pstAddIndicationDest->u16VCID = add_indication->u16VCID;
-	pstAddIndicationDest->u8CC = add_indication->u8CC;
+	add_indication_dest->u8Type = add_indication->u8Type;
+	add_indication_dest->u8Direction = add_indication->eConnectionDir;
+	add_indication_dest->u16TID = add_indication->u16TID;
+	add_indication_dest->u16CID = add_indication->u16CID;
+	add_indication_dest->u16VCID = add_indication->u16VCID;
+	add_indication_dest->u8CC = add_indication->u8CC;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Active Set ");
 	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfActiveSet,
-			(PUCHAR)&pstAddIndicationDest->sfActiveSet);
+			(PUCHAR)&add_indication_dest->sfActiveSet);
 	if (status != 1)
 		goto failed_restore_sf_param;
 
-	if (pstAddIndicationDest->sfActiveSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
-		pstAddIndicationDest->sfActiveSet.u8TotalClassifiers =
+	if (add_indication_dest->sfActiveSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
+		add_indication_dest->sfActiveSet.u8TotalClassifiers =
 			MAX_CLASSIFIERS_IN_SF;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Admitted Set ");
 	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfAdmittedSet,
-			(PUCHAR)&pstAddIndicationDest->sfAdmittedSet);
+			(PUCHAR)&add_indication_dest->sfAdmittedSet);
 	if (status != 1)
 		goto failed_restore_sf_param;
 
-	if (pstAddIndicationDest->sfAdmittedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
-		pstAddIndicationDest->sfAdmittedSet.u8TotalClassifiers =
+	if (add_indication_dest->sfAdmittedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
+		add_indication_dest->sfAdmittedSet.u8TotalClassifiers =
 			MAX_CLASSIFIERS_IN_SF;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"Restoring Authorized Set ");
 	status = RestoreSFParam(ad,
 			(ULONG)add_indication->psfAuthorizedSet,
-			(PUCHAR)&pstAddIndicationDest->sfAuthorizedSet);
+			(PUCHAR)&add_indication_dest->sfAuthorizedSet);
 	if (status != 1)
 		goto failed_restore_sf_param;
 
-	if (pstAddIndicationDest->sfAuthorizedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
-		pstAddIndicationDest->sfAuthorizedSet.u8TotalClassifiers =
+	if (add_indication_dest->sfAuthorizedSet.u8TotalClassifiers > MAX_CLASSIFIERS_IN_SF)
+		add_indication_dest->sfAuthorizedSet.u8TotalClassifiers =
 			MAX_CLASSIFIERS_IN_SF;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
@@ -1677,17 +1677,17 @@ static inline struct bcm_add_indication_alt
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 		"============================================================");
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-			" pstAddIndicationDest->sfActiveSet size  %zx %p",
-			sizeof(*pstAddIndicationDest), pstAddIndicationDest);
+			" add_indication_dest->sfActiveSet size  %zx %p",
+			sizeof(*add_indication_dest), add_indication_dest);
 	/* BCM_DEBUG_PRINT_BUFFER(ad,DBG_TYPE_OTHERS, CONN_MSG,
-	 *		DBG_LVL_ALL, (unsigned char *)pstAddIndicationDest,
-	 *		sizeof(*pstAddIndicationDest));
+	 *		DBG_LVL_ALL, (unsigned char *)add_indication_dest,
+	 *		sizeof(*add_indication_dest));
 	 */
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"============================================================");
-	return pstAddIndicationDest;
+	return add_indication_dest;
 failed_restore_sf_param:
-	kfree(pstAddIndicationDest);
+	kfree(add_indication_dest);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 			"<=====");
 	return NULL;

@@ -887,7 +887,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
  *************************************************************************/
 static VOID DumpCmControlPacket(PVOID pvBuffer)
 {
-	int uiLoopIndex;
+	int i;
 	int nIndex;
 	struct bcm_add_indication_alt *add_indication;
 	UINT nCurClassifierCnt;
@@ -986,23 +986,23 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 				cs_type->cCPacketClassificationRule.u8IPTypeOfService[1],
 				cs_type->cCPacketClassificationRule.u8IPTypeOfService[2]);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 1; uiLoopIndex++)
+		for (i = 0; i < 1; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Protocol: 0x%02X ",
 					cs_type->cCPacketClassificationRule.u8Protocol);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddressLength: 0x%X ",
 				cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddress[32]: 0x%02X ",
-					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddressLength: 0x%X ",
 				cs_type->cCPacketClassificationRule.u8IPDestinationAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddress[32]: 0x%02X ",
-					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolSourcePortRangeLength:0x%X ",
 				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
@@ -1128,22 +1128,22 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 				DBG_LVL_ALL, "u8IPTypeOfService[3]: 0x%*ph",
 				3, cs_type->cCPacketClassificationRule.
 					      u8IPTypeOfService);
-		for (uiLoopIndex = 0; uiLoopIndex < 1; uiLoopIndex++)
+		for (i = 0; i < 1; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Protocol: 0x%02X ", cs_type->cCPacketClassificationRule.u8Protocol);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddressLength: 0x%02X ",
 				cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddress[32]: 0x%02X ",
-					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddressLength: 0x%02X ",
 				cs_type->cCPacketClassificationRule.u8IPDestinationAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddress[32]: 0x%02X ",
-					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolSourcePortRangeLength: 0x%02X ",
 				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
@@ -1274,7 +1274,7 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 				clsRule->u8IPTypeOfService[1],
 				clsRule->u8IPTypeOfService[2]);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 1; uiLoopIndex++)
+		for (i = 0; i < 1; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 					DBG_LVL_ALL,
 					" u8Protocol: 0x%X ",
@@ -1285,22 +1285,22 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 				"u8IPMaskedSourceAddressLength: 0x%X ",
 				clsRule->u8IPMaskedSourceAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 					DBG_LVL_ALL,
 					"u8IPMaskedSourceAddress[32]: 0x%X ",
-					clsRule->u8IPMaskedSourceAddress[uiLoopIndex]);
+					clsRule->u8IPMaskedSourceAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL,
 				"u8IPDestinationAddressLength: 0x%02X ",
 				clsRule->u8IPDestinationAddressLength);
 
-		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
+		for (i = 0; i < 32; i++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 					DBG_LVL_ALL,
 					" u8IPDestinationAddress[32]:0x%X ",
-					clsRule->u8IPDestinationAddress[uiLoopIndex]);
+					clsRule->u8IPDestinationAddress[i]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL,

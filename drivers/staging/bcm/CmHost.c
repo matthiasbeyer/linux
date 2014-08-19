@@ -291,7 +291,7 @@ void ClearTargetDSXBuffer(struct bcm_mini_adapter *ad, B_UINT16 tid, bool free_a
  * copy classifier rule into the specified SF index
  */
 static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
-		struct bcm_convergence_types *psfCSType,
+		struct bcm_convergence_types *cs_type,
 		UINT search_rule_idx,
 		UINT nClassifierIndex)
 {
@@ -302,7 +302,7 @@ static inline VOID CopyClassifierRuleToSF(struct bcm_mini_adapter *ad,
 	/* ULONG ulPhsStatus; */
 
 	struct bcm_packet_class_rules *pack_class_rule =
-		&psfCSType->cCPacketClassificationRule;
+		&cs_type->cCPacketClassificationRule;
 
 	if (ad->PackInfo[search_rule_idx].usVCID_Value == 0 ||
 		nClassifierIndex > (MAX_CLASSIFIERS-1))
@@ -553,7 +553,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	enum E_CLASSIFIER_ACTION eClassifierAction = eInvalidClassifierAction;
 	B_UINT16 u16PacketClassificationRuleIndex = 0;
 	int i;
-	struct bcm_convergence_types *psfCSType = NULL;
+	struct bcm_convergence_types *cs_type = NULL;
 	struct bcm_phs_rule phs_rule;
 	struct bcm_packet_info *curr_packinfo =
 		&ad->PackInfo[search_rule_idx];
@@ -642,20 +642,20 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 	for (i = 0; i < psfLocalSet->u8TotalClassifiers; i++) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Classifier index =%d", i);
-		psfCSType = &psfLocalSet->cConvergenceSLTypes[i];
+		cs_type = &psfLocalSet->cConvergenceSLTypes[i];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
 				"Classifier index =%d", i);
 
-		if (psfCSType->cCPacketClassificationRule.u8ClassifierRulePriority)
+		if (cs_type->cCPacketClassificationRule.u8ClassifierRulePriority)
 			curr_packinfo->bClassifierPriority = TRUE;
 
-		if (psfCSType->cCPacketClassificationRule.u8ClassifierRulePriority)
+		if (cs_type->cCPacketClassificationRule.u8ClassifierRulePriority)
 			curr_packinfo->bClassifierPriority = TRUE;
 
 		if (ucDsxType == DSA_ACK) {
 			eClassifierAction = eAddClassifier;
 		} else if (ucDsxType == DSC_ACK) {
-			switch (psfCSType->u8ClassfierDSCAction) {
+			switch (cs_type->u8ClassfierDSCAction) {
 			case 0: /* DSC Add Classifier */
 				eClassifierAction = eAddClassifier;
 				break;
@@ -670,7 +670,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 			}
 		}
 
-		u16PacketClassificationRuleIndex = ntohs(psfCSType->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
+		u16PacketClassificationRuleIndex = ntohs(cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 
 		switch (eClassifierAction) {
 		case eAddClassifier:
@@ -692,7 +692,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 					break;
 				}
 				/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
-				CopyClassifierRuleToSF(ad, psfCSType,
+				CopyClassifierRuleToSF(ad, cs_type,
 						search_rule_idx,
 						nClassifierIndex);
 			} else {
@@ -717,7 +717,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 				break;
 			}
 			/* Copy the Classifier Rule for this service flow into our Classifier table maintained per SF. */
-			CopyClassifierRuleToSF(ad, psfCSType,
+			CopyClassifierRuleToSF(ad, cs_type,
 					search_rule_idx, nClassifierIndex);
 			break;
 		case eDeleteClassifier:
@@ -745,12 +745,12 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 	/* Repeat parsing Classification Entries to process PHS Rules */
 	for (i = 0; i < psfLocalSet->u8TotalClassifiers; i++) {
-		psfCSType = &psfLocalSet->cConvergenceSLTypes[i];
+		cs_type = &psfLocalSet->cConvergenceSLTypes[i];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG, DBG_LVL_ALL,
-				"psfCSType->u8PhsDSCAction : 0x%x\n",
-				psfCSType->u8PhsDSCAction);
+				"cs_type->u8PhsDSCAction : 0x%x\n",
+				cs_type->u8PhsDSCAction);
 
-		switch (psfCSType->u8PhsDSCAction) {
+		switch (cs_type->u8PhsDSCAction) {
 		case eDeleteAllPHSRules:
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CONN_MSG,
 					DBG_LVL_ALL,
@@ -765,15 +765,15 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 					DBG_LVL_ALL,
 					"PHS DSC Action = Delete PHS Rule\n");
 
-			if (psfCSType->cPhsRule.u8PHSI)
+			if (cs_type->cPhsRule.u8PHSI)
 				PhsDeletePHSRule(&ad->stBCMPhsContext,
 						vcid,
-						psfCSType->cCPacketClassificationRule.u8AssociatedPHSI);
+						cs_type->cCPacketClassificationRule.u8AssociatedPHSI);
 
 			break;
 		default:
 			if (ucDsxType == DSC_ACK) {
-				/* BCM_DEBUG_PRINT(CONN_MSG,("Invalid PHS DSC Action For DSC\n",psfCSType->cPhsRule.u8PHSI)); */
+				/* BCM_DEBUG_PRINT(CONN_MSG,("Invalid PHS DSC Action For DSC\n",cs_type->cPhsRule.u8PHSI)); */
 				break; /* FOr DSC ACK Case PHS DSC Action must be in valid set */
 			}
 		/* Proceed To Add PHS rule for DSA_ACK case even if PHS DSC action is unspecified */
@@ -781,13 +781,13 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 
 		case eAddPHSRule:
 		case eSetPHSRule:
-			if (psfCSType->cPhsRule.u8PHSI)	{
+			if (cs_type->cPhsRule.u8PHSI)	{
 				/* Apply This PHS Rule to all classifiers whose Associated PHSI Match */
 				apply_phs_rule_to_all_classifiers(ad,
 						search_rule_idx,
 						vcid,
 						&phs_rule,
-						&psfCSType->cPhsRule,
+						&cs_type->cPhsRule,
 						add_indication);
 			}
 			break;
@@ -971,94 +971,94 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	if (!add_indication->sfAuthorizedSet.bValid)
 		add_indication->sfAuthorizedSet.bValid = 1;
 	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
-		struct bcm_convergence_types *psfCSType = NULL;
+		struct bcm_convergence_types *cs_type = NULL;
 
-		psfCSType =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[nIndex];
+		cs_type =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[nIndex];
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "psfCSType = %p", psfCSType);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "cs_type = %p", cs_type);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "CCPacketClassificationRuleSI====>");
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ClassifierRulePriority: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8ClassifierRulePriority);
+				cs_type->cCPacketClassificationRule.u8ClassifierRulePriority);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "u8IPTypeOfServiceLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPTypeOfServiceLength);
+				cs_type->cCPacketClassificationRule.u8IPTypeOfServiceLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPTypeOfService[3]: 0x%X ,0x%X ,0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPTypeOfService[0],
-				psfCSType->cCPacketClassificationRule.u8IPTypeOfService[1],
-				psfCSType->cCPacketClassificationRule.u8IPTypeOfService[2]);
+				cs_type->cCPacketClassificationRule.u8IPTypeOfService[0],
+				cs_type->cCPacketClassificationRule.u8IPTypeOfService[1],
+				cs_type->cCPacketClassificationRule.u8IPTypeOfService[2]);
 
 		for (uiLoopIndex = 0; uiLoopIndex < 1; uiLoopIndex++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Protocol: 0x%02X ",
-					psfCSType->cCPacketClassificationRule.u8Protocol);
+					cs_type->cCPacketClassificationRule.u8Protocol);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddressLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
+				cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
 
 		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddress[32]: 0x%02X ",
-					psfCSType->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddressLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPDestinationAddressLength);
+				cs_type->cCPacketClassificationRule.u8IPDestinationAddressLength);
 
 		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddress[32]: 0x%02X ",
-					psfCSType->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolSourcePortRangeLength:0x%X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolSourcePortRange[4]: 0x%02X ,0x%02X ,0x%02X ,0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRange[0],
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRange[1],
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRange[2],
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRange[3]);
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRange[0],
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRange[1],
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRange[2],
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRange[3]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolDestPortRangeLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRangeLength);
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRangeLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolDestPortRange[4]: 0x%02X ,0x%02X ,0x%02X ,0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRange[0],
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRange[1],
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRange[2],
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRange[3]);
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRange[0],
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRange[1],
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRange[2],
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRange[3]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthernetDestMacAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
+				cs_type->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8EthernetDestMacAddress[6]: %pM",
-				psfCSType->cCPacketClassificationRule.
+				cs_type->cCPacketClassificationRule.
 						u8EthernetDestMacAddress);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthernetSourceMACAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
+				cs_type->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8EthernetSourceMACAddress[6]: %pM",
-				psfCSType->cCPacketClassificationRule.
+				cs_type->cCPacketClassificationRule.
 						u8EthernetSourceMACAddress);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthertypeLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8EthertypeLength);
+				cs_type->cCPacketClassificationRule.u8EthertypeLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Ethertype[3]: 0x%02X ,0x%02X ,0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8Ethertype[0],
-				psfCSType->cCPacketClassificationRule.u8Ethertype[1],
-				psfCSType->cCPacketClassificationRule.u8Ethertype[2]);
+				cs_type->cCPacketClassificationRule.u8Ethertype[0],
+				cs_type->cCPacketClassificationRule.u8Ethertype[1],
+				cs_type->cCPacketClassificationRule.u8Ethertype[2]);
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", psfCSType->cCPacketClassificationRule.u16UserPriority);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", psfCSType->cCPacketClassificationRule.u16VLANID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", psfCSType->cCPacketClassificationRule.u8AssociatedPHSI);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", cs_type->cCPacketClassificationRule.u16UserPriority);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", cs_type->cCPacketClassificationRule.u16VLANID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", cs_type->cCPacketClassificationRule.u8AssociatedPHSI);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16PacketClassificationRuleIndex: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
+				cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParamLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8VendorSpecificClassifierParamLength);
+				cs_type->cCPacketClassificationRule.u8VendorSpecificClassifierParamLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParam[1]: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8VendorSpecificClassifierParam[0]);
+				cs_type->cCPacketClassificationRule.u8VendorSpecificClassifierParam[0]);
 #ifdef VERSION_D5
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPv6FlowLableLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPv6FlowLableLength);
+				cs_type->cCPacketClassificationRule.u8IPv6FlowLableLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8IPv6FlowLable[6]: 0x%*ph ",
-				6, psfCSType->cCPacketClassificationRule.
+				6, cs_type->cCPacketClassificationRule.
 					      u8IPv6FlowLable);
 #endif
 	}
@@ -1116,88 +1116,88 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
 	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
-		struct bcm_convergence_types *psfCSType = NULL;
+		struct bcm_convergence_types *cs_type = NULL;
 
-		psfCSType =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[nIndex];
+		cs_type =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[nIndex];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " CCPacketClassificationRuleSI====>");
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ClassifierRulePriority: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ClassifierRulePriority);
+				cs_type->cCPacketClassificationRule.u8ClassifierRulePriority);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPTypeOfServiceLength: 0x%02X",
-				psfCSType->cCPacketClassificationRule.u8IPTypeOfServiceLength);
+				cs_type->cCPacketClassificationRule.u8IPTypeOfServiceLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8IPTypeOfService[3]: 0x%*ph",
-				3, psfCSType->cCPacketClassificationRule.
+				3, cs_type->cCPacketClassificationRule.
 					      u8IPTypeOfService);
 		for (uiLoopIndex = 0; uiLoopIndex < 1; uiLoopIndex++)
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Protocol: 0x%02X ", psfCSType->cCPacketClassificationRule.u8Protocol);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8Protocol: 0x%02X ", cs_type->cCPacketClassificationRule.u8Protocol);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
+				cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddressLength);
 
 		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPMaskedSourceAddress[32]: 0x%02X ",
-					psfCSType->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPMaskedSourceAddress[uiLoopIndex]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8IPDestinationAddressLength);
+				cs_type->cCPacketClassificationRule.u8IPDestinationAddressLength);
 
 		for (uiLoopIndex = 0; uiLoopIndex < 32; uiLoopIndex++)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPDestinationAddress[32]: 0x%02X ",
-					psfCSType->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
+					cs_type->cCPacketClassificationRule.u8IPDestinationAddress[uiLoopIndex]);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolSourcePortRangeLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
+				cs_type->cCPacketClassificationRule.u8ProtocolSourcePortRangeLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8ProtocolSourcePortRange[4]: 0x%*ph ",
-				4, psfCSType->cCPacketClassificationRule.
+				4, cs_type->cCPacketClassificationRule.
 						u8ProtocolSourcePortRange);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ProtocolDestPortRangeLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8ProtocolDestPortRangeLength);
+				cs_type->cCPacketClassificationRule.u8ProtocolDestPortRangeLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8ProtocolDestPortRange[4]: 0x%*ph ",
-				4, psfCSType->cCPacketClassificationRule.
+				4, cs_type->cCPacketClassificationRule.
 						u8ProtocolDestPortRange);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthernetDestMacAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
+				cs_type->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8EthernetDestMacAddress[6]: %pM",
-				psfCSType->cCPacketClassificationRule.
+				cs_type->cCPacketClassificationRule.
 						u8EthernetDestMacAddress);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthernetSourceMACAddressLength: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
+				cs_type->cCPacketClassificationRule.u8EthernetDestMacAddressLength);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8EthernetSourceMACAddress[6]: %pM",
-				psfCSType->cCPacketClassificationRule.
+				cs_type->cCPacketClassificationRule.
 						u8EthernetSourceMACAddress);
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthertypeLength: 0x%02X ", psfCSType->cCPacketClassificationRule.u8EthertypeLength);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8EthertypeLength: 0x%02X ", cs_type->cCPacketClassificationRule.u8EthertypeLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8Ethertype[3]: 0x%*ph",
-				3, psfCSType->cCPacketClassificationRule.
+				3, cs_type->cCPacketClassificationRule.
 					      u8Ethertype);
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", psfCSType->cCPacketClassificationRule.u16UserPriority);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", psfCSType->cCPacketClassificationRule.u16VLANID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", psfCSType->cCPacketClassificationRule.u8AssociatedPHSI);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16UserPriority: 0x%X ", cs_type->cCPacketClassificationRule.u16UserPriority);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16VLANID: 0x%X ", cs_type->cCPacketClassificationRule.u16VLANID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8AssociatedPHSI: 0x%02X ", cs_type->cCPacketClassificationRule.u8AssociatedPHSI);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u16PacketClassificationRuleIndex: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
+				cs_type->cCPacketClassificationRule.u16PacketClassificationRuleIndex);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParamLength: 0x%02X",
-				psfCSType->cCPacketClassificationRule.u8VendorSpecificClassifierParamLength);
+				cs_type->cCPacketClassificationRule.u8VendorSpecificClassifierParamLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8VendorSpecificClassifierParam[1]: 0x%02X ",
-				psfCSType->cCPacketClassificationRule.u8VendorSpecificClassifierParam[0]);
+				cs_type->cCPacketClassificationRule.u8VendorSpecificClassifierParam[0]);
 #ifdef VERSION_D5
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8IPv6FlowLableLength: 0x%X ",
-				psfCSType->cCPacketClassificationRule.u8IPv6FlowLableLength);
+				cs_type->cCPacketClassificationRule.u8IPv6FlowLableLength);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, "u8IPv6FlowLable[6]: 0x%*ph ",
-				6, psfCSType->cCPacketClassificationRule.
+				6, cs_type->cCPacketClassificationRule.
 					      u8IPv6FlowLable);
 #endif
 	}
@@ -1253,11 +1253,11 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
 	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++)	{
-		struct bcm_convergence_types *psfCSType = NULL;
+		struct bcm_convergence_types *cs_type = NULL;
 		struct bcm_packet_class_rules *clsRule = NULL;
 
-		psfCSType = &add_indication->sfActiveSet.cConvergenceSLTypes[nIndex];
-		clsRule	= &psfCSType->cCPacketClassificationRule;
+		cs_type = &add_indication->sfActiveSet.cConvergenceSLTypes[nIndex];
+		clsRule	= &cs_type->cCPacketClassificationRule;
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,
 				DBG_LVL_ALL, " CCPacketClassificationRuleSI====>");

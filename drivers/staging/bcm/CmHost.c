@@ -888,7 +888,7 @@ static VOID CopyToAdapter(register struct bcm_mini_adapter *ad, /* <Pointer to t
 static VOID DumpCmControlPacket(PVOID pvBuffer)
 {
 	int i;
-	int nIndex;
+	int n;
 	struct bcm_add_indication_alt *add_indication;
 	UINT nCurClassifierCnt;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
@@ -970,10 +970,10 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL,  "add_indication->sfAuthorizedSet.u16MacOverhead %x", add_indication->sfAuthorizedSet.u16MacOverhead);
 	if (!add_indication->sfAuthorizedSet.bValid)
 		add_indication->sfAuthorizedSet.bValid = 1;
-	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
+	for (n = 0; n < nCurClassifierCnt; n++) {
 		struct bcm_convergence_types *cs_type = NULL;
 
-		cs_type =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[nIndex];
+		cs_type =  &add_indication->sfAuthorizedSet.cConvergenceSLTypes[n];
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "cs_type = %p", cs_type);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "CCPacketClassificationRuleSI====>");
@@ -1115,10 +1115,10 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
-	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++) {
+	for (n = 0; n < nCurClassifierCnt; n++) {
 		struct bcm_convergence_types *cs_type = NULL;
 
-		cs_type =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[nIndex];
+		cs_type =  &add_indication->sfAdmittedSet.cConvergenceSLTypes[n];
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, " CCPacketClassificationRuleSI====>");
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL, DBG_LVL_ALL, "u8ClassifierRulePriority: 0x%02X ",
 				cs_type->cCPacketClassificationRule.u8ClassifierRulePriority);
@@ -1252,11 +1252,11 @@ static VOID DumpCmControlPacket(PVOID pvBuffer)
 	if (nCurClassifierCnt > MAX_CLASSIFIERS_IN_SF)
 		nCurClassifierCnt = MAX_CLASSIFIERS_IN_SF;
 
-	for (nIndex = 0; nIndex < nCurClassifierCnt; nIndex++)	{
+	for (n = 0; n < nCurClassifierCnt; n++)	{
 		struct bcm_convergence_types *cs_type = NULL;
 		struct bcm_packet_class_rules *clsRule = NULL;
 
-		cs_type = &add_indication->sfActiveSet.cConvergenceSLTypes[nIndex];
+		cs_type = &add_indication->sfActiveSet.cConvergenceSLTypes[n];
 		clsRule	= &cs_type->cCPacketClassificationRule;
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_CONTROL,

@@ -76,19 +76,19 @@ static int SearchFreeSfid(struct bcm_mini_adapter *ad)
  * Description:	This routinue would search Classifier  having specified ClassifierID as input parameter
  * Input parameters: struct bcm_mini_adapter *ad - ad Context
  *  unsigned int uiSfid   - The SF in which the classifier is to searched
- *  B_UINT16  uiClassifierID - The classifier ID to be searched
+ *  B_UINT16  classifier_id - The classifier ID to be searched
  * Return: int :Classifier table index of matching entry
  */
 static int SearchClsid(struct bcm_mini_adapter *ad,
 		ULONG sf_id,
-		B_UINT16 uiClassifierID)
+		B_UINT16 classifier_id)
 {
 	int i;
 
 	for (i = 0; i < MAX_CLASSIFIERS; i++) {
 		if ((ad->astClassifierTable[i].bUsed) &&
 			(ad->astClassifierTable[i].uiClassifierRuleIndex
-				== uiClassifierID) &&
+				== classifier_id) &&
 			(ad->astClassifierTable[i].ulSFID == sf_id))
 			return i;
 	}

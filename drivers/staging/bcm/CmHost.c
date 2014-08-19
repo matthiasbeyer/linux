@@ -15,7 +15,7 @@ enum E_CLASSIFIER_ACTION {
 
 static ULONG GetNextTargetBufferLocation(struct bcm_mini_adapter *ad,
 		B_UINT16 tid);
-static void restore_endianess_of_pstClassifierEntry(
+static void restore_endianess_of_classifier_entry(
 		struct bcm_classifier_rule *classifier_entry,
 		enum bcm_ipaddr_context eIpAddrContext);
 
@@ -256,7 +256,7 @@ CopyIpAddrToClassifier(struct bcm_classifier_rule *classifier_entry,
 		}
 		if (bIpVersion6) {
 			/* Restore EndianNess of Struct */
-			restore_endianess_of_pstClassifierEntry(
+			restore_endianess_of_classifier_entry(
 					classifier_entry,
 					eIpAddrContext
 					);
@@ -2147,7 +2147,7 @@ VOID OverrideServiceFlowParams(struct bcm_mini_adapter *ad,
 	}
 }
 
-static void restore_endianess_of_pstClassifierEntry(
+static void restore_endianess_of_classifier_entry(
 		struct bcm_classifier_rule *classifier_entry,
 		enum bcm_ipaddr_context eIpAddrContext)
 {

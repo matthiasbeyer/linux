@@ -788,7 +788,7 @@ static struct bcm_ddr_setting as_t3lpb_ddr_setting_80mhz[] = {
 };
 
 
-int ddr_init(struct bcm_mini_adapter *Adapter)
+int ddr_init(struct bcm_mini_adapter *ad)
 {
 	struct bcm_ddr_setting *psDDRSetting = NULL;
 	ULONG RegCount = 0;
@@ -797,9 +797,9 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 	UINT uiClockSetting = 0;
 	int retval = STATUS_SUCCESS;
 
-	switch (Adapter->chip_id) {
+	switch (ad->chip_id) {
 	case 0xbece3200:
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = as_t3lp_ddr_setting_80mhz;
 			RegCount = (sizeof(as_t3lp_ddr_setting_80mhz) /
@@ -814,7 +814,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			psDDRSetting = as_t3lp_ddr_setting_133mhz;
 			RegCount = (sizeof(as_t3lp_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
-			if (Adapter->bMipsConfig == MIPS_200_MHZ)
+			if (ad->bMipsConfig == MIPS_200_MHZ)
 				uiClockSetting = 0x03F13652;
 			else
 				uiClockSetting = 0x03F1365B;
@@ -832,28 +832,28 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		/* Set bit 2 and bit 6 to 1 for BBIC 2mA drive
 		 * (please check current value and additionally set these bits)
 		 */
-	if ((Adapter->chip_id !=  BCS220_2) &&
-		(Adapter->chip_id !=  BCS220_2BC) &&
-		(Adapter->chip_id != BCS220_3)) {
-		retval = rdmalt(Adapter, (UINT)0x0f000830, &uiResetValue,
+	if ((ad->chip_id !=  BCS220_2) &&
+		(ad->chip_id !=  BCS220_2BC) &&
+		(ad->chip_id != BCS220_3)) {
+		retval = rdmalt(ad, (UINT)0x0f000830, &uiResetValue,
 				sizeof(uiResetValue));
 		if (retval < 0) {
-			BCM_DEBUG_PRINT(Adapter, CMHOST, RDM, DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, CMHOST, RDM, DBG_LVL_ALL,
 					"%s:%d RDM failed\n",
 					__func__, __LINE__);
 			return retval;
 		}
 		uiResetValue |= 0x44;
-		retval = wrmalt(Adapter, (UINT)0x0f000830, &uiResetValue,
+		retval = wrmalt(ad, (UINT)0x0f000830, &uiResetValue,
 				sizeof(uiResetValue));
 		if (retval < 0) {
-			BCM_DEBUG_PRINT(Adapter, CMHOST, RDM, DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, CMHOST, RDM, DBG_LVL_ALL,
 					"%s:%d RDM failed\n",
 					__func__, __LINE__);
 			return retval;
 		}
 	}
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 
 
 
@@ -872,7 +872,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 
-			if (Adapter->bMipsConfig == MIPS_200_MHZ)
+			if (ad->bMipsConfig == MIPS_200_MHZ)
 				uiClockSetting = 0x03F13652;
 			else
 				uiClockSetting = 0x03F1365B;
@@ -883,7 +883,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			RegCount = sizeof(as_t3lpb_ddr_setting_160mhz) /
 				   sizeof(struct bcm_ddr_setting);
 
-			if (Adapter->bMipsConfig == MIPS_200_MHZ)
+			if (ad->bMipsConfig == MIPS_200_MHZ)
 				uiClockSetting = 0x03F137D2;
 			else
 				uiClockSetting = 0x03F137DB;
@@ -895,9 +895,9 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 	case 0xbece0121:
 	case 0xbece0130:
 	case 0xbece0300:
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
-			"DDR Setting: %x\n", Adapter->DDRSetting);
-		switch (Adapter->DDRSetting) {
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
+			"DDR Setting: %x\n", ad->DDRSetting);
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = asT3_DDRSetting80MHz;
 			RegCount = (sizeof(asT3_DDRSetting80MHz) /
@@ -918,7 +918,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		}
 	case 0xbece0310:
 	{
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = as_t3b_ddr_setting_80mhz;
 			RegCount = (sizeof(as_t3b_ddr_setting_80mhz) /
@@ -932,7 +932,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		case DDR_133_MHZ:
 
 			/* 266Mhz PLL selected. */
-			if (Adapter->bDPLLConfig == PLL_266_MHZ) {
+			if (ad->bDPLLConfig == PLL_266_MHZ) {
 				memcpy(as_t3b_ddr_setting_133mhz, as_dpll_266mhz,
 				       sizeof(as_dpll_266mhz));
 				psDDRSetting = as_t3b_ddr_setting_133mhz;
@@ -942,7 +942,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				psDDRSetting = as_t3b_ddr_setting_133mhz;
 				RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
-				if (Adapter->bMipsConfig == MIPS_200_MHZ)
+				if (ad->bMipsConfig == MIPS_200_MHZ)
 					uiClockSetting = 0x07F13652;
 				else
 					uiClockSetting = 0x07F1365B;
@@ -959,7 +959,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 	}
 
 	value = 0;
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 			"Register Count is =%lu\n", RegCount);
 	while (RegCount && !retval) {
 		if (uiClockSetting
@@ -967,10 +967,10 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			value = uiClockSetting;
 		else
 			value = psDDRSetting->ulRegValue;
-		retval = wrmalt(Adapter, psDDRSetting->ulRegAddress, &value,
+		retval = wrmalt(ad, psDDRSetting->ulRegAddress, &value,
 				sizeof(value));
 		if (STATUS_SUCCESS != retval) {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, 0, 0,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 					"%s:%d\n", __func__, __LINE__);
 			break;
 		}
@@ -979,18 +979,18 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		psDDRSetting++;
 	}
 
-	if (Adapter->chip_id >= 0xbece3300) {
+	if (ad->chip_id >= 0xbece3300) {
 
 		mdelay(3);
-		if ((Adapter->chip_id != BCS220_2) &&
-			(Adapter->chip_id != BCS220_2BC) &&
-			(Adapter->chip_id != BCS220_3)) {
+		if ((ad->chip_id != BCS220_2) &&
+			(ad->chip_id != BCS220_2BC) &&
+			(ad->chip_id != BCS220_3)) {
 			/* drive MDDR to half in case of UMA-B:	*/
 			uiResetValue = 0x01010001;
-			retval = wrmalt(Adapter, (UINT)0x0F007018,
+			retval = wrmalt(ad, (UINT)0x0F007018,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -998,10 +998,10 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x00040020;
-			retval = wrmalt(Adapter, (UINT)0x0F007094,
+			retval = wrmalt(ad, (UINT)0x0F007094,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1009,10 +1009,10 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x01020101;
-			retval = wrmalt(Adapter, (UINT)0x0F00701c,
+			retval = wrmalt(ad, (UINT)0x0F00701c,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1020,10 +1020,10 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x01010000;
-			retval = wrmalt(Adapter, (UINT)0x0F007018,
+			retval = wrmalt(ad, (UINT)0x0F007018,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1040,21 +1040,21 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		 * UMA-B chip id. we will change this when we will have
 		 * internal PMU.
 		 */
-		if (Adapter->PmuMode == HYBRID_MODE_7C) {
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+		if (ad->PmuMode == HYBRID_MODE_7C) {
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1062,30 +1062,30 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x1322a8;
-			retval = wrmalt(Adapter, (UINT)0x0f000d1c,
+			retval = wrmalt(ad, (UINT)0x0f000d1c,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, RDM,
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1093,32 +1093,32 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x132296;
-			retval = wrmalt(Adapter, (UINT)0x0f000d14,
+			retval = wrmalt(ad, (UINT)0x0f000d14,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-		} else if (Adapter->PmuMode == HYBRID_MODE_6) {
+		} else if (ad->PmuMode == HYBRID_MODE_6) {
 
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1126,30 +1126,30 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x6003229a;
-			retval = wrmalt(Adapter, (UINT)0x0f000d14,
+			retval = wrmalt(ad, (UINT)0x0f000d14,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
 						__LINE__);
 				return retval;
 			}
-			retval = rdmalt(Adapter, (UINT)0x0f000c00,
+			retval = rdmalt(ad, (UINT)0x0f000c00,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1157,10 +1157,10 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				return retval;
 			}
 			uiResetValue = 0x1322a8;
-			retval = wrmalt(Adapter, (UINT)0x0f000d1c,
+			retval = wrmalt(ad, (UINT)0x0f000d1c,
 					&uiResetValue, sizeof(uiResetValue));
 			if (retval < 0) {
-				BCM_DEBUG_PRINT(Adapter, CMHOST, RDM,
+				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
 						"%s:%d RDM failed\n",
 						__func__,
@@ -1170,11 +1170,11 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 		}
 
 	}
-	Adapter->bDDRInitDone = TRUE;
+	ad->bDDRInitDone = TRUE;
 	return retval;
 }
 
-int download_ddr_settings(struct bcm_mini_adapter *Adapter)
+int download_ddr_settings(struct bcm_mini_adapter *ad)
 {
 	struct bcm_ddr_setting *psDDRSetting = NULL;
 	ULONG RegCount = 0;
@@ -1184,9 +1184,9 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	int retval = STATUS_SUCCESS;
 	bool bOverrideSelfRefresh = false;
 
-	switch (Adapter->chip_id) {
+	switch (ad->chip_id) {
 	case 0xbece3200:
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = as_t3lp_ddr_setting_80mhz;
 			RegCount = ARRAY_SIZE(as_t3lp_ddr_setting_80mhz);
@@ -1216,7 +1216,7 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	case BCS220_2BC:
 	case BCS250_BC:
 	case BCS220_3:
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = as_t3lpb_ddr_setting_80mhz;
 			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_80mhz);
@@ -1250,7 +1250,7 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 		}
 		break;
 	case 0xbece0300:
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = asT3_DDRSetting80MHz;
 			RegCount = ARRAY_SIZE(asT3_DDRSetting80MHz);
@@ -1275,7 +1275,7 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	break;
 	case 0xbece0310:
 	    {
-		switch (Adapter->DDRSetting) {
+		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			psDDRSetting = as_t3b_ddr_setting_80mhz;
 			RegCount = ARRAY_SIZE(as_t3b_ddr_setting_80mhz);
@@ -1303,10 +1303,10 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	}
 	/* total number of Register that has to be dumped */
 	value = RegCount;
-	retval = wrmalt(Adapter, ul_ddr_setting_load_addr, &value,
+	retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
 			sizeof(value));
 	if (retval) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, 0, 0,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 				"%s:%d\n", __func__, __LINE__);
 
 		return retval;
@@ -1314,10 +1314,10 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	ul_ddr_setting_load_addr += sizeof(ULONG);
 	/* signature */
 	value = (0x1d1e0dd0);
-	retval = wrmalt(Adapter, ul_ddr_setting_load_addr, &value,
+	retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
 			sizeof(value));
 	if (retval) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, 0, 0,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 				"%s:%d\n", __func__, __LINE__);
 		return retval;
 	}
@@ -1327,7 +1327,7 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 
 	while (RegCount && !retval) {
 		value = psDDRSetting->ulRegAddress;
-		retval = wrmalt(Adapter, ul_ddr_setting_load_addr, &value,
+		retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
 				sizeof(value));
 		ul_ddr_setting_load_addr += sizeof(ULONG);
 		if (!retval) {
@@ -1338,11 +1338,11 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 			else
 				value = psDDRSetting->ulRegValue;
 
-			if (STATUS_SUCCESS != wrmalt(Adapter,
+			if (STATUS_SUCCESS != wrmalt(ad,
 						     ul_ddr_setting_load_addr,
 						     &value,
 						     sizeof(value))) {
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, 0, 0,
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 						"%s:%d\n", __func__, __LINE__);
 				break;
 			}

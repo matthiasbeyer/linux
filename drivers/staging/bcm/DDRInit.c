@@ -1182,7 +1182,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		DDR_DUMP_INTERNAL_DEVICE_MEMORY;
 	UINT value = 0;
 	int retval = STATUS_SUCCESS;
-	bool bOverrideSelfRefresh = false;
+	bool override_self_refresh = false;
 
 	switch (ad->chip_id) {
 	case 0xbece3200:
@@ -1200,7 +1200,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 			ddr_setting += T3LP_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
-			bOverrideSelfRefresh = TRUE;
+			override_self_refresh = TRUE;
 			ddr_setting = as_t3lp_ddr_setting_133mhz;
 			reg_cnt = ARRAY_SIZE(as_t3lp_ddr_setting_133mhz);
 			reg_cnt -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
@@ -1230,7 +1230,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 			ddr_setting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
-			bOverrideSelfRefresh = TRUE;
+			override_self_refresh = TRUE;
 			ddr_setting = as_t3lpb_ddr_setting_133mhz;
 			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_133mhz);
 			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
@@ -1238,7 +1238,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 			break;
 
 		case DDR_160_MHZ:
-			bOverrideSelfRefresh = TRUE;
+			override_self_refresh = TRUE;
 			ddr_setting = as_t3lpb_ddr_setting_160mhz;
 			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_160mhz);
 			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
@@ -1289,7 +1289,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 			ddr_setting += T3B_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
-			bOverrideSelfRefresh = TRUE;
+			override_self_refresh = TRUE;
 			ddr_setting = as_t3b_ddr_setting_133mhz;
 			reg_cnt = ARRAY_SIZE(as_t3b_ddr_setting_133mhz);
 			reg_cnt -= T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
@@ -1331,7 +1331,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 				sizeof(value));
 		ddr_setting_load_addr += sizeof(ULONG);
 		if (!retval) {
-			if (bOverrideSelfRefresh
+			if (override_self_refresh
 					&& (ddr_setting->ulRegAddress
 						== 0x0F007018))
 				value = (ddr_setting->ulRegValue | (1<<8));

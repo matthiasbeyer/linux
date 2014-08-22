@@ -11,7 +11,7 @@
  * Enqueue the control packet for Application.
  * @return None
  */
-static VOID handle_rx_control_packet(struct bcm_mini_adapter *Adapter,
+static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 				     struct sk_buff *skb)
 {
 	struct bcm_tarang_data *pTarang = NULL;
@@ -21,40 +21,40 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *Adapter,
 	bool drop_pkt_flag = TRUE;
 	USHORT usStatus = *(PUSHORT)(skb->data);
 
-	if (netif_msg_pktdata(Adapter))
+	if (netif_msg_pktdata(ad))
 		print_hex_dump(KERN_DEBUG, PFX "rx control: ", DUMP_PREFIX_NONE,
 			       16, 1, skb->data, skb->len, 0);
 
 	switch (usStatus) {
 	case CM_RESPONSES:               /* 0xA0 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL,
 			"MAC Version Seems to be Non Multi-Classifier, rejected by Driver");
 		HighPriorityMessage = TRUE;
 		break;
 	case CM_CONTROL_NEWDSX_MULTICLASSIFIER_RESP:
 		HighPriorityMessage = TRUE;
-		if (Adapter->LinkStatus == LINKUP_DONE)
-			CmControlResponseMessage(Adapter,
+		if (ad->LinkStatus == LINKUP_DONE)
+			CmControlResponseMessage(ad,
 				(skb->data + sizeof(USHORT)));
 		break;
 	case LINK_CONTROL_RESP:          /* 0xA2 */
 	case STATUS_RSP:                 /* 0xA1 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL, "LINK_CONTROL_RESP");
 		HighPriorityMessage = TRUE;
-		LinkControlResponseMessage(Adapter,
+		LinkControlResponseMessage(ad,
 			(skb->data + sizeof(USHORT)));
 		break;
 	case STATS_POINTER_RESP:         /* 0xA6 */
 		HighPriorityMessage = TRUE;
-		StatisticsResponse(Adapter, (skb->data + sizeof(USHORT)));
+		StatisticsResponse(ad, (skb->data + sizeof(USHORT)));
 		break;
 	case IDLE_MODE_STATUS:           /* 0xA3 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL,
 			"IDLE_MODE_STATUS Type Message Got from F/W");
-		InterfaceIdleModeRespond(Adapter, (PUINT)(skb->data +
+		InterfaceIdleModeRespond(ad, (PUINT)(skb->data +
 					sizeof(USHORT)));
 		HighPriorityMessage = TRUE;
 		break;
@@ -64,17 +64,17 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *Adapter,
 		break;
 
 	default:
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL, "Got Default Response");
 		/* Let the Application Deal with This Packet */
 		break;
 	}
 
 	/* Queue The Control Packet to The Application Queues */
-	down(&Adapter->RxAppControlQueuelock);
+	down(&ad->RxAppControlQueuelock);
 
-	for (pTarang = Adapter->pTarangs; pTarang; pTarang = pTarang->next) {
-		if (Adapter->device_removed)
+	for (pTarang = ad->pTarangs; pTarang; pTarang = pTarang->next) {
+		if (ad->device_removed)
 			break;
 
 		drop_pkt_flag = TRUE;
@@ -146,10 +146,10 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *Adapter,
 				pTarang->RxAppControlTail, newPacket);
 		pTarang->AppCtrlQueueLen++;
 	}
-	up(&Adapter->RxAppControlQueuelock);
-	wake_up(&Adapter->process_read_wait_queue);
+	up(&ad->RxAppControlQueuelock);
+	wake_up(&ad->process_read_wait_queue);
 	dev_kfree_skb(skb);
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT, DBG_LVL_ALL,
 			"After wake_up_interruptible");
 }
 
@@ -157,70 +157,70 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *Adapter,
  * @ingroup ctrl_pkt_functions
  * Thread to handle control pkt reception
  */
-int control_packet_handler(struct bcm_mini_adapter *Adapter /* pointer to adapter object*/)
+int control_packet_handler(struct bcm_mini_adapter *ad /* pointer to adapter object*/)
 {
 	struct sk_buff *ctrl_packet = NULL;
 	unsigned long flags = 0;
 	/* struct timeval tv; */
 	/* int *puiBuffer = NULL; */
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT, DBG_LVL_ALL,
 		"Entering to make thread wait on control packet event!");
 	while (1) {
-		wait_event_interruptible(Adapter->process_rx_cntrlpkt,
-			atomic_read(&Adapter->cntrlpktCnt) ||
-			Adapter->bWakeUpDevice ||
+		wait_event_interruptible(ad->process_rx_cntrlpkt,
+			atomic_read(&ad->cntrlpktCnt) ||
+			ad->bWakeUpDevice ||
 			kthread_should_stop());
 
 
 		if (kthread_should_stop()) {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, CP_CTRL_PKT,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 				DBG_LVL_ALL, "Exiting\n");
 			return 0;
 		}
-		if (TRUE == Adapter->bWakeUpDevice) {
-			Adapter->bWakeUpDevice = false;
-			if ((false == Adapter->bTriedToWakeUpFromlowPowerMode)
-					&& ((TRUE == Adapter->IdleMode) ||
-					    (TRUE == Adapter->bShutStatus))) {
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+		if (TRUE == ad->bWakeUpDevice) {
+			ad->bWakeUpDevice = false;
+			if ((false == ad->bTriedToWakeUpFromlowPowerMode)
+					&& ((TRUE == ad->IdleMode) ||
+					    (TRUE == ad->bShutStatus))) {
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 					CP_CTRL_PKT, DBG_LVL_ALL,
 					"Calling InterfaceAbortIdlemode\n");
 				/*
-				 * Adapter->bTriedToWakeUpFromlowPowerMode
+				 * ad->bTriedToWakeUpFromlowPowerMode
 				 *					= TRUE;
 				 */
-				InterfaceIdleModeWakeup(Adapter);
+				InterfaceIdleModeWakeup(ad);
 			}
 			continue;
 		}
 
-		while (atomic_read(&Adapter->cntrlpktCnt)) {
-			spin_lock_irqsave(&Adapter->control_queue_lock, flags);
-			ctrl_packet = Adapter->RxControlHead;
+		while (atomic_read(&ad->cntrlpktCnt)) {
+			spin_lock_irqsave(&ad->control_queue_lock, flags);
+			ctrl_packet = ad->RxControlHead;
 			if (ctrl_packet) {
-				DEQUEUEPACKET(Adapter->RxControlHead,
-					Adapter->RxControlTail);
-				/* Adapter->RxControlHead=ctrl_packet->next; */
+				DEQUEUEPACKET(ad->RxControlHead,
+					ad->RxControlTail);
+				/* ad->RxControlHead=ctrl_packet->next; */
 			}
 
-			spin_unlock_irqrestore(&Adapter->control_queue_lock,
+			spin_unlock_irqrestore(&ad->control_queue_lock,
 						flags);
-			handle_rx_control_packet(Adapter, ctrl_packet);
-			atomic_dec(&Adapter->cntrlpktCnt);
+			handle_rx_control_packet(ad, ctrl_packet);
+			atomic_dec(&ad->cntrlpktCnt);
 		}
 
-		SetUpTargetDsxBuffers(Adapter);
+		SetUpTargetDsxBuffers(ad);
 	}
 	return STATUS_SUCCESS;
 }
 
 INT flushAllAppQ(void)
 {
-	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
+	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 	struct bcm_tarang_data *pTarang = NULL;
 	struct sk_buff *PacketToDrop = NULL;
 
-	for (pTarang = Adapter->pTarangs; pTarang; pTarang = pTarang->next) {
+	for (pTarang = ad->pTarangs; pTarang; pTarang = pTarang->next) {
 		while (pTarang->RxAppControlHead != NULL) {
 			PacketToDrop = pTarang->RxAppControlHead;
 			DEQUEUEPACKET(pTarang->RxAppControlHead,

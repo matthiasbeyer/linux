@@ -791,7 +791,7 @@ static struct bcm_ddr_setting as_t3lpb_ddr_setting_80mhz[] = {
 int ddr_init(struct bcm_mini_adapter *ad)
 {
 	struct bcm_ddr_setting *ddr_setting = NULL;
-	ULONG RegCount = 0;
+	ULONG reg_cnt = 0;
 	UINT value = 0;
 	UINT uiResetValue = 0;
 	UINT uiClockSetting = 0;
@@ -802,17 +802,17 @@ int ddr_init(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = as_t3lp_ddr_setting_80mhz;
-			RegCount = (sizeof(as_t3lp_ddr_setting_80mhz) /
+			reg_cnt = (sizeof(as_t3lp_ddr_setting_80mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3lp_ddr_setting_100mhz;
-			RegCount = (sizeof(as_t3lp_ddr_setting_100mhz) /
+			reg_cnt = (sizeof(as_t3lp_ddr_setting_100mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_133_MHZ:
 			ddr_setting = as_t3lp_ddr_setting_133mhz;
-			RegCount = (sizeof(as_t3lp_ddr_setting_133mhz) /
+			reg_cnt = (sizeof(as_t3lp_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			if (ad->bMipsConfig == MIPS_200_MHZ)
 				uiClockSetting = 0x03F13652;
@@ -859,17 +859,17 @@ int ddr_init(struct bcm_mini_adapter *ad)
 
 		case DDR_80_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_80mhz;
-			RegCount = (sizeof(as_t3b_ddr_setting_80mhz) /
+			reg_cnt = (sizeof(as_t3b_ddr_setting_80mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_100mhz;
-			RegCount = (sizeof(as_t3b_ddr_setting_100mhz) /
+			reg_cnt = (sizeof(as_t3b_ddr_setting_100mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_133_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_133mhz;
-			RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
+			reg_cnt = (sizeof(as_t3b_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 
 			if (ad->bMipsConfig == MIPS_200_MHZ)
@@ -880,7 +880,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 
 		case DDR_160_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_160mhz;
-			RegCount = sizeof(as_t3lpb_ddr_setting_160mhz) /
+			reg_cnt = sizeof(as_t3lpb_ddr_setting_160mhz) /
 				   sizeof(struct bcm_ddr_setting);
 
 			if (ad->bMipsConfig == MIPS_200_MHZ)
@@ -900,17 +900,17 @@ int ddr_init(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = asT3_DDRSetting80MHz;
-			RegCount = (sizeof(asT3_DDRSetting80MHz) /
+			reg_cnt = (sizeof(asT3_DDRSetting80MHz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = asT3_DDRSetting100MHz;
-			RegCount = (sizeof(asT3_DDRSetting100MHz) /
+			reg_cnt = (sizeof(asT3_DDRSetting100MHz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_133_MHZ:
 			ddr_setting = as_t3_ddr_setting_133mhz;
-			RegCount = (sizeof(as_t3_ddr_setting_133mhz) /
+			reg_cnt = (sizeof(as_t3_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		default:
@@ -921,12 +921,12 @@ int ddr_init(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = as_t3b_ddr_setting_80mhz;
-			RegCount = (sizeof(as_t3b_ddr_setting_80mhz) /
+			reg_cnt = (sizeof(as_t3b_ddr_setting_80mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3b_ddr_setting_100mhz;
-			RegCount = (sizeof(as_t3b_ddr_setting_100mhz) /
+			reg_cnt = (sizeof(as_t3b_ddr_setting_100mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_133_MHZ:
@@ -936,11 +936,11 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				memcpy(as_t3b_ddr_setting_133mhz, as_dpll_266mhz,
 				       sizeof(as_dpll_266mhz));
 				ddr_setting = as_t3b_ddr_setting_133mhz;
-				RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
+				reg_cnt = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
 			} else {
 				ddr_setting = as_t3b_ddr_setting_133mhz;
-				RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
+				reg_cnt = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
 				if (ad->bMipsConfig == MIPS_200_MHZ)
 					uiClockSetting = 0x07F13652;
@@ -960,8 +960,8 @@ int ddr_init(struct bcm_mini_adapter *ad)
 
 	value = 0;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
-			"Register Count is =%lu\n", RegCount);
-	while (RegCount && !retval) {
+			"Register Count is =%lu\n", reg_cnt);
+	while (reg_cnt && !retval) {
 		if (uiClockSetting
 				&& ddr_setting->ulRegAddress == MIPS_CLOCK_REG)
 			value = uiClockSetting;
@@ -975,7 +975,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 			break;
 		}
 
-		RegCount--;
+		reg_cnt--;
 		ddr_setting++;
 	}
 
@@ -1177,7 +1177,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 int download_ddr_settings(struct bcm_mini_adapter *ad)
 {
 	struct bcm_ddr_setting *ddr_setting = NULL;
-	ULONG RegCount = 0;
+	ULONG reg_cnt = 0;
 	unsigned long ul_ddr_setting_load_addr =
 		DDR_DUMP_INTERNAL_DEVICE_MEMORY;
 	UINT value = 0;
@@ -1189,21 +1189,21 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = as_t3lp_ddr_setting_80mhz;
-			RegCount = ARRAY_SIZE(as_t3lp_ddr_setting_80mhz);
-			RegCount -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lp_ddr_setting_80mhz);
+			reg_cnt -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			ddr_setting += T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3lp_ddr_setting_100mhz;
-			RegCount = ARRAY_SIZE(as_t3lp_ddr_setting_100mhz);
-			RegCount -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lp_ddr_setting_100mhz);
+			reg_cnt -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			ddr_setting += T3LP_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
 			bOverrideSelfRefresh = TRUE;
 			ddr_setting = as_t3lp_ddr_setting_133mhz;
-			RegCount = ARRAY_SIZE(as_t3lp_ddr_setting_133mhz);
-			RegCount -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lp_ddr_setting_133mhz);
+			reg_cnt -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			ddr_setting += T3LP_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			break;
 		default:
@@ -1219,29 +1219,29 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_80mhz;
-			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_80mhz);
-			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_80mhz);
+			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			ddr_setting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3lpb_ddr_setting_100mhz;
-			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_100mhz);
-			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_100mhz);
+			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			ddr_setting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
 			bOverrideSelfRefresh = TRUE;
 			ddr_setting = as_t3lpb_ddr_setting_133mhz;
-			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_133mhz);
-			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_133mhz);
+			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			ddr_setting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			break;
 
 		case DDR_160_MHZ:
 			bOverrideSelfRefresh = TRUE;
 			ddr_setting = as_t3lpb_ddr_setting_160mhz;
-			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_160mhz);
-			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3lpb_ddr_setting_160mhz);
+			reg_cnt -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
 			ddr_setting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
 
 			break;
@@ -1253,20 +1253,20 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = asT3_DDRSetting80MHz;
-			RegCount = ARRAY_SIZE(asT3_DDRSetting80MHz);
-			RegCount -= T3_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
+			reg_cnt = ARRAY_SIZE(asT3_DDRSetting80MHz);
+			reg_cnt -= T3_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			ddr_setting += T3_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = asT3_DDRSetting100MHz;
-			RegCount = ARRAY_SIZE(asT3_DDRSetting100MHz);
-			RegCount -= T3_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
+			reg_cnt = ARRAY_SIZE(asT3_DDRSetting100MHz);
+			reg_cnt -= T3_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			ddr_setting += T3_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
 			ddr_setting = as_t3_ddr_setting_133mhz;
-			RegCount = ARRAY_SIZE(as_t3_ddr_setting_133mhz);
-			RegCount -= T3_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3_ddr_setting_133mhz);
+			reg_cnt -= T3_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			ddr_setting += T3_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			break;
 		default:
@@ -1278,21 +1278,21 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		switch (ad->DDRSetting) {
 		case DDR_80_MHZ:
 			ddr_setting = as_t3b_ddr_setting_80mhz;
-			RegCount = ARRAY_SIZE(as_t3b_ddr_setting_80mhz);
-			RegCount -= T3B_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3b_ddr_setting_80mhz);
+			reg_cnt -= T3B_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			ddr_setting += T3B_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			break;
 		case DDR_100_MHZ:
 			ddr_setting = as_t3b_ddr_setting_100mhz;
-			RegCount = ARRAY_SIZE(as_t3b_ddr_setting_100mhz);
-			RegCount -= T3B_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3b_ddr_setting_100mhz);
+			reg_cnt -= T3B_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			ddr_setting += T3B_SKIP_CLOCK_PROGRAM_DUMP_100MHZ;
 			break;
 		case DDR_133_MHZ:
 			bOverrideSelfRefresh = TRUE;
 			ddr_setting = as_t3b_ddr_setting_133mhz;
-			RegCount = ARRAY_SIZE(as_t3b_ddr_setting_133mhz);
-			RegCount -= T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
+			reg_cnt = ARRAY_SIZE(as_t3b_ddr_setting_133mhz);
+			reg_cnt -= T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			ddr_setting += T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 		break;
 		}
@@ -1302,7 +1302,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		return -EINVAL;
 	}
 	/* total number of Register that has to be dumped */
-	value = RegCount;
+	value = reg_cnt;
 	retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
 			sizeof(value));
 	if (retval) {
@@ -1323,9 +1323,9 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 	}
 
 	ul_ddr_setting_load_addr += sizeof(ULONG);
-	RegCount *= (sizeof(struct bcm_ddr_setting)/sizeof(ULONG));
+	reg_cnt *= (sizeof(struct bcm_ddr_setting)/sizeof(ULONG));
 
-	while (RegCount && !retval) {
+	while (reg_cnt && !retval) {
 		value = ddr_setting->ulRegAddress;
 		retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
 				sizeof(value));
@@ -1348,7 +1348,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 			}
 		}
 		ul_ddr_setting_load_addr += sizeof(ULONG);
-		RegCount--;
+		reg_cnt--;
 		ddr_setting++;
 	}
 	return retval;

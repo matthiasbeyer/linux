@@ -545,7 +545,7 @@ static struct bcm_ddr_setting as_t3lp_ddr_setting_80mhz[] = {
 /* T3 LP-B (UMA-B) */
 
 #define T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ 7  /* index for 0x0F007000 */
-static struct bcm_ddr_setting asT3LPB_DDRSetting160MHz[] = {
+static struct bcm_ddr_setting as_t3lpb_ddr_setting_160mhz[] = {
       /* DPLL Clock Setting */
 	{0x0f000820, 0x03F137DB},
 	{0x0f000810, 0x01842795},
@@ -879,8 +879,8 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			break;
 
 		case DDR_160_MHZ:
-			psDDRSetting = asT3LPB_DDRSetting160MHz;
-			RegCount = sizeof(asT3LPB_DDRSetting160MHz) /
+			psDDRSetting = as_t3lpb_ddr_setting_160mhz;
+			RegCount = sizeof(as_t3lpb_ddr_setting_160mhz) /
 				   sizeof(struct bcm_ddr_setting);
 
 			if (Adapter->bMipsConfig == MIPS_200_MHZ)
@@ -1239,8 +1239,8 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 
 		case DDR_160_MHZ:
 			bOverrideSelfRefresh = TRUE;
-			psDDRSetting = asT3LPB_DDRSetting160MHz;
-			RegCount = ARRAY_SIZE(asT3LPB_DDRSetting160MHz);
+			psDDRSetting = as_t3lpb_ddr_setting_160mhz;
+			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_160mhz);
 			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
 			psDDRSetting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_160MHZ;
 

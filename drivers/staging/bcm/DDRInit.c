@@ -604,7 +604,7 @@ static struct bcm_ddr_setting as_t3lpb_ddr_setting_160mhz[] = {
 
 
 #define T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ 7  /* index for 0x0F007000 */
-static struct bcm_ddr_setting asT3LPB_DDRSetting133MHz[] = {
+static struct bcm_ddr_setting as_t3lpb_ddr_setting_133mhz[] = {
       /* DPLL Clock Setting */
 	{0x0f000820, 0x03F1365B},
 	{0x0f000810, 0x00002F95},
@@ -868,7 +868,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_133_MHZ:
-			psDDRSetting = asT3LPB_DDRSetting133MHz;
+			psDDRSetting = as_t3lpb_ddr_setting_133mhz;
 			RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 
@@ -1231,8 +1231,8 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 			break;
 		case DDR_133_MHZ:
 			bOverrideSelfRefresh = TRUE;
-			psDDRSetting = asT3LPB_DDRSetting133MHz;
-			RegCount = ARRAY_SIZE(asT3LPB_DDRSetting133MHz);
+			psDDRSetting = as_t3lpb_ddr_setting_133mhz;
+			RegCount = ARRAY_SIZE(as_t3lpb_ddr_setting_133mhz);
 			RegCount -= T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			psDDRSetting += T3LPB_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			break;

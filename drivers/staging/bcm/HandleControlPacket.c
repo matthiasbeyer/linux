@@ -14,7 +14,7 @@
 static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 				     struct sk_buff *skb)
 {
-	struct bcm_tarang_data *pTarang = NULL;
+	struct bcm_tarang_data *tarang = NULL;
 	bool HighPriorityMessage = false;
 	struct sk_buff *newPacket = NULL;
 	CHAR cntrl_msg_mask_bit = 0;
@@ -73,7 +73,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 	/* Queue The Control Packet to The Application Queues */
 	down(&ad->RxAppControlQueuelock);
 
-	for (pTarang = ad->pTarangs; pTarang; pTarang = pTarang->next) {
+	for (tarang = ad->pTarangs; tarang; tarang = tarang->next) {
 		if (ad->device_removed)
 			break;
 
@@ -91,12 +91,12 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 		 * printk("\ninew  msg  mask bit which is disable in mask:%X",
 		 *	cntrl_msg_mask_bit);
 		 */
-		if (pTarang->RxCntrlMsgBitMask & (1 << cntrl_msg_mask_bit))
+		if (tarang->RxCntrlMsgBitMask & (1 << cntrl_msg_mask_bit))
 			drop_pkt_flag = false;
 
 		if ((drop_pkt_flag == TRUE) ||
-				(pTarang->AppCtrlQueueLen > MAX_APP_QUEUE_LEN)
-				|| ((pTarang->AppCtrlQueueLen >
+				(tarang->AppCtrlQueueLen > MAX_APP_QUEUE_LEN)
+				|| ((tarang->AppCtrlQueueLen >
 					MAX_APP_QUEUE_LEN / 2) &&
 				    (HighPriorityMessage == false))) {
 			/*
@@ -108,7 +108,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 			 *    tarang only.
 			 */
 			struct bcm_mibs_dropped_cntrl_msg *msg =
-				&pTarang->stDroppedAppCntrlMsgs;
+				&tarang->stDroppedAppCntrlMsgs;
 			switch (*(PUSHORT)skb->data) {
 			case CM_RESPONSES:
 				msg->cm_responses++;
@@ -142,9 +142,9 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 		newPacket = skb_clone(skb, GFP_KERNEL);
 		if (!newPacket)
 			break;
-		ENQUEUEPACKET(pTarang->RxAppControlHead,
-				pTarang->RxAppControlTail, newPacket);
-		pTarang->AppCtrlQueueLen++;
+		ENQUEUEPACKET(tarang->RxAppControlHead,
+				tarang->RxAppControlTail, newPacket);
+		tarang->AppCtrlQueueLen++;
 	}
 	up(&ad->RxAppControlQueuelock);
 	wake_up(&ad->process_read_wait_queue);
@@ -217,19 +217,19 @@ int control_packet_handler(struct bcm_mini_adapter *ad /* pointer to adapter obj
 INT flushAllAppQ(void)
 {
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
-	struct bcm_tarang_data *pTarang = NULL;
+	struct bcm_tarang_data *tarang = NULL;
 	struct sk_buff *PacketToDrop = NULL;
 
-	for (pTarang = ad->pTarangs; pTarang; pTarang = pTarang->next) {
-		while (pTarang->RxAppControlHead != NULL) {
-			PacketToDrop = pTarang->RxAppControlHead;
-			DEQUEUEPACKET(pTarang->RxAppControlHead,
-					pTarang->RxAppControlTail);
+	for (tarang = ad->pTarangs; tarang; tarang = tarang->next) {
+		while (tarang->RxAppControlHead != NULL) {
+			PacketToDrop = tarang->RxAppControlHead;
+			DEQUEUEPACKET(tarang->RxAppControlHead,
+					tarang->RxAppControlTail);
 			dev_kfree_skb(PacketToDrop);
 		}
-		pTarang->AppCtrlQueueLen = 0;
+		tarang->AppCtrlQueueLen = 0;
 		/* dropped contrl packet statistics also should be reset. */
-		memset((PVOID)&pTarang->stDroppedAppCntrlMsgs, 0,
+		memset((PVOID)&tarang->stDroppedAppCntrlMsgs, 0,
 			sizeof(struct bcm_mibs_dropped_cntrl_msg));
 
 	}

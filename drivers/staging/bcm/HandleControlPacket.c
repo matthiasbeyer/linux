@@ -19,13 +19,13 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 	struct sk_buff *new_packet = NULL;
 	CHAR cntrl_msg_mask_bit = 0;
 	bool drop_pkt_flag = TRUE;
-	USHORT usStatus = *(PUSHORT)(skb->data);
+	USHORT status = *(PUSHORT)(skb->data);
 
 	if (netif_msg_pktdata(ad))
 		print_hex_dump(KERN_DEBUG, PFX "rx control: ", DUMP_PREFIX_NONE,
 			       16, 1, skb->data, skb->len, 0);
 
-	switch (usStatus) {
+	switch (status) {
 	case CM_RESPONSES:               /* 0xA0 */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL,
@@ -86,7 +86,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 		 * if mask bit is enable to particular pkt status, send it out
 		 * to app else stop it.
 		 */
-		cntrl_msg_mask_bit = (usStatus & 0x1F);
+		cntrl_msg_mask_bit = (status & 0x1F);
 		/*
 		 * printk("\ninew  msg  mask bit which is disable in mask:%X",
 		 *	cntrl_msg_mask_bit);

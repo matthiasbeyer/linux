@@ -192,7 +192,7 @@ static struct bcm_ddr_setting as_dpll_266mhz[] = {
 };
 
 #define T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ 11  /* index for 0x0F007000 */
-static struct bcm_ddr_setting asT3B_DDRSetting133MHz[] = {
+static struct bcm_ddr_setting as_t3b_ddr_setting_133mhz[] = {
       /* DPLL Clock Setting */
 	{0x0f000810, 0x00000F95},
 	{0x0f000810, 0x00000F95},
@@ -869,7 +869,7 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 			break;
 		case DDR_133_MHZ:
 			psDDRSetting = asT3LPB_DDRSetting133MHz;
-			RegCount = (sizeof(asT3B_DDRSetting133MHz) /
+			RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 
 			if (Adapter->bMipsConfig == MIPS_200_MHZ)
@@ -933,14 +933,14 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 
 			/* 266Mhz PLL selected. */
 			if (Adapter->bDPLLConfig == PLL_266_MHZ) {
-				memcpy(asT3B_DDRSetting133MHz, as_dpll_266mhz,
+				memcpy(as_t3b_ddr_setting_133mhz, as_dpll_266mhz,
 				       sizeof(as_dpll_266mhz));
-				psDDRSetting = asT3B_DDRSetting133MHz;
-				RegCount = (sizeof(asT3B_DDRSetting133MHz) /
+				psDDRSetting = as_t3b_ddr_setting_133mhz;
+				RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
 			} else {
-				psDDRSetting = asT3B_DDRSetting133MHz;
-				RegCount = (sizeof(asT3B_DDRSetting133MHz) /
+				psDDRSetting = as_t3b_ddr_setting_133mhz;
+				RegCount = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
 				if (Adapter->bMipsConfig == MIPS_200_MHZ)
 					uiClockSetting = 0x07F13652;
@@ -1290,8 +1290,8 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 			break;
 		case DDR_133_MHZ:
 			bOverrideSelfRefresh = TRUE;
-			psDDRSetting = asT3B_DDRSetting133MHz;
-			RegCount = ARRAY_SIZE(asT3B_DDRSetting133MHz);
+			psDDRSetting = as_t3b_ddr_setting_133mhz;
+			RegCount = ARRAY_SIZE(as_t3b_ddr_setting_133mhz);
 			RegCount -= T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 			psDDRSetting += T3B_SKIP_CLOCK_PROGRAM_DUMP_133MHZ;
 		break;

@@ -218,14 +218,14 @@ INT flushAllAppQ(void)
 {
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 	struct bcm_tarang_data *tarang = NULL;
-	struct sk_buff *PacketToDrop = NULL;
+	struct sk_buff *drop_packet = NULL;
 
 	for (tarang = ad->pTarangs; tarang; tarang = tarang->next) {
 		while (tarang->RxAppControlHead != NULL) {
-			PacketToDrop = tarang->RxAppControlHead;
+			drop_packet = tarang->RxAppControlHead;
 			DEQUEUEPACKET(tarang->RxAppControlHead,
 					tarang->RxAppControlTail);
-			dev_kfree_skb(PacketToDrop);
+			dev_kfree_skb(drop_packet);
 		}
 		tarang->AppCtrlQueueLen = 0;
 		/* dropped contrl packet statistics also should be reset. */

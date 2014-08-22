@@ -794,7 +794,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 	ULONG reg_cnt = 0;
 	UINT value = 0;
 	UINT reset_val = 0;
-	UINT uiClockSetting = 0;
+	UINT clock_setting = 0;
 	int retval = STATUS_SUCCESS;
 
 	switch (ad->chip_id) {
@@ -815,9 +815,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 			reg_cnt = (sizeof(as_t3lp_ddr_setting_133mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			if (ad->bMipsConfig == MIPS_200_MHZ)
-				uiClockSetting = 0x03F13652;
+				clock_setting = 0x03F13652;
 			else
-				uiClockSetting = 0x03F1365B;
+				clock_setting = 0x03F1365B;
 			break;
 		default:
 			return -EINVAL;
@@ -873,9 +873,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				    sizeof(struct bcm_ddr_setting));
 
 			if (ad->bMipsConfig == MIPS_200_MHZ)
-				uiClockSetting = 0x03F13652;
+				clock_setting = 0x03F13652;
 			else
-				uiClockSetting = 0x03F1365B;
+				clock_setting = 0x03F1365B;
 			break;
 
 		case DDR_160_MHZ:
@@ -884,9 +884,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				   sizeof(struct bcm_ddr_setting);
 
 			if (ad->bMipsConfig == MIPS_200_MHZ)
-				uiClockSetting = 0x03F137D2;
+				clock_setting = 0x03F137D2;
 			else
-				uiClockSetting = 0x03F137DB;
+				clock_setting = 0x03F137DB;
 		}
 			break;
 
@@ -943,9 +943,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				reg_cnt = (sizeof(as_t3b_ddr_setting_133mhz) /
 					    sizeof(struct bcm_ddr_setting));
 				if (ad->bMipsConfig == MIPS_200_MHZ)
-					uiClockSetting = 0x07F13652;
+					clock_setting = 0x07F13652;
 				else
-					uiClockSetting = 0x07F1365B;
+					clock_setting = 0x07F1365B;
 			}
 			break;
 		default:
@@ -962,9 +962,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 			"Register Count is =%lu\n", reg_cnt);
 	while (reg_cnt && !retval) {
-		if (uiClockSetting
+		if (clock_setting
 				&& ddr_setting->ulRegAddress == MIPS_CLOCK_REG)
-			value = uiClockSetting;
+			value = clock_setting;
 		else
 			value = ddr_setting->ulRegValue;
 		retval = wrmalt(ad, ddr_setting->ulRegAddress, &value,

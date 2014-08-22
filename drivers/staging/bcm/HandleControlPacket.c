@@ -15,7 +15,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 				     struct sk_buff *skb)
 {
 	struct bcm_tarang_data *tarang = NULL;
-	bool HighPriorityMessage = false;
+	bool high_prio_msg = false;
 	struct sk_buff *newPacket = NULL;
 	CHAR cntrl_msg_mask_bit = 0;
 	bool drop_pkt_flag = TRUE;
@@ -30,10 +30,10 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL,
 			"MAC Version Seems to be Non Multi-Classifier, rejected by Driver");
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		break;
 	case CM_CONTROL_NEWDSX_MULTICLASSIFIER_RESP:
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		if (ad->LinkStatus == LINKUP_DONE)
 			CmControlResponseMessage(ad,
 				(skb->data + sizeof(USHORT)));
@@ -42,12 +42,12 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 	case STATUS_RSP:                 /* 0xA1 */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, CP_CTRL_PKT,
 			DBG_LVL_ALL, "LINK_CONTROL_RESP");
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		LinkControlResponseMessage(ad,
 			(skb->data + sizeof(USHORT)));
 		break;
 	case STATS_POINTER_RESP:         /* 0xA6 */
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		StatisticsResponse(ad, (skb->data + sizeof(USHORT)));
 		break;
 	case IDLE_MODE_STATUS:           /* 0xA3 */
@@ -56,11 +56,11 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 			"IDLE_MODE_STATUS Type Message Got from F/W");
 		InterfaceIdleModeRespond(ad, (PUINT)(skb->data +
 					sizeof(USHORT)));
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		break;
 
 	case AUTH_SS_HOST_MSG:
-		HighPriorityMessage = TRUE;
+		high_prio_msg = TRUE;
 		break;
 
 	default:
@@ -98,7 +98,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 				(tarang->AppCtrlQueueLen > MAX_APP_QUEUE_LEN)
 				|| ((tarang->AppCtrlQueueLen >
 					MAX_APP_QUEUE_LEN / 2) &&
-				    (HighPriorityMessage == false))) {
+				    (high_prio_msg == false))) {
 			/*
 			 * Assumption:-
 			 * 1. every tarang manages it own dropped pkt

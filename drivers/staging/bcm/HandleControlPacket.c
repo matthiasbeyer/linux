@@ -16,7 +16,7 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 {
 	struct bcm_tarang_data *tarang = NULL;
 	bool high_prio_msg = false;
-	struct sk_buff *newPacket = NULL;
+	struct sk_buff *new_packet = NULL;
 	CHAR cntrl_msg_mask_bit = 0;
 	bool drop_pkt_flag = TRUE;
 	USHORT usStatus = *(PUSHORT)(skb->data);
@@ -139,11 +139,11 @@ static VOID handle_rx_control_packet(struct bcm_mini_adapter *ad,
 			continue;
 		}
 
-		newPacket = skb_clone(skb, GFP_KERNEL);
-		if (!newPacket)
+		new_packet = skb_clone(skb, GFP_KERNEL);
+		if (!new_packet)
 			break;
 		ENQUEUEPACKET(tarang->RxAppControlHead,
-				tarang->RxAppControlTail, newPacket);
+				tarang->RxAppControlTail, new_packet);
 		tarang->AppCtrlQueueLen++;
 	}
 	up(&ad->RxAppControlQueuelock);

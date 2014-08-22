@@ -484,7 +484,7 @@ static struct bcm_ddr_setting as_t3lp_ddr_setting_100mhz[] = {
 };
 
 #define T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ 9  /* index for 0x0F007000 */
-static struct bcm_ddr_setting asT3LP_DDRSetting80MHz[] = {
+static struct bcm_ddr_setting as_t3lp_ddr_setting_80mhz[] = {
       /* DPLL Clock Setting */
 	{0x0f000820, 0x07F13FFF},
 	{0x0f000810, 0x00002F95},
@@ -801,8 +801,8 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 	case 0xbece3200:
 		switch (Adapter->DDRSetting) {
 		case DDR_80_MHZ:
-			psDDRSetting = asT3LP_DDRSetting80MHz;
-			RegCount = (sizeof(asT3LP_DDRSetting80MHz) /
+			psDDRSetting = as_t3lp_ddr_setting_80mhz;
+			RegCount = (sizeof(as_t3lp_ddr_setting_80mhz) /
 				    sizeof(struct bcm_ddr_setting));
 			break;
 		case DDR_100_MHZ:
@@ -1188,8 +1188,8 @@ int download_ddr_settings(struct bcm_mini_adapter *Adapter)
 	case 0xbece3200:
 		switch (Adapter->DDRSetting) {
 		case DDR_80_MHZ:
-			psDDRSetting = asT3LP_DDRSetting80MHz;
-			RegCount = ARRAY_SIZE(asT3LP_DDRSetting80MHz);
+			psDDRSetting = as_t3lp_ddr_setting_80mhz;
+			RegCount = ARRAY_SIZE(as_t3lp_ddr_setting_80mhz);
 			RegCount -= T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			psDDRSetting += T3LP_SKIP_CLOCK_PROGRAM_DUMP_80MHZ;
 			break;

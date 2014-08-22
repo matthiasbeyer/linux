@@ -793,7 +793,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 	struct bcm_ddr_setting *ddr_setting = NULL;
 	ULONG reg_cnt = 0;
 	UINT value = 0;
-	UINT uiResetValue = 0;
+	UINT reset_val = 0;
 	UINT uiClockSetting = 0;
 	int retval = STATUS_SUCCESS;
 
@@ -835,17 +835,17 @@ int ddr_init(struct bcm_mini_adapter *ad)
 	if ((ad->chip_id !=  BCS220_2) &&
 		(ad->chip_id !=  BCS220_2BC) &&
 		(ad->chip_id != BCS220_3)) {
-		retval = rdmalt(ad, (UINT)0x0f000830, &uiResetValue,
-				sizeof(uiResetValue));
+		retval = rdmalt(ad, (UINT)0x0f000830, &reset_val,
+				sizeof(reset_val));
 		if (retval < 0) {
 			BCM_DEBUG_PRINT(ad, CMHOST, RDM, DBG_LVL_ALL,
 					"%s:%d RDM failed\n",
 					__func__, __LINE__);
 			return retval;
 		}
-		uiResetValue |= 0x44;
-		retval = wrmalt(ad, (UINT)0x0f000830, &uiResetValue,
-				sizeof(uiResetValue));
+		reset_val |= 0x44;
+		retval = wrmalt(ad, (UINT)0x0f000830, &reset_val,
+				sizeof(reset_val));
 		if (retval < 0) {
 			BCM_DEBUG_PRINT(ad, CMHOST, RDM, DBG_LVL_ALL,
 					"%s:%d RDM failed\n",
@@ -986,9 +986,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 			(ad->chip_id != BCS220_2BC) &&
 			(ad->chip_id != BCS220_3)) {
 			/* drive MDDR to half in case of UMA-B:	*/
-			uiResetValue = 0x01010001;
+			reset_val = 0x01010001;
 			retval = wrmalt(ad, (UINT)0x0F007018,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -997,9 +997,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x00040020;
+			reset_val = 0x00040020;
 			retval = wrmalt(ad, (UINT)0x0F007094,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1008,9 +1008,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x01020101;
+			reset_val = 0x01020101;
 			retval = wrmalt(ad, (UINT)0x0F00701c,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1019,9 +1019,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x01010000;
+			reset_val = 0x01010000;
 			retval = wrmalt(ad, (UINT)0x0F007018,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1042,7 +1042,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 		 */
 		if (ad->PmuMode == HYBRID_MODE_7C) {
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1052,7 +1052,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1061,9 +1061,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x1322a8;
+			reset_val = 0x1322a8;
 			retval = wrmalt(ad, (UINT)0x0f000d1c,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1073,7 +1073,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, RDM,
 						DBG_LVL_ALL,
@@ -1083,7 +1083,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1092,9 +1092,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x132296;
+			reset_val = 0x132296;
 			retval = wrmalt(ad, (UINT)0x0f000d14,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1106,7 +1106,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 		} else if (ad->PmuMode == HYBRID_MODE_6) {
 
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1116,7 +1116,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1125,9 +1125,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x6003229a;
+			reset_val = 0x6003229a;
 			retval = wrmalt(ad, (UINT)0x0f000d14,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1137,7 +1137,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1147,7 +1147,7 @@ int ddr_init(struct bcm_mini_adapter *ad)
 				return retval;
 			}
 			retval = rdmalt(ad, (UINT)0x0f000c00,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,
@@ -1156,9 +1156,9 @@ int ddr_init(struct bcm_mini_adapter *ad)
 						__LINE__);
 				return retval;
 			}
-			uiResetValue = 0x1322a8;
+			reset_val = 0x1322a8;
 			retval = wrmalt(ad, (UINT)0x0f000d1c,
-					&uiResetValue, sizeof(uiResetValue));
+					&reset_val, sizeof(reset_val));
 			if (retval < 0) {
 				BCM_DEBUG_PRINT(ad, CMHOST, RDM,
 						DBG_LVL_ALL,

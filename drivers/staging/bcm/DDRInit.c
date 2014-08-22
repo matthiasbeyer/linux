@@ -1178,7 +1178,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 {
 	struct bcm_ddr_setting *ddr_setting = NULL;
 	ULONG reg_cnt = 0;
-	unsigned long ul_ddr_setting_load_addr =
+	unsigned long ddr_setting_load_addr =
 		DDR_DUMP_INTERNAL_DEVICE_MEMORY;
 	UINT value = 0;
 	int retval = STATUS_SUCCESS;
@@ -1303,7 +1303,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 	}
 	/* total number of Register that has to be dumped */
 	value = reg_cnt;
-	retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
+	retval = wrmalt(ad, ddr_setting_load_addr, &value,
 			sizeof(value));
 	if (retval) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
@@ -1311,10 +1311,10 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 
 		return retval;
 	}
-	ul_ddr_setting_load_addr += sizeof(ULONG);
+	ddr_setting_load_addr += sizeof(ULONG);
 	/* signature */
 	value = (0x1d1e0dd0);
-	retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
+	retval = wrmalt(ad, ddr_setting_load_addr, &value,
 			sizeof(value));
 	if (retval) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
@@ -1322,14 +1322,14 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 		return retval;
 	}
 
-	ul_ddr_setting_load_addr += sizeof(ULONG);
+	ddr_setting_load_addr += sizeof(ULONG);
 	reg_cnt *= (sizeof(struct bcm_ddr_setting)/sizeof(ULONG));
 
 	while (reg_cnt && !retval) {
 		value = ddr_setting->ulRegAddress;
-		retval = wrmalt(ad, ul_ddr_setting_load_addr, &value,
+		retval = wrmalt(ad, ddr_setting_load_addr, &value,
 				sizeof(value));
-		ul_ddr_setting_load_addr += sizeof(ULONG);
+		ddr_setting_load_addr += sizeof(ULONG);
 		if (!retval) {
 			if (bOverrideSelfRefresh
 					&& (ddr_setting->ulRegAddress
@@ -1339,7 +1339,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 				value = ddr_setting->ulRegValue;
 
 			if (STATUS_SUCCESS != wrmalt(ad,
-						     ul_ddr_setting_load_addr,
+						     ddr_setting_load_addr,
 						     &value,
 						     sizeof(value))) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
@@ -1347,7 +1347,7 @@ int download_ddr_settings(struct bcm_mini_adapter *ad)
 				break;
 			}
 		}
-		ul_ddr_setting_load_addr += sizeof(ULONG);
+		ddr_setting_load_addr += sizeof(ULONG);
 		reg_cnt--;
 		ddr_setting++;
 	}

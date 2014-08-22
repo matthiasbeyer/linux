@@ -180,7 +180,7 @@ static struct bcm_ddr_setting asT3_DDRSetting100MHz[] = {
 /* Net T3B DDR Settings
  * DDR INIT-133Mhz
  */
-static struct bcm_ddr_setting asDPLL_266MHZ[] = {
+static struct bcm_ddr_setting as_dpll_266mhz[] = {
 	{0x0F000800, 0x00007212},
 	{0x0f000820, 0x07F13FFF},
 	{0x0f000810, 0x00000F95},
@@ -933,8 +933,8 @@ int ddr_init(struct bcm_mini_adapter *Adapter)
 
 			/* 266Mhz PLL selected. */
 			if (Adapter->bDPLLConfig == PLL_266_MHZ) {
-				memcpy(asT3B_DDRSetting133MHz, asDPLL_266MHZ,
-				       sizeof(asDPLL_266MHZ));
+				memcpy(asT3B_DDRSetting133MHz, as_dpll_266mhz,
+				       sizeof(as_dpll_266mhz));
 				psDDRSetting = asT3B_DDRSetting133MHz;
 				RegCount = (sizeof(asT3B_DDRSetting133MHz) /
 					    sizeof(struct bcm_ddr_setting));

@@ -16,14 +16,14 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	struct bcm_phs_rule *phs_rule = NULL;
 	struct bcm_phs_classifier_table *classif_tab = NULL;
 	struct bcm_phs_classifier_entry *classif_rule = NULL;
-	struct bcm_phs_extension *pDeviceExtension = &ad->stBCMPhsContext;
+	struct bcm_phs_extension *dev_extension = &ad->stBCMPhsContext;
 	struct bcm_mibs_host_info *host_info;
 	UINT nClassifierIndex = 0;
 	UINT nPhsTableIndex = 0;
 	UINT nSfIndex = 0;
 	UINT uiIndex = 0;
 
-	if (pDeviceExtension == NULL) {
+	if (dev_extension == NULL) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, HOST_MIBS,
 				DBG_LVL_ALL, "Invalid Device Extension\n");
 		return STATUS_FAILURE;
@@ -54,7 +54,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 
 		/* Retrieve the SFID Entry Index for requested Service Flow */
 		if (PHS_INVALID_TABLE_INDEX ==
-		    GetServiceFlowEntry(pDeviceExtension->
+		    GetServiceFlowEntry(dev_extension->
 					pstServiceFlowPhsRulesTable,
 					ad->PackInfo[nSfIndex].
 					usVCID_Value, &service_flow_entry))

@@ -1,6 +1,6 @@
 #include "headers.h"
 #include <linux/usb/ch9.h>
-static struct usb_device_id InterfaceUsbtable[] = {
+static struct usb_device_id interface_usb_table[] = {
 	{ USB_DEVICE(BCM_USB_VENDOR_ID_T3, BCM_USB_PRODUCT_ID_T3) },
 	{ USB_DEVICE(BCM_USB_VENDOR_ID_T3, BCM_USB_PRODUCT_ID_T3B) },
 	{ USB_DEVICE(BCM_USB_VENDOR_ID_T3, BCM_USB_PRODUCT_ID_T3L) },
@@ -12,7 +12,7 @@ static struct usb_device_id InterfaceUsbtable[] = {
 	{ USB_DEVICE(BCM_USB_VENDOR_ID_ZTE, BCM_USB_PRODUCT_ID_ZTE_326) },
 	{ }
 };
-MODULE_DEVICE_TABLE(usb, InterfaceUsbtable);
+MODULE_DEVICE_TABLE(usb, interface_usb_table);
 
 static int debug = -1;
 module_param(debug, uint, 0600);
@@ -687,7 +687,7 @@ static struct usb_driver usbbcm_driver = {
 	.disconnect = usbbcm_disconnect,
 	.suspend = InterfaceSuspend,
 	.resume = InterfaceResume,
-	.id_table = InterfaceUsbtable,
+	.id_table = interface_usb_table,
 	.supports_autosuspend = 1,
 };
 

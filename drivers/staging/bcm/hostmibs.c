@@ -110,10 +110,10 @@ VOID GetDroppedAppCntrlPktMibs(struct bcm_host_stats_mibs *host_mibs,
 
 VOID CopyMIBSExtendedSFParameters(struct bcm_mini_adapter *ad,
 				  struct bcm_connect_mgr_params *local_set,
-				  UINT uiSearchRuleIndex)
+				  UINT search_rule_idx)
 {
 	struct bcm_mibs_parameters *t =
-		&ad->PackInfo[uiSearchRuleIndex].stMibsExtServiceFlowTable;
+		&ad->PackInfo[search_rule_idx].stMibsExtServiceFlowTable;
 
 	t->wmanIfSfid = local_set->u32SFID;
 	t->wmanIfCmnCpsMaxSustainedRate =

@@ -12,7 +12,7 @@
 INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 		       struct bcm_host_stats_mibs *host_mibs)
 {
-	struct bcm_phs_entry *pstServiceFlowEntry = NULL;
+	struct bcm_phs_entry *service_flow_entry = NULL;
 	struct bcm_phs_rule *pstPhsRule = NULL;
 	struct bcm_phs_classifier_table *pstClassifierTable = NULL;
 	struct bcm_phs_classifier_entry *pstClassifierRule = NULL;
@@ -57,11 +57,11 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 		    GetServiceFlowEntry(pDeviceExtension->
 					pstServiceFlowPhsRulesTable,
 					ad->PackInfo[nSfIndex].
-					usVCID_Value, &pstServiceFlowEntry))
+					usVCID_Value, &service_flow_entry))
 
 			continue;
 
-		pstClassifierTable = pstServiceFlowEntry->pstClassifierTable;
+		pstClassifierTable = service_flow_entry->pstClassifierTable;
 
 		for (uiIndex = 0; uiIndex < MAX_PHSRULE_PER_SF; uiIndex++) {
 			pstClassifierRule = &pstClassifierTable->stActivePhsRulesList[uiIndex];

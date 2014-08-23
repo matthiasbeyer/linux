@@ -4,9 +4,9 @@
 static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 {
 	int		status = urb->status;
-	struct bcm_interface_adapter *psIntfAdapter =
+	struct bcm_interface_adapter *intf_ad =
 		(struct bcm_interface_adapter *)urb->context;
-	struct bcm_mini_adapter *Adapter = psIntfAdapter->psAdapter;
+	struct bcm_mini_adapter *Adapter = intf_ad->psAdapter;
 
 	if (netif_msg_intr(Adapter))
 		pr_info(PFX "%s: interrupt status %d\n",
@@ -19,8 +19,8 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	}
 
 	if ((Adapter->bPreparingForLowPowerMode && Adapter->bDoSuspend) ||
-			psIntfAdapter->bSuspended ||
-			psIntfAdapter->bPreparingForBusSuspend) {
+			intf_ad->bSuspended ||
+			intf_ad->bPreparingForBusSuspend) {
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Interrupt call back is called while suspending the device");
@@ -32,15 +32,15 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	case STATUS_SUCCESS:
 		if (urb->actual_length) {
 
-			if (psIntfAdapter->ulInterruptData[1] & 0xFF) {
+			if (intf_ad->ulInterruptData[1] & 0xFF) {
 				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
 						INTF_INIT, DBG_LVL_ALL,
 						"Got USIM interrupt");
 			}
 
-			if (psIntfAdapter->ulInterruptData[1] & 0xFF00) {
+			if (intf_ad->ulInterruptData[1] & 0xFF00) {
 				atomic_set(&Adapter->CurrNumFreeTxDesc,
-					(psIntfAdapter->ulInterruptData[1] &
+					(intf_ad->ulInterruptData[1] &
 					 0xFF00) >> 8);
 				atomic_set(&Adapter->uiMBupdate, TRUE);
 				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
@@ -48,20 +48,20 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 					"TX mailbox contains %d",
 					atomic_read(&Adapter->CurrNumFreeTxDesc));
 			}
-			if (psIntfAdapter->ulInterruptData[1] >> 16) {
+			if (intf_ad->ulInterruptData[1] >> 16) {
 				Adapter->CurrNumRecvDescs =
-					(psIntfAdapter->ulInterruptData[1]  >> 16);
+					(intf_ad->ulInterruptData[1]  >> 16);
 				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
 						INTF_INIT, DBG_LVL_ALL,
 						"RX mailbox contains %d",
 						Adapter->CurrNumRecvDescs);
-				InterfaceRx(psIntfAdapter);
+				InterfaceRx(intf_ad);
 			}
 			if (Adapter->fw_download_done &&
 				!Adapter->downloadDDR &&
 				atomic_read(&Adapter->CurrNumFreeTxDesc)) {
 
-				psIntfAdapter->psAdapter->downloadDDR += 1;
+				intf_ad->psAdapter->downloadDDR += 1;
 				wake_up(&Adapter->tx_packet_wait_queue);
 			}
 			if (!Adapter->waiting_to_fw_download_done) {
@@ -127,61 +127,61 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		break;
 	}
 
-	StartInterruptUrb(psIntfAdapter);
+	StartInterruptUrb(intf_ad);
 
 
 }
 
-int CreateInterruptUrb(struct bcm_interface_adapter *psIntfAdapter)
+int CreateInterruptUrb(struct bcm_interface_adapter *intf_ad)
 {
-	psIntfAdapter->psInterruptUrb = usb_alloc_urb(0, GFP_KERNEL);
-	if (!psIntfAdapter->psInterruptUrb) {
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS,
+	intf_ad->psInterruptUrb = usb_alloc_urb(0, GFP_KERNEL);
+	if (!intf_ad->psInterruptUrb) {
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS,
 				INTF_INIT, DBG_LVL_ALL,
 				"Cannot allocate interrupt urb");
 		return -ENOMEM;
 	}
-	psIntfAdapter->psInterruptUrb->transfer_buffer =
-		psIntfAdapter->ulInterruptData;
-	psIntfAdapter->psInterruptUrb->transfer_buffer_length =
-		sizeof(psIntfAdapter->ulInterruptData);
+	intf_ad->psInterruptUrb->transfer_buffer =
+		intf_ad->ulInterruptData;
+	intf_ad->psInterruptUrb->transfer_buffer_length =
+		sizeof(intf_ad->ulInterruptData);
 
-	psIntfAdapter->sIntrIn.int_in_pipe = usb_rcvintpipe(psIntfAdapter->udev,
-			psIntfAdapter->sIntrIn.int_in_endpointAddr);
+	intf_ad->sIntrIn.int_in_pipe = usb_rcvintpipe(intf_ad->udev,
+			intf_ad->sIntrIn.int_in_endpointAddr);
 
-	usb_fill_int_urb(psIntfAdapter->psInterruptUrb, psIntfAdapter->udev,
-			psIntfAdapter->sIntrIn.int_in_pipe,
-			psIntfAdapter->psInterruptUrb->transfer_buffer,
-			psIntfAdapter->psInterruptUrb->transfer_buffer_length,
-			read_int_callback, psIntfAdapter,
-			psIntfAdapter->sIntrIn.int_in_interval);
+	usb_fill_int_urb(intf_ad->psInterruptUrb, intf_ad->udev,
+			intf_ad->sIntrIn.int_in_pipe,
+			intf_ad->psInterruptUrb->transfer_buffer,
+			intf_ad->psInterruptUrb->transfer_buffer_length,
+			read_int_callback, intf_ad,
+			intf_ad->sIntrIn.int_in_interval);
 
-	BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS, INTF_INIT,
+	BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS, INTF_INIT,
 			DBG_LVL_ALL, "Interrupt Interval: %d\n",
-			psIntfAdapter->sIntrIn.int_in_interval);
+			intf_ad->sIntrIn.int_in_interval);
 	return 0;
 }
 
 
-INT StartInterruptUrb(struct bcm_interface_adapter *psIntfAdapter)
+INT StartInterruptUrb(struct bcm_interface_adapter *intf_ad)
 {
 	INT status = 0;
 
-	if (!(psIntfAdapter->psAdapter->device_removed ||
-				psIntfAdapter->psAdapter->bEndPointHalted ||
-				psIntfAdapter->bSuspended ||
-				psIntfAdapter->bPreparingForBusSuspend ||
-				psIntfAdapter->psAdapter->StopAllXaction)) {
+	if (!(intf_ad->psAdapter->device_removed ||
+				intf_ad->psAdapter->bEndPointHalted ||
+				intf_ad->bSuspended ||
+				intf_ad->bPreparingForBusSuspend ||
+				intf_ad->psAdapter->StopAllXaction)) {
 		status =
-			usb_submit_urb(psIntfAdapter->psInterruptUrb, GFP_ATOMIC);
+			usb_submit_urb(intf_ad->psInterruptUrb, GFP_ATOMIC);
 		if (status) {
-			BCM_DEBUG_PRINT(psIntfAdapter->psAdapter,
+			BCM_DEBUG_PRINT(intf_ad->psAdapter,
 					DBG_TYPE_OTHERS, INTF_INIT, DBG_LVL_ALL,
 					"Cannot send inturb %d\n", status);
 			if (status == -EPIPE) {
-				psIntfAdapter->psAdapter->bEndPointHalted =
+				intf_ad->psAdapter->bEndPointHalted =
 					TRUE;
-				wake_up(&psIntfAdapter->psAdapter->tx_packet_wait_queue);
+				wake_up(&intf_ad->psAdapter->tx_packet_wait_queue);
 			}
 		}
 	}

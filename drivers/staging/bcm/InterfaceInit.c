@@ -381,7 +381,7 @@ static int select_alternate_setting_for_highspeed_modem(
 		struct bcm_interface_adapter *intf_ad,
 		struct usb_endpoint_descriptor **endpoint,
 		const struct usb_host_interface *iface_desc,
-		int *usedIntOutForBulkTransfer)
+		int *used_int_out_for_bulk_transfer)
 {
 	int retval = 0;
 	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
@@ -395,7 +395,7 @@ static int select_alternate_setting_for_highspeed_modem(
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 			"BCM16 is applicable on this dongle\n");
 	if (retval || !intf_ad->bHighSpeedDevice) {
-		*usedIntOutForBulkTransfer = EP2;
+		*used_int_out_for_bulk_transfer = EP2;
 		*endpoint = &iface_desc->endpoint[EP2].desc;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 				"Interface altsetting failed or modem is configured to Full Speed, hence will work on default setting 0\n");
@@ -448,7 +448,7 @@ static int select_alternate_setting_for_highspeed_modem(
 					      4, TRUE);
 		}
 	} else {
-		*usedIntOutForBulkTransfer = EP4;
+		*used_int_out_for_bulk_transfer = EP4;
 		*endpoint = &iface_desc->endpoint[EP4].desc;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 				"Choosing AltSetting as a default setting.\n");
@@ -488,7 +488,7 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 	size_t buffer_size;
 	unsigned long value;
 	int retval = 0;
-	int usedIntOutForBulkTransfer = 0;
+	int used_int_out_for_bulk_transfer = 0;
 	bool bBcm16 = false;
 	UINT uiData = 0;
 	int bytes;
@@ -534,7 +534,7 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 		if (bBcm16 == TRUE) {
 			retval = select_alternate_setting_for_highspeed_modem(
 					intf_ad, &endpoint, iface_desc,
-					&usedIntOutForBulkTransfer);
+					&used_int_out_for_bulk_transfer);
 			if (retval)
 				return retval;
 		}
@@ -583,7 +583,7 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 				usb_endpoint_is_int_out(endpoint)) {
 			if (!intf_ad->sBulkOut.bulk_out_endpointAddr &&
 					(ad->chip_id == T3B) &&
-					(value == usedIntOutForBulkTransfer)) {
+					(value == used_int_out_for_bulk_transfer)) {
 				/*
 				 * use first intout end point as a bulk out end
 				 * point

@@ -439,12 +439,12 @@ static int select_alternate_setting_for_highspeed_modem(
 			 * Revert it back to INT.
 			 * Else USB_IF will fail.
 			 */
-			UINT _uiData = ntohl(EP2_CFG_INT);
+			UINT data = ntohl(EP2_CFG_INT);
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY,
 					DBG_LVL_ALL,
 					"Reverting Bulk to INT as it is in Full Speed mode.\n");
-			BeceemEEPROMBulkWrite(ad, (PUCHAR) & _uiData, 0x136,
+			BeceemEEPROMBulkWrite(ad, (PUCHAR) & data, 0x136,
 					      4, TRUE);
 		}
 	} else {

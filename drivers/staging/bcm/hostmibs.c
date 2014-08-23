@@ -20,7 +20,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	struct bcm_mibs_host_info *host_info;
 	UINT i = 0;
 	UINT phs_tab_idx = 0;
-	UINT nSfIndex = 0;
+	UINT sf_idx = 0;
 	UINT uiIndex = 0;
 
 	if (dev_extension == NULL) {
@@ -38,10 +38,10 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	}
 
 	/* Copy the SF Table */
-	for (nSfIndex = 0; nSfIndex < NO_OF_QUEUES; nSfIndex++) {
-		if (ad->PackInfo[nSfIndex].bValid) {
-			memcpy(&host_mibs->astSFtable[nSfIndex],
-			       &ad->PackInfo[nSfIndex],
+	for (sf_idx = 0; sf_idx < NO_OF_QUEUES; sf_idx++) {
+		if (ad->PackInfo[sf_idx].bValid) {
+			memcpy(&host_mibs->astSFtable[sf_idx],
+			       &ad->PackInfo[sf_idx],
 			       sizeof(struct bcm_mibs_table));
 		} else {
 			/* If index in not valid,
@@ -55,7 +55,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 		if (PHS_INVALID_TABLE_INDEX ==
 		    GetServiceFlowEntry(dev_extension->
 					pstServiceFlowPhsRulesTable,
-					ad->PackInfo[nSfIndex].
+					ad->PackInfo[sf_idx].
 					usVCID_Value, &service_flow_entry))
 
 			continue;
@@ -69,7 +69,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 				phs_rule = classif_rule->pstPhsRule;
 
 				host_mibs->astPhsRulesTable[phs_tab_idx].
-				    ulSFID = ad->PackInfo[nSfIndex].ulSFID;
+				    ulSFID = ad->PackInfo[sf_idx].ulSFID;
 
 				memcpy(&host_mibs->astPhsRulesTable[phs_tab_idx].u8PHSI,
 				       &phs_rule->u8PHSI,

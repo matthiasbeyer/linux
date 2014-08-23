@@ -21,7 +21,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	UINT i = 0;
 	UINT phs_tab_idx = 0;
 	UINT sf_idx = 0;
-	UINT uiIndex = 0;
+	UINT idx = 0;
 
 	if (dev_extension == NULL) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, HOST_MIBS,
@@ -62,8 +62,8 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 
 		classif_tab = service_flow_entry->pstClassifierTable;
 
-		for (uiIndex = 0; uiIndex < MAX_PHSRULE_PER_SF; uiIndex++) {
-			classif_rule = &classif_tab->stActivePhsRulesList[uiIndex];
+		for (idx = 0; idx < MAX_PHSRULE_PER_SF; idx++) {
+			classif_rule = &classif_tab->stActivePhsRulesList[idx];
 
 			if (classif_rule->bUsed) {
 				phs_rule = classif_rule->pstPhsRule;

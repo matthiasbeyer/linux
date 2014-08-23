@@ -240,7 +240,7 @@ error:
 
 static INT buffDnld(struct bcm_mini_adapter *ad,
 			PUCHAR mappedbuffer, UINT firmware_len,
-			ULONG u32StartingAddress)
+			ULONG start_addr)
 {
 	unsigned int len = 0;
 	int retval = STATUS_SUCCESS;
@@ -249,11 +249,11 @@ static INT buffDnld(struct bcm_mini_adapter *ad,
 
 	while (firmware_len) {
 		len = MIN_VAL(firmware_len, MAX_TRANSFER_CTRL_BYTE_USB);
-		retval = wrm(ad, u32StartingAddress, mappedbuffer, len);
+		retval = wrm(ad, start_addr, mappedbuffer, len);
 
 		if (retval)
 			break;
-		u32StartingAddress += len;
+		start_addr += len;
 		firmware_len -= len;
 		mappedbuffer += len;
 	}
@@ -262,7 +262,7 @@ static INT buffDnld(struct bcm_mini_adapter *ad,
 
 static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 			PUCHAR mappedbuffer, UINT firmware_len,
-			ULONG u32StartingAddress)
+			ULONG start_addr)
 {
 	UINT len = firmware_len;
 	INT retval = STATUS_SUCCESS;
@@ -274,7 +274,7 @@ static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 
 	while (firmware_len && !retval) {
 		len = MIN_VAL(firmware_len, MAX_TRANSFER_CTRL_BYTE_USB);
-		bytes = rdm(ad, u32StartingAddress, readbackbuff, len);
+		bytes = rdm(ad, start_addr, readbackbuff, len);
 
 		if (bytes < 0) {
 			retval = bytes;
@@ -287,7 +287,7 @@ static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 			retval = -EIO;
 		}
 
-		u32StartingAddress += len;
+		start_addr += len;
 		firmware_len -= len;
 		mappedbuffer += len;
 
@@ -299,17 +299,17 @@ static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 INT buffDnldVerify(struct bcm_mini_adapter *ad,
 			unsigned char *mappedbuffer,
 			unsigned int firmware_len,
-			unsigned long u32StartingAddress)
+			unsigned long start_addr)
 {
 	INT status = STATUS_SUCCESS;
 
 	status = buffDnld(ad, mappedbuffer,
-			firmware_len, u32StartingAddress);
+			firmware_len, start_addr);
 	if (status != STATUS_SUCCESS)
 		goto error;
 
 	status = buffRdbkVerify(ad, mappedbuffer,
-			firmware_len, u32StartingAddress);
+			firmware_len, start_addr);
 	if (status != STATUS_SUCCESS)
 		goto error;
 error:

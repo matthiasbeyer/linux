@@ -134,7 +134,7 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 }
 
 static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
-				unsigned int Pattern)
+				unsigned int pattern)
 {
 	int status = STATUS_SUCCESS;
 	unsigned int value;
@@ -159,7 +159,7 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
 			DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE)) {
 		/* write the SW abort pattern. */
 		status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
-				&Pattern, sizeof(Pattern));
+				&pattern, sizeof(pattern));
 		if (status)
 			return status;
 	}
@@ -215,7 +215,7 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
 				"read chip-id :%lu", itr);
 
 		status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
-				&Pattern, sizeof(status));
+				&pattern, sizeof(status));
 		if (status)
 			return status;
 	}

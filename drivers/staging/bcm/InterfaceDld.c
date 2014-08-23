@@ -114,7 +114,7 @@ exit:
 }
 
 static int bcm_download_config_file(struct bcm_mini_adapter *ad,
-				struct bcm_firmware_info *psFwInfo)
+				struct bcm_firmware_info *fw_info)
 {
 	int retval = STATUS_SUCCESS;
 	B_UINT32 value = 0;
@@ -126,12 +126,12 @@ static int bcm_download_config_file(struct bcm_mini_adapter *ad,
 			return -ENOMEM;
 	}
 
-	if (psFwInfo->u32FirmwareLength != sizeof(struct bcm_target_params))
+	if (fw_info->u32FirmwareLength != sizeof(struct bcm_target_params))
 		return -EIO;
 
 	retval = copy_from_user(ad->pstargetparams,
-			psFwInfo->pvMappedFirmwareAddress,
-			psFwInfo->u32FirmwareLength);
+			fw_info->pvMappedFirmwareAddress,
+			fw_info->u32FirmwareLength);
 	if (retval) {
 		kfree(ad->pstargetparams);
 		ad->pstargetparams = NULL;
@@ -192,7 +192,7 @@ static int bcm_download_config_file(struct bcm_mini_adapter *ad,
 }
 
 int bcm_ioctl_fw_download(struct bcm_mini_adapter *ad,
-			struct bcm_firmware_info *psFwInfo)
+			struct bcm_firmware_info *fw_info)
 {
 	int retval = STATUS_SUCCESS;
 	PUCHAR buff = NULL;
@@ -203,22 +203,22 @@ int bcm_ioctl_fw_download(struct bcm_mini_adapter *ad,
 	 */
 	atomic_set(&ad->uiMBupdate, false);
 	if (!ad->bCfgDownloaded &&
-		psFwInfo->u32StartingAddress != CONFIG_BEGIN_ADDR) {
+		fw_info->u32StartingAddress != CONFIG_BEGIN_ADDR) {
 		/* Can't Download Firmware. */
 		return -EINVAL;
 	}
 
 	/* If Config File, Finish the DDR Settings and then Download CFG File */
-	if (psFwInfo->u32StartingAddress == CONFIG_BEGIN_ADDR) {
-		retval = bcm_download_config_file(ad, psFwInfo);
+	if (fw_info->u32StartingAddress == CONFIG_BEGIN_ADDR) {
+		retval = bcm_download_config_file(ad, fw_info);
 	} else {
-		buff = kzalloc(psFwInfo->u32FirmwareLength, GFP_KERNEL);
+		buff = kzalloc(fw_info->u32FirmwareLength, GFP_KERNEL);
 		if (buff == NULL)
 			return -ENOMEM;
 
 		retval = copy_from_user(buff,
-			psFwInfo->pvMappedFirmwareAddress,
-			psFwInfo->u32FirmwareLength);
+			fw_info->pvMappedFirmwareAddress,
+			fw_info->u32FirmwareLength);
 		if (retval != STATUS_SUCCESS) {
 			retval = -EFAULT;
 			goto error;
@@ -226,8 +226,8 @@ int bcm_ioctl_fw_download(struct bcm_mini_adapter *ad,
 
 		retval = buffDnldVerify(ad,
 					buff,
-					psFwInfo->u32FirmwareLength,
-					psFwInfo->u32StartingAddress);
+					fw_info->u32FirmwareLength,
+					fw_info->u32StartingAddress);
 
 		if (retval != STATUS_SUCCESS)
 			goto error;

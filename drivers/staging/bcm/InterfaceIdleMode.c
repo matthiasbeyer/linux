@@ -9,7 +9,7 @@ Description:	This is the hardware specific Function for
 		device to wake it and necessary power state
 		transitions from host are performed here.
 
-Input parameters: IN struct bcm_mini_adapter *Adapter
+Input parameters: IN struct bcm_mini_adapter *ad
 		  - Miniport Adapter Context
 
 Return:		BCM_STATUS_SUCCESS - If Wakeup of the HW Interface
@@ -26,7 +26,7 @@ Description:	This is the hardware specific Function for
 		idle mode or other device specific initializations
 		are performed here.
 
-Input parameters: IN struct bcm_mini_adapter * Adapter
+Input parameters: IN struct bcm_mini_adapter * ad
 		  - Miniport Adapter Context
 
 Return:		BCM_STATUS_SUCCESS - If Idle mode response related
@@ -48,7 +48,7 @@ send to f/w with in 200 ms after the Idle/Shutdown req issued
 */
 
 
-int InterfaceIdleModeRespond(struct bcm_mini_adapter *Adapter,
+int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 			unsigned int *puiBuffer)
 {
 	int	status = STATUS_SUCCESS;
@@ -58,15 +58,15 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *Adapter,
 	if (ntohl(*puiBuffer) == GO_TO_IDLE_MODE_PAYLOAD) {
 		if (ntohl(*(puiBuffer+1)) == 0) {
 
-			status = wrmalt(Adapter, SW_ABORT_IDLEMODE_LOC,
+			status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
 					&uiRegRead, sizeof(uiRegRead));
 			if (status)
 				return status;
 
-			if (Adapter->ulPowerSaveMode ==
+			if (ad->ulPowerSaveMode ==
 				DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) {
 				uiRegRead = 0x00000000;
-				status = wrmalt(Adapter,
+				status = wrmalt(ad,
 					DEBUG_INTERRUPT_GENERATOR_REGISTOR,
 					&uiRegRead, sizeof(uiRegRead));
 				if (status)
@@ -74,17 +74,17 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *Adapter,
 			}
 			/* Below Register should not br read in case of
 			 * Manual and Protocol Idle mode */
-			else if (Adapter->ulPowerSaveMode !=
+			else if (ad->ulPowerSaveMode !=
 				DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE) {
 				/* clear on read Register */
-				bytes = rdmalt(Adapter, DEVICE_INT_OUT_EP_REG0,
+				bytes = rdmalt(ad, DEVICE_INT_OUT_EP_REG0,
 					&uiRegRead, sizeof(uiRegRead));
 				if (bytes < 0) {
 					status = bytes;
 					return status;
 				}
 				/* clear on read Register */
-				bytes = rdmalt(Adapter, DEVICE_INT_OUT_EP_REG1,
+				bytes = rdmalt(ad, DEVICE_INT_OUT_EP_REG1,
 					&uiRegRead, sizeof(uiRegRead));
 				if (bytes < 0) {
 					status = bytes;
@@ -94,23 +94,23 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *Adapter,
 
 			/* Set Idle Mode Flag to False and
 			 * Clear IdleMode reg. */
-			Adapter->IdleMode = false;
-			Adapter->bTriedToWakeUpFromlowPowerMode = false;
+			ad->IdleMode = false;
+			ad->bTriedToWakeUpFromlowPowerMode = false;
 
-			wake_up(&Adapter->lowpower_mode_wait_queue);
+			wake_up(&ad->lowpower_mode_wait_queue);
 
 		} else {
-			if (TRUE == Adapter->IdleMode)
+			if (TRUE == ad->IdleMode)
 				return status;
 
 			uiRegRead = 0;
 
-			if (Adapter->chip_id == BCS220_2 ||
-				Adapter->chip_id == BCS220_2BC ||
-					Adapter->chip_id == BCS250_BC ||
-					Adapter->chip_id == BCS220_3) {
+			if (ad->chip_id == BCS220_2 ||
+				ad->chip_id == BCS220_2BC ||
+					ad->chip_id == BCS250_BC ||
+					ad->chip_id == BCS220_3) {
 
-				bytes = rdmalt(Adapter, HPM_CONFIG_MSW,
+				bytes = rdmalt(ad, HPM_CONFIG_MSW,
 					&uiRegRead, sizeof(uiRegRead));
 				if (bytes < 0) {
 					status = bytes;
@@ -120,20 +120,20 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *Adapter,
 
 				uiRegRead |= (1<<17);
 
-				status = wrmalt(Adapter, HPM_CONFIG_MSW,
+				status = wrmalt(ad, HPM_CONFIG_MSW,
 					&uiRegRead, sizeof(uiRegRead));
 				if (status)
 					return status;
 			}
-			SendIdleModeResponse(Adapter);
+			SendIdleModeResponse(ad);
 		}
 	} else if (ntohl(*puiBuffer) == IDLE_MODE_SF_UPDATE_MSG) {
-		OverrideServiceFlowParams(Adapter, puiBuffer);
+		OverrideServiceFlowParams(ad, puiBuffer);
 	}
 	return status;
 }
 
-static int InterfaceAbortIdlemode(struct bcm_mini_adapter *Adapter,
+static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
 				unsigned int Pattern)
 {
 	int status = STATUS_SUCCESS;
@@ -145,34 +145,34 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *Adapter,
 	unsigned char aucAbortPattern[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 						0xFF, 0xFF, 0xFF};
 	struct bcm_interface_adapter *psInterfaceAdapter =
-				Adapter->pvInterfaceAdapter;
+				ad->pvInterfaceAdapter;
 
 	/* Abort Bus suspend if its already suspended */
 	if ((TRUE == psInterfaceAdapter->bSuspended) &&
-			(TRUE == Adapter->bDoSuspend))
+			(TRUE == ad->bDoSuspend))
 		status = usb_autopm_get_interface(
 				psInterfaceAdapter->interface);
 
-	if ((Adapter->ulPowerSaveMode ==
+	if ((ad->ulPowerSaveMode ==
 			DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) ||
-	   (Adapter->ulPowerSaveMode ==
+	   (ad->ulPowerSaveMode ==
 			DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE)) {
 		/* write the SW abort pattern. */
-		status = wrmalt(Adapter, SW_ABORT_IDLEMODE_LOC,
+		status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
 				&Pattern, sizeof(Pattern));
 		if (status)
 			return status;
 	}
 
-	if (Adapter->ulPowerSaveMode ==
+	if (ad->ulPowerSaveMode ==
 		DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) {
 		value = 0x80000000;
-		status = wrmalt(Adapter,
+		status = wrmalt(ad,
 				DEBUG_INTERRUPT_GENERATOR_REGISTOR,
 				&value, sizeof(value));
 		if (status)
 			return status;
-	} else if (Adapter->ulPowerSaveMode !=
+	} else if (ad->ulPowerSaveMode !=
 			DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE) {
 		/*
 		 * Get a Interrupt Out URB and send 8 Bytes Down
@@ -189,7 +189,7 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *Adapter,
 		if (status)
 			return status;
 		else
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 				IDLE_MODE, DBG_LVL_ALL,
 				"NOB Sent down :%d", lenwritten);
 
@@ -198,54 +198,54 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *Adapter,
 		timeout = jiffies +  msecs_to_jiffies(50);
 		while (time_after(timeout, jiffies)) {
 			itr++;
-			rdmalt(Adapter, CHIP_ID_REG, &chip_id, sizeof(UINT));
+			rdmalt(ad, CHIP_ID_REG, &chip_id, sizeof(UINT));
 			if (0xbece3200 == (chip_id&~(0xF0)))
 				chip_id = chip_id&~(0xF0);
-			if (chip_id == Adapter->chip_id)
+			if (chip_id == ad->chip_id)
 				break;
 		}
 		if (time_before(timeout, jiffies))
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 				IDLE_MODE, DBG_LVL_ALL,
 				"Not able to read chip-id even after 25 msec");
 		else
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 				IDLE_MODE, DBG_LVL_ALL,
 				"Number of completed iteration to"
 				"read chip-id :%lu", itr);
 
-		status = wrmalt(Adapter, SW_ABORT_IDLEMODE_LOC,
+		status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
 				&Pattern, sizeof(status));
 		if (status)
 			return status;
 	}
 	return status;
 }
-int InterfaceIdleModeWakeup(struct bcm_mini_adapter *Adapter)
+int InterfaceIdleModeWakeup(struct bcm_mini_adapter *ad)
 {
-	if (Adapter->bTriedToWakeUpFromlowPowerMode) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+	if (ad->bTriedToWakeUpFromlowPowerMode) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 		IDLE_MODE, DBG_LVL_ALL,
 		"Wake up already attempted.. ignoring\n");
 	} else {
-		Adapter->bTriedToWakeUpFromlowPowerMode = TRUE;
-		InterfaceAbortIdlemode(Adapter, Adapter->usIdleModePattern);
+		ad->bTriedToWakeUpFromlowPowerMode = TRUE;
+		InterfaceAbortIdlemode(ad, ad->usIdleModePattern);
 
 	}
 	return 0;
 }
 
-void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *Adapter)
+void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *ad)
 {
 	unsigned int uiRegVal = 0;
 	INT Status = 0;
 	int bytes;
 
-	if (Adapter->ulPowerSaveMode ==
+	if (ad->ulPowerSaveMode ==
 		DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) {
 		/* clear idlemode interrupt. */
 		uiRegVal = 0;
-		Status = wrmalt(Adapter,
+		Status = wrmalt(ad,
 			DEBUG_INTERRUPT_GENERATOR_REGISTOR,
 			&uiRegVal, sizeof(uiRegVal));
 		if (Status)
@@ -255,7 +255,7 @@ void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *Adapter)
 	else {
 
 /* clear Interrupt EP registers. */
-		bytes = rdmalt(Adapter,
+		bytes = rdmalt(ad,
 			DEVICE_INT_OUT_EP_REG0,
 			&uiRegVal, sizeof(uiRegVal));
 		if (bytes < 0) {
@@ -263,7 +263,7 @@ void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *Adapter)
 			return;
 		}
 
-		bytes = rdmalt(Adapter,
+		bytes = rdmalt(ad,
 			DEVICE_INT_OUT_EP_REG1,
 			&uiRegVal, sizeof(uiRegVal));
 		if (bytes < 0) {

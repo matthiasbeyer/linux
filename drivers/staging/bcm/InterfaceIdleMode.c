@@ -144,14 +144,14 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
 	int lenwritten = 0;
 	unsigned char aucAbortPattern[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 						0xFF, 0xFF, 0xFF};
-	struct bcm_interface_adapter *psInterfaceAdapter =
+	struct bcm_interface_adapter *interf_ad =
 				ad->pvInterfaceAdapter;
 
 	/* Abort Bus suspend if its already suspended */
-	if ((TRUE == psInterfaceAdapter->bSuspended) &&
+	if ((TRUE == interf_ad->bSuspended) &&
 			(TRUE == ad->bDoSuspend))
 		status = usb_autopm_get_interface(
-				psInterfaceAdapter->interface);
+				interf_ad->interface);
 
 	if ((ad->ulPowerSaveMode ==
 			DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) ||
@@ -179,9 +179,9 @@ static int InterfaceAbortIdlemode(struct bcm_mini_adapter *ad,
 		 * To be Done in Thread Context.
 		 * Not using Asynchronous Mechanism.
 		 */
-		status = usb_interrupt_msg(psInterfaceAdapter->udev,
-			usb_sndintpipe(psInterfaceAdapter->udev,
-			psInterfaceAdapter->sIntrOut.int_out_endpointAddr),
+		status = usb_interrupt_msg(interf_ad->udev,
+			usb_sndintpipe(interf_ad->udev,
+			interf_ad->sIntrOut.int_out_endpointAddr),
 			aucAbortPattern,
 			8,
 			&lenwritten,

@@ -101,10 +101,10 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 }
 
 VOID GetDroppedAppCntrlPktMibs(struct bcm_host_stats_mibs *host_mibs,
-			       struct bcm_tarang_data *pTarang)
+			       struct bcm_tarang_data *tarang)
 {
 	memcpy(&(host_mibs->stDroppedAppCntrlMsgs),
-	       &(pTarang->stDroppedAppCntrlMsgs),
+	       &(tarang->stDroppedAppCntrlMsgs),
 	       sizeof(struct bcm_mibs_dropped_cntrl_msg));
 }
 

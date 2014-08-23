@@ -9,14 +9,14 @@
 
 #include "headers.h"
 
-INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
+INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 		       struct bcm_host_stats_mibs *pstHostMibs)
 {
 	struct bcm_phs_entry *pstServiceFlowEntry = NULL;
 	struct bcm_phs_rule *pstPhsRule = NULL;
 	struct bcm_phs_classifier_table *pstClassifierTable = NULL;
 	struct bcm_phs_classifier_entry *pstClassifierRule = NULL;
-	struct bcm_phs_extension *pDeviceExtension = &Adapter->stBCMPhsContext;
+	struct bcm_phs_extension *pDeviceExtension = &ad->stBCMPhsContext;
 	struct bcm_mibs_host_info *host_info;
 	UINT nClassifierIndex = 0;
 	UINT nPhsTableIndex = 0;
@@ -24,7 +24,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
 	UINT uiIndex = 0;
 
 	if (pDeviceExtension == NULL) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, HOST_MIBS,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, HOST_MIBS,
 				DBG_LVL_ALL, "Invalid Device Extension\n");
 		return STATUS_FAILURE;
 	}
@@ -32,17 +32,17 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
 	/* Copy the classifier Table */
 	for (nClassifierIndex = 0; nClassifierIndex < MAX_CLASSIFIERS;
 							nClassifierIndex++) {
-		if (Adapter->astClassifierTable[nClassifierIndex].bUsed == TRUE)
+		if (ad->astClassifierTable[nClassifierIndex].bUsed == TRUE)
 			memcpy(&pstHostMibs->astClassifierTable[nClassifierIndex],
-			       &Adapter->astClassifierTable[nClassifierIndex],
+			       &ad->astClassifierTable[nClassifierIndex],
 			       sizeof(struct bcm_mibs_classifier_rule));
 	}
 
 	/* Copy the SF Table */
 	for (nSfIndex = 0; nSfIndex < NO_OF_QUEUES; nSfIndex++) {
-		if (Adapter->PackInfo[nSfIndex].bValid) {
+		if (ad->PackInfo[nSfIndex].bValid) {
 			memcpy(&pstHostMibs->astSFtable[nSfIndex],
-			       &Adapter->PackInfo[nSfIndex],
+			       &ad->PackInfo[nSfIndex],
 			       sizeof(struct bcm_mibs_table));
 		} else {
 			/* If index in not valid,
@@ -56,7 +56,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
 		if (PHS_INVALID_TABLE_INDEX ==
 		    GetServiceFlowEntry(pDeviceExtension->
 					pstServiceFlowPhsRulesTable,
-					Adapter->PackInfo[nSfIndex].
+					ad->PackInfo[nSfIndex].
 					usVCID_Value, &pstServiceFlowEntry))
 
 			continue;
@@ -70,7 +70,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
 				pstPhsRule = pstClassifierRule->pstPhsRule;
 
 				pstHostMibs->astPhsRulesTable[nPhsTableIndex].
-				    ulSFID = Adapter->PackInfo[nSfIndex].ulSFID;
+				    ulSFID = ad->PackInfo[nSfIndex].ulSFID;
 
 				memcpy(&pstHostMibs->astPhsRulesTable[nPhsTableIndex].u8PHSI,
 				       &pstPhsRule->u8PHSI,
@@ -85,17 +85,17 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *Adapter,
 
 	/* Copy other Host Statistics parameters */
 	host_info = &pstHostMibs->stHostInfo;
-	host_info->GoodTransmits    = Adapter->dev->stats.tx_packets;
-	host_info->GoodReceives	    = Adapter->dev->stats.rx_packets;
-	host_info->CurrNumFreeDesc  = atomic_read(&Adapter->CurrNumFreeTxDesc);
-	host_info->BEBucketSize	    = Adapter->BEBucketSize;
-	host_info->rtPSBucketSize   = Adapter->rtPSBucketSize;
-	host_info->TimerActive	    = Adapter->TimerActive;
-	host_info->u32TotalDSD	    = Adapter->u32TotalDSD;
+	host_info->GoodTransmits    = ad->dev->stats.tx_packets;
+	host_info->GoodReceives	    = ad->dev->stats.rx_packets;
+	host_info->CurrNumFreeDesc  = atomic_read(&ad->CurrNumFreeTxDesc);
+	host_info->BEBucketSize	    = ad->BEBucketSize;
+	host_info->rtPSBucketSize   = ad->rtPSBucketSize;
+	host_info->TimerActive	    = ad->TimerActive;
+	host_info->u32TotalDSD	    = ad->u32TotalDSD;
 
-	memcpy(host_info->aTxPktSizeHist, Adapter->aTxPktSizeHist,
+	memcpy(host_info->aTxPktSizeHist, ad->aTxPktSizeHist,
 	       sizeof(UINT32) * MIBS_MAX_HIST_ENTRIES);
-	memcpy(host_info->aRxPktSizeHist, Adapter->aRxPktSizeHist,
+	memcpy(host_info->aRxPktSizeHist, ad->aRxPktSizeHist,
 	       sizeof(UINT32) * MIBS_MAX_HIST_ENTRIES);
 
 	return STATUS_SUCCESS;
@@ -109,12 +109,12 @@ VOID GetDroppedAppCntrlPktMibs(struct bcm_host_stats_mibs *pstHostMibs,
 	       sizeof(struct bcm_mibs_dropped_cntrl_msg));
 }
 
-VOID CopyMIBSExtendedSFParameters(struct bcm_mini_adapter *Adapter,
+VOID CopyMIBSExtendedSFParameters(struct bcm_mini_adapter *ad,
 				  struct bcm_connect_mgr_params *psfLocalSet,
 				  UINT uiSearchRuleIndex)
 {
 	struct bcm_mibs_parameters *t =
-		&Adapter->PackInfo[uiSearchRuleIndex].stMibsExtServiceFlowTable;
+		&ad->PackInfo[uiSearchRuleIndex].stMibsExtServiceFlowTable;
 
 	t->wmanIfSfid = psfLocalSet->u32SFID;
 	t->wmanIfCmnCpsMaxSustainedRate =

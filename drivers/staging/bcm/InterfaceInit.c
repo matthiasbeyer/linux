@@ -156,7 +156,7 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 {
 	struct usb_device *udev = interface_to_usbdev(intf);
 	int retval;
-	struct bcm_mini_adapter *psAdapter;
+	struct bcm_mini_adapter *adapter;
 	struct bcm_interface_adapter *intf_ad;
 	struct net_device *ndev;
 
@@ -170,14 +170,14 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 
 	SET_NETDEV_DEV(ndev, &intf->dev);
 
-	psAdapter = netdev_priv(ndev);
-	psAdapter->dev = ndev;
-	psAdapter->msg_enable = netif_msg_init(debug, default_msg);
+	adapter = netdev_priv(ndev);
+	adapter->dev = ndev;
+	adapter->msg_enable = netif_msg_init(debug, default_msg);
 
 	/* Init default driver debug state */
 
-	psAdapter->stDebugState.debug_level = DBG_LVL_CURR;
-	psAdapter->stDebugState.type = DBG_TYPE_INITEXIT;
+	adapter->stDebugState.debug_level = DBG_LVL_CURR;
+	adapter->stDebugState.type = DBG_TYPE_INITEXIT;
 
 	/*
 	 * Technically, one can start using BCM_DEBUG_PRINT after this point.
@@ -192,13 +192,13 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 	 * Further, we turn this OFF once init_module() completes.
 	 */
 
-	psAdapter->stDebugState.subtype[DBG_TYPE_INITEXIT] = 0xff;
-	BCM_SHOW_DEBUG_BITMAP(psAdapter);
+	adapter->stDebugState.subtype[DBG_TYPE_INITEXIT] = 0xff;
+	BCM_SHOW_DEBUG_BITMAP(adapter);
 
-	retval = InitAdapter(psAdapter);
+	retval = InitAdapter(adapter);
 	if (retval) {
 		dev_err(&udev->dev, DRV_NAME ": InitAdapter Failed\n");
-		AdapterFree(psAdapter);
+		AdapterFree(adapter);
 		return retval;
 	}
 
@@ -206,18 +206,18 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 	intf_ad = kzalloc(sizeof(struct bcm_interface_adapter),
 			GFP_KERNEL);
 	if (intf_ad == NULL) {
-		AdapterFree(psAdapter);
+		AdapterFree(adapter);
 		return -ENOMEM;
 	}
 
-	psAdapter->pvInterfaceAdapter = intf_ad;
-	intf_ad->psAdapter = psAdapter;
+	adapter->pvInterfaceAdapter = intf_ad;
+	intf_ad->psAdapter = adapter;
 
 	/* Store usb interface in Interface Adapter */
 	intf_ad->interface = intf;
 	usb_set_intfdata(intf, intf_ad);
 
-	BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(adapter, DBG_TYPE_INITEXIT, DRV_ENTRY, DBG_LVL_ALL,
 			"intf_ad 0x%p\n", intf_ad);
 	retval = InterfaceAdapterInit(intf_ad);
 	if (retval) {
@@ -226,12 +226,12 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 		 * download the files.
 		 */
 		if (-ENOENT == retval) {
-			BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
+			BCM_DEBUG_PRINT(adapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
 					DBG_LVL_ALL,
 					"File Not Found.  Use app to download.\n");
 			return STATUS_SUCCESS;
 		}
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
+		BCM_DEBUG_PRINT(adapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
 				DBG_LVL_ALL, "InterfaceAdapterInit failed.\n");
 		usb_set_intfdata(intf, NULL);
 		udev = interface_to_usbdev(intf);
@@ -239,11 +239,11 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 		InterfaceAdapterFree(intf_ad);
 		return retval;
 	}
-	if (psAdapter->chip_id > T3) {
+	if (adapter->chip_id > T3) {
 		uint32_t uiNackZeroLengthInt = 4;
 
 		retval =
-			wrmalt(psAdapter, DISABLE_USB_ZERO_LEN_INT,
+			wrmalt(adapter, DISABLE_USB_ZERO_LEN_INT,
 					&uiNackZeroLengthInt,
 					sizeof(uiNackZeroLengthInt));
 		if (retval)
@@ -253,7 +253,7 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 	/* Check whether the USB-Device Supports remote Wake-Up */
 	if (USB_CONFIG_ATT_WAKEUP & udev->actconfig->desc.bmAttributes) {
 		/* If Suspend then only support dynamic suspend */
-		if (psAdapter->bDoSuspend) {
+		if (adapter->bDoSuspend) {
 #ifdef CONFIG_PM
 			pm_runtime_set_autosuspend_delay(&udev->dev, 0);
 			intf->needs_remote_wakeup = 1;
@@ -261,7 +261,7 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 			device_init_wakeup(&intf->dev, 1);
 			INIT_WORK(&intf_ad->usbSuspendWork,
 					putUsbSuspend);
-			BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
+			BCM_DEBUG_PRINT(adapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
 					DBG_LVL_ALL,
 					"Enabling USB Auto-Suspend\n");
 #endif
@@ -271,26 +271,26 @@ static int usbbcm_device_probe(struct usb_interface *intf,
 		}
 	}
 
-	psAdapter->stDebugState.subtype[DBG_TYPE_INITEXIT] = 0x0;
+	adapter->stDebugState.subtype[DBG_TYPE_INITEXIT] = 0x0;
 	return retval;
 }
 
 static void usbbcm_disconnect(struct usb_interface *intf)
 {
 	struct bcm_interface_adapter *intf_ad = usb_get_intfdata(intf);
-	struct bcm_mini_adapter *psAdapter;
+	struct bcm_mini_adapter *adapter;
 	struct usb_device  *udev = interface_to_usbdev(intf);
 
 	if (intf_ad == NULL)
 		return;
 
-	psAdapter = intf_ad->psAdapter;
-	netif_device_detach(psAdapter->dev);
+	adapter = intf_ad->psAdapter;
+	netif_device_detach(adapter->dev);
 
-	if (psAdapter->bDoSuspend)
+	if (adapter->bDoSuspend)
 		intf->needs_remote_wakeup = 0;
 
-	psAdapter->device_removed = TRUE;
+	adapter->device_removed = TRUE;
 	usb_set_intfdata(intf, NULL);
 	InterfaceAdapterFree(intf_ad);
 	usb_put_dev(udev);

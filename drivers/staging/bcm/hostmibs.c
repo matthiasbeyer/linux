@@ -19,7 +19,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	struct bcm_phs_extension *dev_extension = &ad->stBCMPhsContext;
 	struct bcm_mibs_host_info *host_info;
 	UINT i = 0;
-	UINT nPhsTableIndex = 0;
+	UINT phs_tab_idx = 0;
 	UINT nSfIndex = 0;
 	UINT uiIndex = 0;
 
@@ -68,13 +68,13 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 			if (classif_rule->bUsed) {
 				phs_rule = classif_rule->pstPhsRule;
 
-				host_mibs->astPhsRulesTable[nPhsTableIndex].
+				host_mibs->astPhsRulesTable[phs_tab_idx].
 				    ulSFID = ad->PackInfo[nSfIndex].ulSFID;
 
-				memcpy(&host_mibs->astPhsRulesTable[nPhsTableIndex].u8PHSI,
+				memcpy(&host_mibs->astPhsRulesTable[phs_tab_idx].u8PHSI,
 				       &phs_rule->u8PHSI,
 				       sizeof(struct bcm_phs_rule));
-				nPhsTableIndex++;
+				phs_tab_idx++;
 
 			}
 

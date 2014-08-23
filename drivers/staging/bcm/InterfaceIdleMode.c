@@ -49,14 +49,14 @@ send to f/w with in 200 ms after the Idle/Shutdown req issued
 
 
 int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
-			unsigned int *puiBuffer)
+			unsigned int *buff)
 {
 	int	status = STATUS_SUCCESS;
 	unsigned int	uiRegRead = 0;
 	int bytes;
 
-	if (ntohl(*puiBuffer) == GO_TO_IDLE_MODE_PAYLOAD) {
-		if (ntohl(*(puiBuffer+1)) == 0) {
+	if (ntohl(*buff) == GO_TO_IDLE_MODE_PAYLOAD) {
+		if (ntohl(*(buff+1)) == 0) {
 
 			status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
 					&uiRegRead, sizeof(uiRegRead));
@@ -127,8 +127,8 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 			}
 			SendIdleModeResponse(ad);
 		}
-	} else if (ntohl(*puiBuffer) == IDLE_MODE_SF_UPDATE_MSG) {
-		OverrideServiceFlowParams(ad, puiBuffer);
+	} else if (ntohl(*buff) == IDLE_MODE_SF_UPDATE_MSG) {
+		OverrideServiceFlowParams(ad, buff);
 	}
 	return status;
 }

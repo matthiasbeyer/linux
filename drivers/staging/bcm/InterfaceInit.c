@@ -489,7 +489,7 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 	unsigned long value;
 	int retval = 0;
 	int used_int_out_for_bulk_transfer = 0;
-	bool bBcm16 = false;
+	bool bcm_16 = false;
 	UINT uiData = 0;
 	int bytes;
 	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
@@ -525,13 +525,13 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 		 * BCM16 can be done or not. */
 		BeceemEEPROMBulkRead(ad, &uiData, 0x0, 4);
 		if (uiData == BECM)
-			bBcm16 = TRUE;
+			bcm_16 = TRUE;
 
 		dev_info(&intf_ad->udev->dev,
 			 "number of alternate setting %d\n",
 			 intf_ad->interface->num_altsetting);
 
-		if (bBcm16 == TRUE) {
+		if (bcm_16 == TRUE) {
 			retval = select_alternate_setting_for_highspeed_modem(
 					intf_ad, &endpoint, iface_desc,
 					&used_int_out_for_bulk_transfer);

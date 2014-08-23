@@ -6,22 +6,22 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	int		status = urb->status;
 	struct bcm_interface_adapter *intf_ad =
 		(struct bcm_interface_adapter *)urb->context;
-	struct bcm_mini_adapter *Adapter = intf_ad->psAdapter;
+	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
 
-	if (netif_msg_intr(Adapter))
+	if (netif_msg_intr(ad))
 		pr_info(PFX "%s: interrupt status %d\n",
-				Adapter->dev->name, status);
+				ad->dev->name, status);
 
-	if (Adapter->device_removed) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+	if (ad->device_removed) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL, "Device has Got Removed.");
 		return;
 	}
 
-	if ((Adapter->bPreparingForLowPowerMode && Adapter->bDoSuspend) ||
+	if ((ad->bPreparingForLowPowerMode && ad->bDoSuspend) ||
 			intf_ad->bSuspended ||
 			intf_ad->bPreparingForBusSuspend) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Interrupt call back is called while suspending the device");
 		return;
@@ -33,51 +33,51 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		if (urb->actual_length) {
 
 			if (intf_ad->ulInterruptData[1] & 0xFF) {
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						INTF_INIT, DBG_LVL_ALL,
 						"Got USIM interrupt");
 			}
 
 			if (intf_ad->ulInterruptData[1] & 0xFF00) {
-				atomic_set(&Adapter->CurrNumFreeTxDesc,
+				atomic_set(&ad->CurrNumFreeTxDesc,
 					(intf_ad->ulInterruptData[1] &
 					 0xFF00) >> 8);
-				atomic_set(&Adapter->uiMBupdate, TRUE);
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+				atomic_set(&ad->uiMBupdate, TRUE);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 					INTF_INIT, DBG_LVL_ALL,
 					"TX mailbox contains %d",
-					atomic_read(&Adapter->CurrNumFreeTxDesc));
+					atomic_read(&ad->CurrNumFreeTxDesc));
 			}
 			if (intf_ad->ulInterruptData[1] >> 16) {
-				Adapter->CurrNumRecvDescs =
+				ad->CurrNumRecvDescs =
 					(intf_ad->ulInterruptData[1]  >> 16);
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS,
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS,
 						INTF_INIT, DBG_LVL_ALL,
 						"RX mailbox contains %d",
-						Adapter->CurrNumRecvDescs);
+						ad->CurrNumRecvDescs);
 				InterfaceRx(intf_ad);
 			}
-			if (Adapter->fw_download_done &&
-				!Adapter->downloadDDR &&
-				atomic_read(&Adapter->CurrNumFreeTxDesc)) {
+			if (ad->fw_download_done &&
+				!ad->downloadDDR &&
+				atomic_read(&ad->CurrNumFreeTxDesc)) {
 
 				intf_ad->psAdapter->downloadDDR += 1;
-				wake_up(&Adapter->tx_packet_wait_queue);
+				wake_up(&ad->tx_packet_wait_queue);
 			}
-			if (!Adapter->waiting_to_fw_download_done) {
-				Adapter->waiting_to_fw_download_done = TRUE;
-				wake_up(&Adapter->ioctl_fw_dnld_wait_queue);
+			if (!ad->waiting_to_fw_download_done) {
+				ad->waiting_to_fw_download_done = TRUE;
+				wake_up(&ad->ioctl_fw_dnld_wait_queue);
 			}
-			if (!atomic_read(&Adapter->TxPktAvail)) {
-				atomic_set(&Adapter->TxPktAvail, 1);
-				wake_up(&Adapter->tx_packet_wait_queue);
+			if (!atomic_read(&ad->TxPktAvail)) {
+				atomic_set(&ad->TxPktAvail, 1);
+				wake_up(&ad->tx_packet_wait_queue);
 			}
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 					DBG_LVL_ALL, "Firing interrupt in URB");
 		}
 		break;
 	case -ENOENT:
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL, "URB has got disconnected....");
 		return;
 	case -EINPROGRESS:
@@ -85,17 +85,17 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		 * This situation may happened when URBunlink is used.  for
 		 * detail check usb_unlink_urb documentation.
 		 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Impossibe condition has occurred... something very bad is going on");
 		break;
 		/* return; */
 	case -EPIPE:
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Interrupt IN endPoint has got halted/stalled...need to clear this");
-		Adapter->bEndPointHalted = TRUE;
-		wake_up(&Adapter->tx_packet_wait_queue);
+		ad->bEndPointHalted = TRUE;
+		wake_up(&ad->tx_packet_wait_queue);
 		urb->status = STATUS_SUCCESS;
 		return;
 	/* software-driven interface shutdown */
@@ -111,7 +111,7 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		 * Some thing very bad happened with the URB. No
 		 * description is available.
 		 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL, "interrupt urb error %d", status);
 		urb->status = STATUS_SUCCESS;
 		break;
@@ -121,7 +121,7 @@ static void read_int_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		 * This is required to check what is the defaults conditions
 		 * when it occurs..
 		 */
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, NEXT_SEND, DBG_LVL_ALL,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, NEXT_SEND, DBG_LVL_ALL,
 				"GOT DEFAULT INTERRUPT URB STATUS :%d..Please Analyze it...",
 				status);
 		break;

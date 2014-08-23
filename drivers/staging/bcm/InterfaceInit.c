@@ -490,7 +490,7 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 	int retval = 0;
 	int used_int_out_for_bulk_transfer = 0;
 	bool bcm_16 = false;
-	UINT uiData = 0;
+	UINT data = 0;
 	int bytes;
 	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
 
@@ -523,8 +523,8 @@ static int InterfaceAdapterInit(struct bcm_interface_adapter *intf_ad)
 	if (ad->chip_id == T3B) {
 		/* T3B device will have EEPROM, check if EEPROM is proper and
 		 * BCM16 can be done or not. */
-		BeceemEEPROMBulkRead(ad, &uiData, 0x0, 4);
-		if (uiData == BECM)
+		BeceemEEPROMBulkRead(ad, &data, 0x0, 4);
+		if (data == BECM)
 			bcm_16 = TRUE;
 
 		dev_info(&intf_ad->udev->dev,

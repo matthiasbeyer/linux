@@ -52,23 +52,23 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 			unsigned int *buff)
 {
 	int	status = STATUS_SUCCESS;
-	unsigned int	uiRegRead = 0;
+	unsigned int	reg_read = 0;
 	int bytes;
 
 	if (ntohl(*buff) == GO_TO_IDLE_MODE_PAYLOAD) {
 		if (ntohl(*(buff+1)) == 0) {
 
 			status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 			if (status)
 				return status;
 
 			if (ad->ulPowerSaveMode ==
 				DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) {
-				uiRegRead = 0x00000000;
+				reg_read = 0x00000000;
 				status = wrmalt(ad,
 					DEBUG_INTERRUPT_GENERATOR_REGISTOR,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 				if (status)
 					return status;
 			}
@@ -78,14 +78,14 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 				DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE) {
 				/* clear on read Register */
 				bytes = rdmalt(ad, DEVICE_INT_OUT_EP_REG0,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 				if (bytes < 0) {
 					status = bytes;
 					return status;
 				}
 				/* clear on read Register */
 				bytes = rdmalt(ad, DEVICE_INT_OUT_EP_REG1,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 				if (bytes < 0) {
 					status = bytes;
 					return status;
@@ -103,7 +103,7 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 			if (TRUE == ad->IdleMode)
 				return status;
 
-			uiRegRead = 0;
+			reg_read = 0;
 
 			if (ad->chip_id == BCS220_2 ||
 				ad->chip_id == BCS220_2BC ||
@@ -111,17 +111,17 @@ int InterfaceIdleModeRespond(struct bcm_mini_adapter *ad,
 					ad->chip_id == BCS220_3) {
 
 				bytes = rdmalt(ad, HPM_CONFIG_MSW,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 				if (bytes < 0) {
 					status = bytes;
 					return status;
 				}
 
 
-				uiRegRead |= (1<<17);
+				reg_read |= (1<<17);
 
 				status = wrmalt(ad, HPM_CONFIG_MSW,
-					&uiRegRead, sizeof(uiRegRead));
+					&reg_read, sizeof(reg_read));
 				if (status)
 					return status;
 			}

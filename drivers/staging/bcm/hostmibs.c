@@ -10,7 +10,7 @@
 #include "headers.h"
 
 INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
-		       struct bcm_host_stats_mibs *pstHostMibs)
+		       struct bcm_host_stats_mibs *host_mibs)
 {
 	struct bcm_phs_entry *pstServiceFlowEntry = NULL;
 	struct bcm_phs_rule *pstPhsRule = NULL;
@@ -33,7 +33,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	for (nClassifierIndex = 0; nClassifierIndex < MAX_CLASSIFIERS;
 							nClassifierIndex++) {
 		if (ad->astClassifierTable[nClassifierIndex].bUsed == TRUE)
-			memcpy(&pstHostMibs->astClassifierTable[nClassifierIndex],
+			memcpy(&host_mibs->astClassifierTable[nClassifierIndex],
 			       &ad->astClassifierTable[nClassifierIndex],
 			       sizeof(struct bcm_mibs_classifier_rule));
 	}
@@ -41,7 +41,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	/* Copy the SF Table */
 	for (nSfIndex = 0; nSfIndex < NO_OF_QUEUES; nSfIndex++) {
 		if (ad->PackInfo[nSfIndex].bValid) {
-			memcpy(&pstHostMibs->astSFtable[nSfIndex],
+			memcpy(&host_mibs->astSFtable[nSfIndex],
 			       &ad->PackInfo[nSfIndex],
 			       sizeof(struct bcm_mibs_table));
 		} else {
@@ -69,10 +69,10 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 			if (pstClassifierRule->bUsed) {
 				pstPhsRule = pstClassifierRule->pstPhsRule;
 
-				pstHostMibs->astPhsRulesTable[nPhsTableIndex].
+				host_mibs->astPhsRulesTable[nPhsTableIndex].
 				    ulSFID = ad->PackInfo[nSfIndex].ulSFID;
 
-				memcpy(&pstHostMibs->astPhsRulesTable[nPhsTableIndex].u8PHSI,
+				memcpy(&host_mibs->astPhsRulesTable[nPhsTableIndex].u8PHSI,
 				       &pstPhsRule->u8PHSI,
 				       sizeof(struct bcm_phs_rule));
 				nPhsTableIndex++;
@@ -84,7 +84,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	}
 
 	/* Copy other Host Statistics parameters */
-	host_info = &pstHostMibs->stHostInfo;
+	host_info = &host_mibs->stHostInfo;
 	host_info->GoodTransmits    = ad->dev->stats.tx_packets;
 	host_info->GoodReceives	    = ad->dev->stats.rx_packets;
 	host_info->CurrNumFreeDesc  = atomic_read(&ad->CurrNumFreeTxDesc);
@@ -101,10 +101,10 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	return STATUS_SUCCESS;
 }
 
-VOID GetDroppedAppCntrlPktMibs(struct bcm_host_stats_mibs *pstHostMibs,
+VOID GetDroppedAppCntrlPktMibs(struct bcm_host_stats_mibs *host_mibs,
 			       struct bcm_tarang_data *pTarang)
 {
-	memcpy(&(pstHostMibs->stDroppedAppCntrlMsgs),
+	memcpy(&(host_mibs->stDroppedAppCntrlMsgs),
 	       &(pTarang->stDroppedAppCntrlMsgs),
 	       sizeof(struct bcm_mibs_dropped_cntrl_msg));
 }

@@ -75,7 +75,7 @@ static void ConfigureEndPointTypesThroughEEPROM(
 {
 	u32 reg;
 	int bytes;
-	struct bcm_interface_adapter *interfaceAdapter;
+	struct bcm_interface_adapter *interf_ad;
 
 	/* Program EP2 MAX_PKT_SIZE */
 	reg = ntohl(EP2_MPS_REG);
@@ -85,9 +85,9 @@ static void ConfigureEndPointTypesThroughEEPROM(
 
 	reg = ntohl(EP2_CFG_REG);
 	BeceemEEPROMBulkWrite(ad, (PUCHAR)&reg, 0x132, 4, TRUE);
-	interfaceAdapter =
+	interf_ad =
 		(struct bcm_interface_adapter *)(ad->pvInterfaceAdapter);
-	if (interfaceAdapter->bHighSpeedDevice) {
+	if (interf_ad->bHighSpeedDevice) {
 		reg = ntohl(EP2_CFG_INT);
 		BeceemEEPROMBulkWrite(ad, (PUCHAR)&reg, 0x136, 4, TRUE);
 	} else {

@@ -238,17 +238,17 @@ int InterfaceIdleModeWakeup(struct bcm_mini_adapter *ad)
 void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *ad)
 {
 	unsigned int reg_val = 0;
-	INT Status = 0;
+	INT status = 0;
 	int bytes;
 
 	if (ad->ulPowerSaveMode ==
 		DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING) {
 		/* clear idlemode interrupt. */
 		reg_val = 0;
-		Status = wrmalt(ad,
+		status = wrmalt(ad,
 			DEBUG_INTERRUPT_GENERATOR_REGISTOR,
 			&reg_val, sizeof(reg_val));
-		if (Status)
+		if (status)
 			return;
 	}
 
@@ -259,7 +259,7 @@ void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *ad)
 			DEVICE_INT_OUT_EP_REG0,
 			&reg_val, sizeof(reg_val));
 		if (bytes < 0) {
-			Status = bytes;
+			status = bytes;
 			return;
 		}
 
@@ -267,7 +267,7 @@ void InterfaceHandleShutdownModeWakeup(struct bcm_mini_adapter *ad)
 			DEVICE_INT_OUT_EP_REG1,
 			&reg_val, sizeof(reg_val));
 		if (bytes < 0) {
-			Status = bytes;
+			status = bytes;
 			return;
 		}
 	}

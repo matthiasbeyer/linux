@@ -18,7 +18,7 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	struct bcm_phs_classifier_entry *classif_rule = NULL;
 	struct bcm_phs_extension *dev_extension = &ad->stBCMPhsContext;
 	struct bcm_mibs_host_info *host_info;
-	UINT nClassifierIndex = 0;
+	UINT i = 0;
 	UINT nPhsTableIndex = 0;
 	UINT nSfIndex = 0;
 	UINT uiIndex = 0;
@@ -30,11 +30,10 @@ INT ProcessGetHostMibs(struct bcm_mini_adapter *ad,
 	}
 
 	/* Copy the classifier Table */
-	for (nClassifierIndex = 0; nClassifierIndex < MAX_CLASSIFIERS;
-							nClassifierIndex++) {
-		if (ad->astClassifierTable[nClassifierIndex].bUsed == TRUE)
-			memcpy(&host_mibs->astClassifierTable[nClassifierIndex],
-			       &ad->astClassifierTable[nClassifierIndex],
+	for (i = 0; i < MAX_CLASSIFIERS; i++) {
+		if (ad->astClassifierTable[i].bUsed == TRUE)
+			memcpy(&host_mibs->astClassifierTable[i],
+			       &ad->astClassifierTable[i],
 			       sizeof(struct bcm_mibs_classifier_rule));
 	}
 

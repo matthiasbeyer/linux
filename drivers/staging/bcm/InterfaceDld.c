@@ -6,8 +6,8 @@ int InterfaceFileDownload(PVOID arg, struct file *flp, unsigned int on_chip_loc)
 	mm_segment_t oldfs = {0};
 	int errno = 0, len = 0; /* ,is_config_file = 0 */
 	loff_t pos = 0;
-	struct bcm_interface_adapter *psIntfAdapter = arg;
-	/* struct bcm_mini_adapter *Adapter = psIntfAdapter->psAdapter; */
+	struct bcm_interface_adapter *intf_ad = arg;
+	/* struct bcm_mini_adapter *Adapter = intf_ad->psAdapter; */
 	char *buff = kmalloc(MAX_TRANSFER_CTRL_BYTE_USB, GFP_KERNEL);
 
 	if (!buff)
@@ -30,7 +30,7 @@ int InterfaceFileDownload(PVOID arg, struct file *flp, unsigned int on_chip_loc)
 		 *			  DBG_LVL_ALL, buff,
 		 *			  MAX_TRANSFER_CTRL_BYTE_USB);
 		 */
-		errno = InterfaceWRM(psIntfAdapter, on_chip_loc, buff, len);
+		errno = InterfaceWRM(intf_ad, on_chip_loc, buff, len);
 		if (errno)
 			break;
 		on_chip_loc += MAX_TRANSFER_CTRL_BYTE_USB;
@@ -50,7 +50,7 @@ int InterfaceFileReadbackFromChip(PVOID arg, struct file *flp,
 	loff_t pos = 0;
 	static int fw_down;
 	INT Status = STATUS_SUCCESS;
-	struct bcm_interface_adapter *psIntfAdapter = arg;
+	struct bcm_interface_adapter *intf_ad = arg;
 	int bytes;
 
 	buff = kzalloc(MAX_TRANSFER_CTRL_BYTE_USB, GFP_DMA);
@@ -80,7 +80,7 @@ int InterfaceFileReadbackFromChip(PVOID arg, struct file *flp,
 			break;
 		}
 
-		bytes = InterfaceRDM(psIntfAdapter, on_chip_loc,
+		bytes = InterfaceRDM(intf_ad, on_chip_loc,
 					buff_readback, len);
 		if (bytes < 0) {
 			Status = bytes;

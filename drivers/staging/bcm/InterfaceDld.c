@@ -239,32 +239,32 @@ error:
 }
 
 static INT buffDnld(struct bcm_mini_adapter *ad,
-			PUCHAR mappedbuffer, UINT u32FirmwareLength,
+			PUCHAR mappedbuffer, UINT firmware_len,
 			ULONG u32StartingAddress)
 {
 	unsigned int len = 0;
 	int retval = STATUS_SUCCESS;
 
-	len = u32FirmwareLength;
+	len = firmware_len;
 
-	while (u32FirmwareLength) {
-		len = MIN_VAL(u32FirmwareLength, MAX_TRANSFER_CTRL_BYTE_USB);
+	while (firmware_len) {
+		len = MIN_VAL(firmware_len, MAX_TRANSFER_CTRL_BYTE_USB);
 		retval = wrm(ad, u32StartingAddress, mappedbuffer, len);
 
 		if (retval)
 			break;
 		u32StartingAddress += len;
-		u32FirmwareLength -= len;
+		firmware_len -= len;
 		mappedbuffer += len;
 	}
 	return retval;
 }
 
 static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
-			PUCHAR mappedbuffer, UINT u32FirmwareLength,
+			PUCHAR mappedbuffer, UINT firmware_len,
 			ULONG u32StartingAddress)
 {
-	UINT len = u32FirmwareLength;
+	UINT len = firmware_len;
 	INT retval = STATUS_SUCCESS;
 	PUCHAR readbackbuff = kzalloc(MAX_TRANSFER_CTRL_BYTE_USB, GFP_KERNEL);
 	int bytes;
@@ -272,8 +272,8 @@ static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 	if (NULL == readbackbuff)
 		return -ENOMEM;
 
-	while (u32FirmwareLength && !retval) {
-		len = MIN_VAL(u32FirmwareLength, MAX_TRANSFER_CTRL_BYTE_USB);
+	while (firmware_len && !retval) {
+		len = MIN_VAL(firmware_len, MAX_TRANSFER_CTRL_BYTE_USB);
 		bytes = rdm(ad, u32StartingAddress, readbackbuff, len);
 
 		if (bytes < 0) {
@@ -288,28 +288,28 @@ static INT buffRdbkVerify(struct bcm_mini_adapter *ad,
 		}
 
 		u32StartingAddress += len;
-		u32FirmwareLength -= len;
+		firmware_len -= len;
 		mappedbuffer += len;
 
-	} /* end of while (u32FirmwareLength && !retval) */
+	} /* end of while (firmware_len && !retval) */
 	kfree(readbackbuff);
 	return retval;
 }
 
 INT buffDnldVerify(struct bcm_mini_adapter *ad,
 			unsigned char *mappedbuffer,
-			unsigned int u32FirmwareLength,
+			unsigned int firmware_len,
 			unsigned long u32StartingAddress)
 {
 	INT status = STATUS_SUCCESS;
 
 	status = buffDnld(ad, mappedbuffer,
-			u32FirmwareLength, u32StartingAddress);
+			firmware_len, u32StartingAddress);
 	if (status != STATUS_SUCCESS)
 		goto error;
 
 	status = buffRdbkVerify(ad, mappedbuffer,
-			u32FirmwareLength, u32StartingAddress);
+			firmware_len, u32StartingAddress);
 	if (status != STATUS_SUCCESS)
 		goto error;
 error:

@@ -23,7 +23,7 @@ static const u32 default_msg =
 	| NETIF_MSG_TIMER | NETIF_MSG_TX_ERR | NETIF_MSG_RX_ERR
 	| NETIF_MSG_IFUP | NETIF_MSG_IFDOWN;
 
-static int InterfaceAdapterInit(struct bcm_interface_adapter *Adapter);
+static int InterfaceAdapterInit(struct bcm_interface_adapter *ad);
 
 static void InterfaceAdapterFree(struct bcm_interface_adapter *intf_ad)
 {
@@ -71,7 +71,7 @@ static void InterfaceAdapterFree(struct bcm_interface_adapter *intf_ad)
 }
 
 static void ConfigureEndPointTypesThroughEEPROM(
-		struct bcm_mini_adapter *Adapter)
+		struct bcm_mini_adapter *ad)
 {
 	u32 ulReg;
 	int bytes;
@@ -79,76 +79,76 @@ static void ConfigureEndPointTypesThroughEEPROM(
 
 	/* Program EP2 MAX_PKT_SIZE */
 	ulReg = ntohl(EP2_MPS_REG);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x128, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x128, 4, TRUE);
 	ulReg = ntohl(EP2_MPS);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x12C, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x12C, 4, TRUE);
 
 	ulReg = ntohl(EP2_CFG_REG);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x132, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x132, 4, TRUE);
 	interfaceAdapter =
-		(struct bcm_interface_adapter *)(Adapter->pvInterfaceAdapter);
+		(struct bcm_interface_adapter *)(ad->pvInterfaceAdapter);
 	if (interfaceAdapter->bHighSpeedDevice) {
 		ulReg = ntohl(EP2_CFG_INT);
-		BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x136, 4, TRUE);
+		BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x136, 4, TRUE);
 	} else {
 		/* USE BULK EP as TX in FS mode. */
 		ulReg = ntohl(EP2_CFG_BULK);
-		BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x136, 4, TRUE);
+		BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x136, 4, TRUE);
 	}
 
 	/* Program EP4 MAX_PKT_SIZE. */
 	ulReg = ntohl(EP4_MPS_REG);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x13C, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x13C, 4, TRUE);
 	ulReg = ntohl(EP4_MPS);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x140, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x140, 4, TRUE);
 
 	/* Program TX EP as interrupt(Alternate Setting) */
-	bytes = rdmalt(Adapter, 0x0F0110F8, &ulReg, sizeof(u32));
+	bytes = rdmalt(ad, 0x0F0110F8, &ulReg, sizeof(u32));
 	if (bytes < 0) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_INITEXIT, DRV_ENTRY,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_INITEXIT, DRV_ENTRY,
 				DBG_LVL_ALL, "reading of Tx EP failed\n");
 		return;
 	}
 	ulReg |= 0x6;
 
 	ulReg = ntohl(ulReg);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1CC, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1CC, 4, TRUE);
 
 	ulReg = ntohl(EP4_CFG_REG);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1C8, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1C8, 4, TRUE);
 	/* Program ISOCHRONOUS EP size to zero. */
 	ulReg = ntohl(ISO_MPS_REG);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1D2, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1D2, 4, TRUE);
 	ulReg = ntohl(ISO_MPS);
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1D6, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1D6, 4, TRUE);
 
 	/*
 	 * Update EEPROM Version.
 	 * Read 4 bytes from 508 and modify 511 and 510.
 	 */
-	ReadBeceemEEPROM(Adapter, 0x1FC, &ulReg);
+	ReadBeceemEEPROM(ad, 0x1FC, &ulReg);
 	ulReg &= 0x0101FFFF;
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1FC, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1FC, 4, TRUE);
 
 	/*
 	 * Update length field if required.
 	 * Also make the string NULL terminated.
 	 */
 
-	ReadBeceemEEPROM(Adapter, 0xA8, &ulReg);
+	ReadBeceemEEPROM(ad, 0xA8, &ulReg);
 	if ((ulReg&0x00FF0000)>>16 > 0x30) {
 		ulReg = (ulReg&0xFF00FFFF)|(0x30<<16);
-		BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0xA8, 4, TRUE);
+		BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0xA8, 4, TRUE);
 	}
-	ReadBeceemEEPROM(Adapter, 0x148, &ulReg);
+	ReadBeceemEEPROM(ad, 0x148, &ulReg);
 	if ((ulReg&0x00FF0000)>>16 > 0x30) {
 		ulReg = (ulReg&0xFF00FFFF)|(0x30<<16);
-		BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x148, 4, TRUE);
+		BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x148, 4, TRUE);
 	}
 	ulReg = 0;
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x122, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x122, 4, TRUE);
 	ulReg = 0;
-	BeceemEEPROMBulkWrite(Adapter, (PUCHAR)&ulReg, 0x1C2, 4, TRUE);
+	BeceemEEPROMBulkWrite(ad, (PUCHAR)&ulReg, 0x1C2, 4, TRUE);
 }
 
 static int usbbcm_device_probe(struct usb_interface *intf,

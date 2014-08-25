@@ -135,7 +135,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 }
 
 
-static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *pusSrcPort,
+static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 	USHORT *pusDestPort, USHORT usPayloadLength, UCHAR ucNextHeader)
 {
 	UCHAR *pIpv6HdrScanContext = payload;
@@ -147,7 +147,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *pusSrcPort,
 	if (!payload || (usPayloadLength == 0))
 		return 0;
 
-	*pusSrcPort = *pusDestPort = 0;
+	*src_port = *pusDestPort = 0;
 	ucHeaderType = ucNextHeader;
 	while (!bDone) {
 		nxt_hdr = GetNextIPV6ChainedHeader(&pIpv6HdrScanContext,
@@ -157,12 +157,12 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *pusSrcPort,
 		if (bDone) {
 			if ((ucHeaderType == TCP_HEADER_TYPE) ||
 				(ucHeaderType == UDP_HEADER_TYPE)) {
-				*pusSrcPort = *((PUSHORT)(nxt_hdr));
+				*src_port = *((PUSHORT)(nxt_hdr));
 				*pusDestPort = *((PUSHORT)(nxt_hdr+2));
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 						DBG_LVL_ALL,
 						"\nProtocol Ports - Src Port :0x%x Dest Port : 0x%x",
-						ntohs(*pusSrcPort),
+						ntohs(*src_port),
 						ntohs(*pusDestPort));
 			}
 			break;

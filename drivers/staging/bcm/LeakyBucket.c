@@ -17,7 +17,7 @@
 
 static VOID UpdateTokenCount(register struct bcm_mini_adapter *Adapter)
 {
-	ULONG liCurrentTime;
+	ULONG curr_time;
 	INT i = 0;
 	struct timeval tv;
 	struct bcm_packet_info *curr_pi;
@@ -35,17 +35,17 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *Adapter)
 		curr_pi = &Adapter->PackInfo[i];
 
 		if (TRUE == curr_pi->bValid && (1 == curr_pi->ucDirection)) {
-			liCurrentTime = ((tv.tv_sec -
+			curr_time = ((tv.tv_sec -
 				curr_pi->stLastUpdateTokenAt.tv_sec)*1000 +
 				(tv.tv_usec - curr_pi->stLastUpdateTokenAt.tv_usec) /
 				1000);
-			if (0 != liCurrentTime) {
+			if (0 != curr_time) {
 				curr_pi->uiCurrentTokenCount += (ULONG)
 					((curr_pi->uiMaxAllowedRate) *
-					((ULONG)((liCurrentTime)))/1000);
+					((ULONG)((curr_time)))/1000);
 				memcpy(&curr_pi->stLastUpdateTokenAt, &tv,
 				       sizeof(struct timeval));
-				curr_pi->liLastUpdateTokenAt = liCurrentTime;
+				curr_pi->liLastUpdateTokenAt = curr_time;
 				if (curr_pi->uiCurrentTokenCount >=
 				    curr_pi->uiMaxBucketSize) {
 					curr_pi->uiCurrentTokenCount =

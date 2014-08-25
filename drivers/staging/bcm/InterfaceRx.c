@@ -125,7 +125,7 @@ GetBulkInRcb(struct bcm_interface_adapter *intf_ad)
 static void read_bulk_callback(struct urb *urb)
 {
 	struct sk_buff *skb = NULL;
-	bool bHeaderSupressionEnabled = false;
+	bool hdr_suppression_enabled = false;
 	int QueueIndex = NO_OF_QUEUES + 1;
 	UINT uiIndex = 0;
 	struct bcm_usb_rcb *rcb = (struct bcm_usb_rcb *)urb->context;
@@ -189,10 +189,10 @@ static void read_bulk_callback(struct urb *urb)
 
 	QueueIndex = SearchVcid(ad, pLeader->Vcid);
 	if (QueueIndex < NO_OF_QUEUES) {
-		bHeaderSupressionEnabled =
+		hdr_suppression_enabled =
 			ad->PackInfo[QueueIndex].bHeaderSuppressionEnabled;
-		bHeaderSupressionEnabled =
-			bHeaderSupressionEnabled & ad->bPHSEnabled;
+		hdr_suppression_enabled =
+			hdr_suppression_enabled & ad->bPHSEnabled;
 	}
 
 	skb = dev_alloc_skb(pLeader->PLength + SKB_RESERVE_PHS_BYTES +
@@ -211,7 +211,7 @@ static void read_bulk_callback(struct urb *urb)
 	} else {
 		format_eth_hdr_to_stack(intf_ad, ad, pLeader, skb,
 					urb, uiIndex, QueueIndex,
-					bHeaderSupressionEnabled);
+					hdr_suppression_enabled);
 	}
 	ad->PrevNumRecvDescs++;
 	rcb->bUsed = false;

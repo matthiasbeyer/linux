@@ -7,14 +7,14 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr);
 
 static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
-	UCHAR *nxt_hdr, bool *parse_done, USHORT *pusPayloadLength)
+	UCHAR *nxt_hdr, bool *parse_done, USHORT *payload_len)
 {
 	UCHAR *pucRetHeaderPtr = NULL;
 	UCHAR *pucPayloadPtr = NULL;
 	USHORT  usNextHeaderOffset = 0;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
-	if ((payload == NULL) || (*pusPayloadLength == 0) ||
+	if ((payload == NULL) || (*payload_len == 0) ||
 		(*parse_done)) {
 		*parse_done = TRUE;
 		return NULL;
@@ -120,12 +120,12 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	}
 
 	if (*parse_done == false) {
-		if (*pusPayloadLength <= usNextHeaderOffset) {
+		if (*payload_len <= usNextHeaderOffset) {
 			*parse_done = TRUE;
 		} else {
 			*nxt_hdr = *pucPayloadPtr;
 			pucPayloadPtr += usNextHeaderOffset;
-			(*pusPayloadLength) -= usNextHeaderOffset;
+			(*payload_len) -= usNextHeaderOffset;
 		}
 
 	}

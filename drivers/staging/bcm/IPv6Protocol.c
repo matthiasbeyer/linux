@@ -185,7 +185,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 	USHORT	src_port = 0;
 	UCHAR   nxt_prot_above_ip = 0;
 	struct bcm_ipv6_hdr *ipv6_hdr = NULL;
-	bool bClassificationSucceed = false;
+	bool classif_succeed = false;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 			DBG_LVL_ALL, "IpVersion6 ==========>\n");
@@ -222,14 +222,14 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 			break;
 		}
 
-		bClassificationSucceed = MatchSrcIpv6Address(classifier_rule,
+		classif_succeed = MatchSrcIpv6Address(classifier_rule,
 							     ipv6_hdr);
-		if (!bClassificationSucceed)
+		if (!classif_succeed)
 			break;
 
-		bClassificationSucceed = MatchDestIpv6Address(classifier_rule,
+		classif_succeed = MatchDestIpv6Address(classifier_rule,
 							      ipv6_hdr);
-		if (!bClassificationSucceed)
+		if (!classif_succeed)
 			break;
 
 		/*
@@ -237,9 +237,9 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		 * For IPv6 the next protocol at end of
 		 * Chain of IPv6 prot headers
 		 */
-		bClassificationSucceed = MatchProtocol(classifier_rule,
+		classif_succeed = MatchProtocol(classifier_rule,
 						       nxt_prot_above_ip);
-		if (!bClassificationSucceed)
+		if (!classif_succeed)
 			break;
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
@@ -251,9 +251,9 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL, "\nIPv6 Source Port:%x\n",
 					ntohs(src_port));
-			bClassificationSucceed = MatchSrcPort(classifier_rule,
+			classif_succeed = MatchSrcPort(classifier_rule,
 							      ntohs(src_port));
-			if (!bClassificationSucceed)
+			if (!classif_succeed)
 				break;
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
@@ -264,9 +264,9 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 					DBG_LVL_ALL,
 					"\nIPv6 Destination Port:%x\n",
 					ntohs(dest_port));
-			bClassificationSucceed = MatchDestPort(classifier_rule,
+			classif_succeed = MatchDestPort(classifier_rule,
 							       ntohs(dest_port));
-			if (!bClassificationSucceed)
+			if (!classif_succeed)
 				break;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,
@@ -274,17 +274,17 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		}
 	} while (0);
 
-	if (bClassificationSucceed == TRUE) {
+	if (classif_succeed == TRUE) {
 		INT iMatchedSFQueueIndex = 0;
 
 		iMatchedSFQueueIndex = SearchSfid(ad,
 						  classifier_rule->ulSFID);
 		if ((iMatchedSFQueueIndex >= NO_OF_QUEUES) ||
 		    (ad->PackInfo[iMatchedSFQueueIndex].bActive == false))
-			bClassificationSucceed = false;
+			classif_succeed = false;
 	}
 
-	return bClassificationSucceed;
+	return classif_succeed;
 }
 
 

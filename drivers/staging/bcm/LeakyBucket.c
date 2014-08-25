@@ -10,29 +10,29 @@
 * Description - This function calculates the token count for each
 *				channel and updates the same in Adapter strucuture.
 *
-* Parameters  - Adapter: Pointer to the Adapter structure.
+* Parameters  - ad: Pointer to the Adapter structure.
 *
 * Returns     - None
 **********************************************************************/
 
-static VOID UpdateTokenCount(register struct bcm_mini_adapter *Adapter)
+static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 {
 	ULONG curr_time;
 	INT i = 0;
 	struct timeval tv;
 	struct bcm_packet_info *curr_pi;
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"=====>\n");
-	if (NULL == Adapter) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS,
+	if (NULL == ad) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS,
 				DBG_LVL_ALL, "Adapter found NULL!\n");
 		return;
 	}
 
 	do_gettimeofday(&tv);
 	for (i = 0; i < NO_OF_QUEUES; i++) {
-		curr_pi = &Adapter->PackInfo[i];
+		curr_pi = &ad->PackInfo[i];
 
 		if (TRUE == curr_pi->bValid && (1 == curr_pi->ucDirection)) {
 			curr_time = ((tv.tv_sec -
@@ -54,7 +54,7 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *Adapter)
 			}
 		}
 	}
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"<=====\n");
 }
 
@@ -66,24 +66,24 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *Adapter)
 *				specified queue can be allowed for transmission by
 *				checking the token count.
 *
-* Parameters  - Adapter	      :	Pointer to the Adpater structure.
+* Parameters  - ad	      :	Pointer to the Adpater structure.
 * 			  - iQIndex	      :	The queue Identifier.
 * 			  - ulPacketLength:	Number of bytes to be transmitted.
 *
 * Returns     - The number of bytes allowed for transmission.
 *
 ***********************************************************************/
-static ULONG GetSFTokenCount(struct bcm_mini_adapter *Adapter, struct bcm_packet_info *psSF)
+static ULONG GetSFTokenCount(struct bcm_mini_adapter *ad, struct bcm_packet_info *psSF)
 {
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"IsPacketAllowedForFlow ===>");
 
 	/* Validate the parameters */
-	if (NULL == Adapter || (psSF < Adapter->PackInfo &&
-	    (uintptr_t)psSF > (uintptr_t) &Adapter->PackInfo[HiPriority])) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+	if (NULL == ad || (psSF < ad->PackInfo &&
+	    (uintptr_t)psSF > (uintptr_t) &ad->PackInfo[HiPriority])) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 				"IPAFF: Got wrong Parameters:Adapter: %p, QIndex: %zd\n",
-				Adapter, (psSF-Adapter->PackInfo));
+				ad, (psSF-ad->PackInfo));
 		return 0;
 	}
 
@@ -91,18 +91,18 @@ static ULONG GetSFTokenCount(struct bcm_mini_adapter *Adapter, struct bcm_packet
 		if (0 != psSF->uiCurrentTokenCount) {
 			return psSF->uiCurrentTokenCount;
 		} else {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS,
 					DBG_LVL_ALL,
 					"Not enough tokens in queue %zd Available %u\n",
-					psSF-Adapter->PackInfo, psSF->uiCurrentTokenCount);
+					psSF-ad->PackInfo, psSF->uiCurrentTokenCount);
 			psSF->uiPendedLast = 1;
 		}
 	} else {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 				"IPAFF: Queue %zd not valid\n",
-				psSF-Adapter->PackInfo);
+				psSF-ad->PackInfo);
 	}
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"IsPacketAllowedForFlow <===");
 	return 0;
 }
@@ -112,17 +112,17 @@ static ULONG GetSFTokenCount(struct bcm_mini_adapter *Adapter, struct bcm_packet
 This function despatches packet from the specified queue.
 @return Zero(success) or Negative value(failure)
 */
-static INT SendPacketFromQueue(struct bcm_mini_adapter *Adapter,/**<Logical Adapter*/
+static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 			       struct bcm_packet_info *psSF, /**<Queue identifier*/
 			       struct sk_buff *Packet)	/**<Pointer to the packet to be sent*/
 {
 	INT Status = STATUS_FAILURE;
 	UINT uiIndex = 0, PktLen = 0;
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 			"=====>");
-	if (!Adapter || !Packet || !psSF) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
+	if (!ad || !Packet || !psSF) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 				"Got NULL Adapter or Packet");
 		return -EINVAL;
 	}
@@ -131,15 +131,15 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *Adapter,/**<Logical Adap
 		psSF->liDrainCalculated = jiffies;
 	/* send the packet to the fifo.. */
 	PktLen = Packet->len;
-	Status = SetupNextSend(Adapter, Packet, psSF->usVCID_Value);
+	Status = SetupNextSend(ad, Packet, psSF->usVCID_Value);
 	if (Status == 0) {
 		for (uiIndex = 0; uiIndex < MIBS_MAX_HIST_ENTRIES; uiIndex++) {
 			if ((PktLen <= MIBS_PKTSIZEHIST_RANGE*(uiIndex+1)) &&
 			    (PktLen > MIBS_PKTSIZEHIST_RANGE*(uiIndex)))
-				Adapter->aTxPktSizeHist[uiIndex]++;
+				ad->aTxPktSizeHist[uiIndex]++;
 		}
 	}
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 			"<=====");
 	return Status;
 }
@@ -262,24 +262,24 @@ static void send_control_packet(struct bcm_mini_adapter *ad,
 * Description - This function dequeues the data/control packet from the
 *				specified queue for transmission.
 *
-* Parameters  - Adapter : Pointer to the driver control structure.
+* Parameters  - ad : Pointer to the driver control structure.
 * 			  - iQIndex : The queue Identifier.
 *
 * Returns     - None.
 *
 ****************************************************************************/
-static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *Adapter,
+static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *ad,
 					struct bcm_packet_info *psSF)
 {
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
-			"%zd ====>", (psSF-Adapter->PackInfo));
-	if ((psSF != &Adapter->PackInfo[HiPriority]) &&
-	    Adapter->LinkUpStatus &&
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+			"%zd ====>", (psSF-ad->PackInfo));
+	if ((psSF != &ad->PackInfo[HiPriority]) &&
+	    ad->LinkUpStatus &&
 	    atomic_read(&psSF->uiPerSFTxResourceCount)) { /* Get data packet */
 
-		get_data_packet(Adapter, psSF);
+		get_data_packet(ad, psSF);
 	} else {
-		send_control_packet(Adapter, psSF);
+		send_control_packet(ad, psSF);
 	}
 }
 
@@ -290,81 +290,81 @@ static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *Adapter,
 * Description - This function transmits the packets from different
 *				queues, if free descriptors are available on target.
 *
-* Parameters  - Adapter:  Pointer to the Adapter structure.
+* Parameters  - ad:  Pointer to the Adapter structure.
 *
 * Returns     - None.
 ********************************************************************/
-VOID transmit_packets(struct bcm_mini_adapter *Adapter)
+VOID transmit_packets(struct bcm_mini_adapter *ad)
 {
 	UINT uiPrevTotalCount = 0;
 	int iIndex = 0;
 
 	bool exit_flag = TRUE;
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 			"=====>");
 
-	if (NULL == Adapter) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	if (NULL == ad) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 				"Got NULL Adapter");
 		return;
 	}
-	if (Adapter->device_removed == TRUE) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	if (ad->device_removed == TRUE) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 				"Device removed");
 		return;
 	}
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 			"\nUpdateTokenCount ====>\n");
 
-	UpdateTokenCount(Adapter);
+	UpdateTokenCount(ad);
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 			"\nPruneQueueAllSF ====>\n");
 
-	PruneQueueAllSF(Adapter);
+	PruneQueueAllSF(ad);
 
-	uiPrevTotalCount = atomic_read(&Adapter->TotalPacketCount);
+	uiPrevTotalCount = atomic_read(&ad->TotalPacketCount);
 
 	for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
-		if (!uiPrevTotalCount || (TRUE == Adapter->device_removed))
+		if (!uiPrevTotalCount || (TRUE == ad->device_removed))
 				break;
 
-		if (Adapter->PackInfo[iIndex].bValid &&
-		    Adapter->PackInfo[iIndex].uiPendedLast &&
-		    Adapter->PackInfo[iIndex].uiCurrentBytesOnHost) {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS,
+		if (ad->PackInfo[iIndex].bValid &&
+		    ad->PackInfo[iIndex].uiPendedLast &&
+		    ad->PackInfo[iIndex].uiCurrentBytesOnHost) {
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS,
 					DBG_LVL_ALL,
 					"Calling CheckAndSendPacketFromIndex..");
-			CheckAndSendPacketFromIndex(Adapter,
-						    &Adapter->PackInfo[iIndex]);
+			CheckAndSendPacketFromIndex(ad,
+						    &ad->PackInfo[iIndex]);
 			uiPrevTotalCount--;
 		}
 	}
 
-	while (uiPrevTotalCount > 0 && !Adapter->device_removed) {
+	while (uiPrevTotalCount > 0 && !ad->device_removed) {
 		exit_flag = TRUE;
 		/* second iteration to parse non-pending queues */
 		for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
 			if (!uiPrevTotalCount ||
-			    (TRUE == Adapter->device_removed))
+			    (TRUE == ad->device_removed))
 				break;
 
-			if (Adapter->PackInfo[iIndex].bValid &&
-			    Adapter->PackInfo[iIndex].uiCurrentBytesOnHost &&
-			    !Adapter->PackInfo[iIndex].uiPendedLast) {
-				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX,
+			if (ad->PackInfo[iIndex].bValid &&
+			    ad->PackInfo[iIndex].uiCurrentBytesOnHost &&
+			    !ad->PackInfo[iIndex].uiPendedLast) {
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX,
 						TX_PACKETS, DBG_LVL_ALL,
 						"Calling CheckAndSendPacketFromIndex..");
-				CheckAndSendPacketFromIndex(Adapter, &Adapter->PackInfo[iIndex]);
+				CheckAndSendPacketFromIndex(ad, &ad->PackInfo[iIndex]);
 				uiPrevTotalCount--;
 				exit_flag = false;
 			}
 		}
 
-		if (Adapter->IdleMode || Adapter->bPreparingForLowPowerMode) {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS,
+		if (ad->IdleMode || ad->bPreparingForLowPowerMode) {
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS,
 					DBG_LVL_ALL, "In Idle Mode\n");
 			break;
 		}
@@ -372,8 +372,8 @@ VOID transmit_packets(struct bcm_mini_adapter *Adapter)
 			break;
 	} /* end of inner while loop */
 
-	update_per_cid_rx(Adapter);
-	Adapter->txtransmit_running = 0;
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
+	update_per_cid_rx(ad);
+	ad->txtransmit_running = 0;
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
 			"<======");
 }

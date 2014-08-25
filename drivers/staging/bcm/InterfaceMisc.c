@@ -128,10 +128,10 @@ int BcmWRM(void *arg,
 			    len);
 }
 
-int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
+int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *ad)
 {
 	struct bcm_interface_adapter *intf_ad =
-		(struct bcm_interface_adapter *)(Adapter->pvInterfaceAdapter);
+		(struct bcm_interface_adapter *)(ad->pvInterfaceAdapter);
 	int status = STATUS_SUCCESS;
 
 	/*
@@ -158,7 +158,7 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 	status = usb_clear_halt(intf_ad->udev,
 				intf_ad->sIntrIn.int_in_pipe);
 	if (status != STATUS_SUCCESS)
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Unable to Clear Halt of Interrupt IN end point. :%d ",
 				status);
@@ -166,7 +166,7 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 	status = usb_clear_halt(intf_ad->udev,
 				intf_ad->sBulkIn.bulk_in_pipe);
 	if (status != STATUS_SUCCESS)
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Unable to Clear Halt of Bulk IN end point. :%d ",
 				status);
@@ -174,7 +174,7 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 	status = usb_clear_halt(intf_ad->udev,
 				intf_ad->sBulkOut.bulk_out_pipe);
 	if (status != STATUS_SUCCESS)
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Unable to Clear Halt of Bulk OUT end point. :%d ",
 				status);

@@ -440,15 +440,15 @@ VOID DumpIpv6Address(ULONG *puIpv6Address)
 
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr)
 {
-	UCHAR ucVersion;
+	UCHAR version;
 	UCHAR ucPrio;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"----Ipv6 Header---");
-	ucVersion = ipv6_hdr->ucVersionPrio & 0xf0;
+	version = ipv6_hdr->ucVersionPrio & 0xf0;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-			"Version : %x\n", ucVersion);
+			"Version : %x\n", version);
 	ucPrio = ipv6_hdr->ucVersionPrio & 0x0f;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Priority : %x\n", ucPrio);

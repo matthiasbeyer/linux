@@ -206,12 +206,10 @@ static void read_bulk_callback(struct urb *urb)
 	/* If it is a control Packet, then call handle_bcm_packet ()*/
 	if ((ntohs(leader->Vcid) == VCID_CONTROL_PACKET) ||
 	    (!(leader->Status >= 0x20  &&  leader->Status <= 0x3F))) {
-		handle_control_packet(intf_ad, ad, leader, skb,
-				      urb);
+		handle_control_packet(intf_ad, ad, leader, skb, urb);
 	} else {
-		format_eth_hdr_to_stack(intf_ad, ad, leader, skb,
-					urb, index, queue_idx,
-					hdr_suppression_enabled);
+		format_eth_hdr_to_stack(intf_ad, ad, leader, skb, urb, index,
+					queue_idx, hdr_suppression_enabled);
 	}
 	ad->PrevNumRecvDescs++;
 	rcb->bUsed = false;
@@ -227,9 +225,9 @@ static int ReceiveRcb(struct bcm_interface_adapter *intf_ad,
 	usb_fill_bulk_urb(urb, intf_ad->udev,
 			  usb_rcvbulkpipe(intf_ad->udev,
 					  intf_ad->sBulkIn.bulk_in_endpointAddr),
-			  urb->transfer_buffer,
-			  BCM_USB_MAX_READ_LENGTH,
-			  read_bulk_callback, rcb);
+					  urb->transfer_buffer,
+					  BCM_USB_MAX_READ_LENGTH,
+					  read_bulk_callback, rcb);
 
 	if (false == intf_ad->psAdapter->device_removed &&
 	    false == intf_ad->psAdapter->bEndPointHalted &&
@@ -268,17 +266,15 @@ Return:				TRUE  - If Rx was successful.
 
 bool InterfaceRx(struct bcm_interface_adapter *intf_ad)
 {
-	USHORT rx_desc_cnt = NUM_RX_DESC -
-		atomic_read(&intf_ad->uNumRcbUsed);
+	USHORT rx_desc_cnt = NUM_RX_DESC - atomic_read(&intf_ad->uNumRcbUsed);
 
 	struct bcm_usb_rcb *rcb = NULL;
 
 	while (rx_desc_cnt) {
 		rcb = GetBulkInRcb(intf_ad);
 		if (rcb == NULL) {
-			BCM_DEBUG_PRINT(intf_ad->psAdapter,
-					DBG_TYPE_PRINTK, 0, 0,
-					"Unable to get Rcb pointer");
+			BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_PRINTK,
+					0, 0, "Unable to get Rcb pointer");
 			return false;
 		}
 		ReceiveRcb(intf_ad, rcb);

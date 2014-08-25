@@ -91,10 +91,10 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 		(struct bcm_link_request *)urb->transfer_buffer;
 	struct bcm_mini_adapter *ps_ad = intf_ad->psAdapter;
 	bool power_down_msg = false;
-	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
+	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	if (unlikely(netif_msg_tx_done(Adapter)))
-		pr_info(PFX "%s: transmit status %d\n", Adapter->dev->name,
+	if (unlikely(netif_msg_tx_done(ad)))
+		pr_info(PFX "%s: transmit status %d\n", ad->dev->name,
 			urb->status);
 
 	if (urb->status != STATUS_SUCCESS) {
@@ -102,7 +102,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 			intf_ad->psAdapter->bEndPointHalted = TRUE;
 			wake_up(&intf_ad->psAdapter->tx_packet_wait_queue);
 		} else {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, NEXT_SEND,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, NEXT_SEND,
 					DBG_LVL_ALL,
 					"Tx URB has got cancelled. status :%d",
 					urb->status);
@@ -113,7 +113,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	atomic_dec(&intf_ad->uNumTcbUsed);
 
 	if (TRUE == ps_ad->bPreparingForLowPowerMode) {
-		prepare_low_power_mode(urb, intf_ad, ps_ad, Adapter,
+		prepare_low_power_mode(urb, intf_ad, ps_ad, ad,
 				       cntr_msg, &power_down_msg);
 	}
 

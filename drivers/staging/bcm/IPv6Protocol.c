@@ -7,7 +7,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr);
 
 static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
-	UCHAR *pucNextHeader, bool *bParseDone, USHORT *pusPayloadLength)
+	UCHAR *nxt_hdr, bool *bParseDone, USHORT *pusPayloadLength)
 {
 	UCHAR *pucRetHeaderPtr = NULL;
 	UCHAR *pucPayloadPtr = NULL;
@@ -32,7 +32,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	*bParseDone = false;
 
 
-	switch (*pucNextHeader) {
+	switch (*nxt_hdr) {
 	case IPV6HDR_TYPE_HOPBYHOP:
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nIPv6 HopByHop Header");
@@ -123,7 +123,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		if (*pusPayloadLength <= usNextHeaderOffset) {
 			*bParseDone = TRUE;
 		} else {
-			*pucNextHeader = *pucPayloadPtr;
+			*nxt_hdr = *pucPayloadPtr;
 			pucPayloadPtr += usNextHeaderOffset;
 			(*pusPayloadLength) -= usNextHeaderOffset;
 		}
@@ -141,7 +141,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *pucPayload, USHORT *pusSrcPort,
 	UCHAR *pIpv6HdrScanContext = pucPayload;
 	bool bDone = false;
 	UCHAR ucHeaderType = 0;
-	UCHAR *pucNextHeader = NULL;
+	UCHAR *nxt_hdr = NULL;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
 	if (!pucPayload || (usPayloadLength == 0))
@@ -150,15 +150,15 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *pucPayload, USHORT *pusSrcPort,
 	*pusSrcPort = *pusDestPort = 0;
 	ucHeaderType = ucNextHeader;
 	while (!bDone) {
-		pucNextHeader = GetNextIPV6ChainedHeader(&pIpv6HdrScanContext,
+		nxt_hdr = GetNextIPV6ChainedHeader(&pIpv6HdrScanContext,
 							 &ucHeaderType,
 							 &bDone,
 							 &usPayloadLength);
 		if (bDone) {
 			if ((ucHeaderType == TCP_HEADER_TYPE) ||
 				(ucHeaderType == UDP_HEADER_TYPE)) {
-				*pusSrcPort = *((PUSHORT)(pucNextHeader));
-				*pusDestPort = *((PUSHORT)(pucNextHeader+2));
+				*pusSrcPort = *((PUSHORT)(nxt_hdr));
+				*pusDestPort = *((PUSHORT)(nxt_hdr+2));
 				BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 						DBG_LVL_ALL,
 						"\nProtocol Ports - Src Port :0x%x Dest Port : 0x%x",

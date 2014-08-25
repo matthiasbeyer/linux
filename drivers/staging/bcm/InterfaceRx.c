@@ -268,12 +268,12 @@ Return:				TRUE  - If Rx was successful.
 
 bool InterfaceRx(struct bcm_interface_adapter *intf_ad)
 {
-	USHORT RxDescCount = NUM_RX_DESC -
+	USHORT rx_desc_cnt = NUM_RX_DESC -
 		atomic_read(&intf_ad->uNumRcbUsed);
 
 	struct bcm_usb_rcb *rcb = NULL;
 
-	while (RxDescCount) {
+	while (rx_desc_cnt) {
 		rcb = GetBulkInRcb(intf_ad);
 		if (rcb == NULL) {
 			BCM_DEBUG_PRINT(intf_ad->psAdapter,
@@ -282,7 +282,7 @@ bool InterfaceRx(struct bcm_interface_adapter *intf_ad)
 			return false;
 		}
 		ReceiveRcb(intf_ad, rcb);
-		RxDescCount--;
+		rx_desc_cnt--;
 	}
 	return TRUE;
 }

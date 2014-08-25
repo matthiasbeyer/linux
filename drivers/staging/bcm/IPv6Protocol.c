@@ -181,7 +181,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		   struct bcm_classifier_rule *classifier_rule)
 {
-	USHORT	ushDestPort = 0;
+	USHORT	dest_port = 0;
 	USHORT	ushSrcPort = 0;
 	UCHAR   ucNextProtocolAboveIP = 0;
 	struct bcm_ipv6_hdr *ipv6_hdr = NULL;
@@ -201,7 +201,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 	ucNextProtocolAboveIP = GetIpv6ProtocolPorts((UCHAR *)(ip_hdr +
 						     sizeof(struct bcm_ipv6_hdr)),
 						     &ushSrcPort,
-						     &ushDestPort,
+						     &dest_port,
 						     ipv6_hdr->usPayloadLength,
 						     ipv6_hdr->ucNextHeader);
 
@@ -263,9 +263,9 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,
 					"\nIPv6 Destination Port:%x\n",
-					ntohs(ushDestPort));
+					ntohs(dest_port));
 			bClassificationSucceed = MatchDestPort(classifier_rule,
-							       ntohs(ushDestPort));
+							       ntohs(dest_port));
 			if (!bClassificationSucceed)
 				break;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,

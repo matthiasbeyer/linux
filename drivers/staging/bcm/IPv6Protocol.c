@@ -370,10 +370,10 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 	 * ie Range of IP Addresses contained in the classifier rule
 	 * for which we need to match
 	 */
-	UINT uiCountIPDestinationAddresses =
+	UINT ip_dest_addr_cnt =
 		(UINT)classifier_rule->ucIPDestinationAddressLength;
 
-	if (uiCountIPDestinationAddresses == 0)
+	if (ip_dest_addr_cnt == 0)
 		return TRUE;
 
 
@@ -385,7 +385,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 			ntohl(ipv6_hdr->ulDestIpAddress[ipv6_add_idx]);
 
 	for (i = 0;
-	     i < uiCountIPDestinationAddresses;
+	     i < ip_dest_addr_cnt;
 	     i += ipv6_addr_no_long_words) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 				"\n Destination Ipv6 Address In Received Packet :\n ");

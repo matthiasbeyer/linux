@@ -117,7 +117,7 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 			       struct sk_buff *packet)	/**<Pointer to the packet to be sent*/
 {
 	INT status = STATUS_FAILURE;
-	UINT i = 0, PktLen = 0;
+	UINT i = 0, pkt_len = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 			"=====>");
@@ -130,12 +130,12 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 	if (sf->liDrainCalculated == 0)
 		sf->liDrainCalculated = jiffies;
 	/* send the packet to the fifo.. */
-	PktLen = packet->len;
+	pkt_len = packet->len;
 	status = SetupNextSend(ad, packet, sf->usVCID_Value);
 	if (status == 0) {
 		for (i = 0; i < MIBS_MAX_HIST_ENTRIES; i++) {
-			if ((PktLen <= MIBS_PKTSIZEHIST_RANGE*(i+1)) &&
-			    (PktLen > MIBS_PKTSIZEHIST_RANGE*(i)))
+			if ((pkt_len <= MIBS_PKTSIZEHIST_RANGE*(i+1)) &&
+			    (pkt_len > MIBS_PKTSIZEHIST_RANGE*(i)))
 				ad->aTxPktSizeHist[i]++;
 		}
 	}

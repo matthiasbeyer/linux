@@ -64,13 +64,13 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		{
 			struct bcm_ipv6_dest_options_hdr *ipv6_dest_opts_hdr =
 				(struct bcm_ipv6_dest_options_hdr *)pld;
-			int nTotalOptions = ipv6_dest_opts_hdr->ucHdrExtLen;
+			int total_opts = ipv6_dest_opts_hdr->ucHdrExtLen;
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,
 					"\nIPv6 DestOpts Header Header");
 			nxt_hdr_offset += sizeof(struct bcm_ipv6_dest_options_hdr);
-			nxt_hdr_offset += nTotalOptions *
+			nxt_hdr_offset += total_opts *
 					      IPV6_DESTOPTS_HDR_OPTIONSIZE;
 		}
 		break;

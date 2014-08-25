@@ -292,7 +292,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UINT i = 0;
-	UINT uiIpv6AddIndex = 0;
+	UINT ipv6_add_idx = 0;
 	UINT uiIpv6AddrNoLongWords = 4;
 	ULONG aulSrcIP[4];
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
@@ -311,11 +311,11 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 
 
 	/* First Convert the Ip Address in the packet to Host Endian order */
-	for (uiIpv6AddIndex = 0;
-	     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
-	     uiIpv6AddIndex++)
-		aulSrcIP[uiIpv6AddIndex] =
-			ntohl(ipv6_hdr->ulSrcIpAddress[uiIpv6AddIndex]);
+	for (ipv6_add_idx = 0;
+	     ipv6_add_idx < uiIpv6AddrNoLongWords;
+	     ipv6_add_idx++)
+		aulSrcIP[ipv6_add_idx] =
+			ntohl(ipv6_hdr->ulSrcIpAddress[ipv6_add_idx]);
 
 	for (i = 0;
 	     i < uiCountIPSrcAddresses;
@@ -330,12 +330,12 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				"\n Src Ipv6 Address In Classifier Rule :\n");
 		DumpIpv6Address(&src_addr->ulIpv6Addr[i]);
 
-		for (uiIpv6AddIndex = 0;
-		     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
-		     uiIpv6AddIndex++) {
-			if ((src_addr->ulIpv6Mask[i+uiIpv6AddIndex] &
-				aulSrcIP[uiIpv6AddIndex]) !=
-			    src_addr->ulIpv6Addr[i+uiIpv6AddIndex]) {
+		for (ipv6_add_idx = 0;
+		     ipv6_add_idx < uiIpv6AddrNoLongWords;
+		     ipv6_add_idx++) {
+			if ((src_addr->ulIpv6Mask[i+ipv6_add_idx] &
+				aulSrcIP[ipv6_add_idx]) !=
+			    src_addr->ulIpv6Addr[i+ipv6_add_idx]) {
 				/*
 				 * Match failed for current Ipv6 Address
 				 * Try next Ipv6 Address
@@ -343,7 +343,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				break;
 			}
 
-			if (uiIpv6AddIndex ==  uiIpv6AddrNoLongWords-1) {
+			if (ipv6_add_idx ==  uiIpv6AddrNoLongWords-1) {
 				/* Match Found */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 						DBG_LVL_ALL,
@@ -359,7 +359,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				 struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UINT i = 0;
-	UINT uiIpv6AddIndex = 0;
+	UINT ipv6_add_idx = 0;
 	UINT uiIpv6AddrNoLongWords = 4;
 	ULONG aulDestIP[4];
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
@@ -378,11 +378,11 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 
 
 	/* First Convert the Ip Address in the packet to Host Endian order */
-	for (uiIpv6AddIndex = 0;
-	     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
-	     uiIpv6AddIndex++)
-		aulDestIP[uiIpv6AddIndex] =
-			ntohl(ipv6_hdr->ulDestIpAddress[uiIpv6AddIndex]);
+	for (ipv6_add_idx = 0;
+	     ipv6_add_idx < uiIpv6AddrNoLongWords;
+	     ipv6_add_idx++)
+		aulDestIP[ipv6_add_idx] =
+			ntohl(ipv6_hdr->ulDestIpAddress[ipv6_add_idx]);
 
 	for (i = 0;
 	     i < uiCountIPDestinationAddresses;
@@ -397,12 +397,12 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				"\n Destination Ipv6 Address In Classifier Rule :\n");
 		DumpIpv6Address(&dest_addr->ulIpv6Addr[i]);
 
-		for (uiIpv6AddIndex = 0;
-		     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
-		     uiIpv6AddIndex++) {
-			if ((dest_addr->ulIpv6Mask[i+uiIpv6AddIndex] &
-				aulDestIP[uiIpv6AddIndex]) !=
-			    dest_addr->ulIpv6Addr[i+uiIpv6AddIndex]) {
+		for (ipv6_add_idx = 0;
+		     ipv6_add_idx < uiIpv6AddrNoLongWords;
+		     ipv6_add_idx++) {
+			if ((dest_addr->ulIpv6Mask[i+ipv6_add_idx] &
+				aulDestIP[ipv6_add_idx]) !=
+			    dest_addr->ulIpv6Addr[i+ipv6_add_idx]) {
 				/*
 				 * Match failed for current Ipv6 Address.
 				 * Try next Ipv6 Address
@@ -410,7 +410,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				break;
 			}
 
-			if (uiIpv6AddIndex ==  uiIpv6AddrNoLongWords-1) {
+			if (ipv6_add_idx ==  uiIpv6AddrNoLongWords-1) {
 				/* Match Found */
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 						DBG_LVL_ALL,
@@ -426,14 +426,14 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 VOID DumpIpv6Address(ULONG *puIpv6Address)
 {
 	UINT uiIpv6AddrNoLongWords = 4;
-	UINT uiIpv6AddIndex = 0;
+	UINT ipv6_add_idx = 0;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	for (uiIpv6AddIndex = 0;
-	     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
-	     uiIpv6AddIndex++) {
+	for (ipv6_add_idx = 0;
+	     ipv6_add_idx < uiIpv6AddrNoLongWords;
+	     ipv6_add_idx++) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-				":%lx", puIpv6Address[uiIpv6AddIndex]);
+				":%lx", puIpv6Address[ipv6_add_idx]);
 	}
 
 }

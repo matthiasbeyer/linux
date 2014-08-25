@@ -1,10 +1,10 @@
 #include "headers.h"
 
 static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
-	struct bcm_ipv6_hdr *pstIpv6Header);
+	struct bcm_ipv6_hdr *ipv6_hdr);
 static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
-	struct bcm_ipv6_hdr *pstIpv6Header);
-static VOID DumpIpv6Header(struct bcm_ipv6_hdr *pstIpv6Header);
+	struct bcm_ipv6_hdr *ipv6_hdr);
+static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr);
 
 static UCHAR *GetNextIPV6ChainedHeader(UCHAR **ppucPayload,
 	UCHAR *pucNextHeader, bool *bParseDone, USHORT *pusPayloadLength)
@@ -184,15 +184,15 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 	USHORT	ushDestPort = 0;
 	USHORT	ushSrcPort = 0;
 	UCHAR   ucNextProtocolAboveIP = 0;
-	struct bcm_ipv6_hdr *pstIpv6Header = NULL;
+	struct bcm_ipv6_hdr *ipv6_hdr = NULL;
 	bool bClassificationSucceed = false;
 
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 			DBG_LVL_ALL, "IpVersion6 ==========>\n");
 
-	pstIpv6Header = pcIpHeader;
+	ipv6_hdr = pcIpHeader;
 
-	DumpIpv6Header(pstIpv6Header);
+	DumpIpv6Header(ipv6_hdr);
 
 	/*
 	 * Try to get the next higher layer protocol
@@ -202,8 +202,8 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 						     sizeof(struct bcm_ipv6_hdr)),
 						     &ushSrcPort,
 						     &ushDestPort,
-						     pstIpv6Header->usPayloadLength,
-						     pstIpv6Header->ucNextHeader);
+						     ipv6_hdr->usPayloadLength,
+						     ipv6_hdr->ucNextHeader);
 
 	do {
 		if (classifier_rule->ucDirection == 0) {
@@ -223,12 +223,12 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 		}
 
 		bClassificationSucceed = MatchSrcIpv6Address(classifier_rule,
-							     pstIpv6Header);
+							     ipv6_hdr);
 		if (!bClassificationSucceed)
 			break;
 
 		bClassificationSucceed = MatchDestIpv6Address(classifier_rule,
-							      pstIpv6Header);
+							      ipv6_hdr);
 		if (!bClassificationSucceed)
 			break;
 
@@ -289,7 +289,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 
 
 static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
-				struct bcm_ipv6_hdr *pstIpv6Header)
+				struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UINT uiLoopIndex = 0;
 	UINT uiIpv6AddIndex = 0;
@@ -315,7 +315,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 	     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
 	     uiIpv6AddIndex++)
 		aulSrcIP[uiIpv6AddIndex] =
-			ntohl(pstIpv6Header->ulSrcIpAddress[uiIpv6AddIndex]);
+			ntohl(ipv6_hdr->ulSrcIpAddress[uiIpv6AddIndex]);
 
 	for (uiLoopIndex = 0;
 	     uiLoopIndex < uiCountIPSrcAddresses;
@@ -356,7 +356,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 }
 
 static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
-				 struct bcm_ipv6_hdr *pstIpv6Header)
+				 struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UINT uiLoopIndex = 0;
 	UINT uiIpv6AddIndex = 0;
@@ -382,7 +382,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 	     uiIpv6AddIndex < uiIpv6AddrNoLongWords;
 	     uiIpv6AddIndex++)
 		aulDestIP[uiIpv6AddIndex] =
-			ntohl(pstIpv6Header->ulDestIpAddress[uiIpv6AddIndex]);
+			ntohl(ipv6_hdr->ulDestIpAddress[uiIpv6AddIndex]);
 
 	for (uiLoopIndex = 0;
 	     uiLoopIndex < uiCountIPDestinationAddresses;
@@ -438,7 +438,7 @@ VOID DumpIpv6Address(ULONG *puIpv6Address)
 
 }
 
-static VOID DumpIpv6Header(struct bcm_ipv6_hdr *pstIpv6Header)
+static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UCHAR ucVersion;
 	UCHAR ucPrio;
@@ -446,29 +446,29 @@ static VOID DumpIpv6Header(struct bcm_ipv6_hdr *pstIpv6Header)
 
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"----Ipv6 Header---");
-	ucVersion = pstIpv6Header->ucVersionPrio & 0xf0;
+	ucVersion = ipv6_hdr->ucVersionPrio & 0xf0;
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Version : %x\n", ucVersion);
-	ucPrio = pstIpv6Header->ucVersionPrio & 0x0f;
+	ucPrio = ipv6_hdr->ucVersionPrio & 0x0f;
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Priority : %x\n", ucPrio);
 	/*
 	 * BCM_DEBUG_PRINT( Adapter,DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-	 * "Flow Label : %x\n",(pstIpv6Header->ucVersionPrio &0xf0);
+	 * "Flow Label : %x\n",(ipv6_hdr->ucVersionPrio &0xf0);
 	 */
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Payload Length : %x\n",
-			ntohs(pstIpv6Header->usPayloadLength));
+			ntohs(ipv6_hdr->usPayloadLength));
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-			"Next Header : %x\n", pstIpv6Header->ucNextHeader);
+			"Next Header : %x\n", ipv6_hdr->ucNextHeader);
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-			"Hop Limit : %x\n", pstIpv6Header->ucHopLimit);
+			"Hop Limit : %x\n", ipv6_hdr->ucHopLimit);
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Src Address :\n");
-	DumpIpv6Address(pstIpv6Header->ulSrcIpAddress);
+	DumpIpv6Address(ipv6_hdr->ulSrcIpAddress);
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Dest Address :\n");
-	DumpIpv6Address(pstIpv6Header->ulDestIpAddress);
+	DumpIpv6Address(ipv6_hdr->ulDestIpAddress);
 	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"----Ipv6 Header End---");
 

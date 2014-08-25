@@ -183,7 +183,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 {
 	USHORT	dest_port = 0;
 	USHORT	src_port = 0;
-	UCHAR   ucNextProtocolAboveIP = 0;
+	UCHAR   nxt_prot_above_ip = 0;
 	struct bcm_ipv6_hdr *ipv6_hdr = NULL;
 	bool bClassificationSucceed = false;
 
@@ -198,7 +198,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 	 * Try to get the next higher layer protocol
 	 * and the Ports Nos if TCP or UDP
 	 */
-	ucNextProtocolAboveIP = GetIpv6ProtocolPorts((UCHAR *)(ip_hdr +
+	nxt_prot_above_ip = GetIpv6ProtocolPorts((UCHAR *)(ip_hdr +
 						     sizeof(struct bcm_ipv6_hdr)),
 						     &src_port,
 						     &dest_port,
@@ -238,15 +238,15 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		 * Chain of IPv6 prot headers
 		 */
 		bClassificationSucceed = MatchProtocol(classifier_rule,
-						       ucNextProtocolAboveIP);
+						       nxt_prot_above_ip);
 		if (!bClassificationSucceed)
 			break;
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nIPv6 Protocol Matched");
 
-		if ((ucNextProtocolAboveIP == TCP_HEADER_TYPE) ||
-			(ucNextProtocolAboveIP == UDP_HEADER_TYPE)) {
+		if ((nxt_prot_above_ip == TCP_HEADER_TYPE) ||
+			(nxt_prot_above_ip == UDP_HEADER_TYPE)) {
 			/* Match Src Port */
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL, "\nIPv6 Source Port:%x\n",

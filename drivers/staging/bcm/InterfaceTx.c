@@ -87,7 +87,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 {
 	struct bcm_usb_tcb *tcb = (struct bcm_usb_tcb *)urb->context;
 	struct bcm_interface_adapter *intf_ad = tcb->psIntfAdapter;
-	struct bcm_link_request *pControlMsg =
+	struct bcm_link_request *cntr_msg =
 		(struct bcm_link_request *)urb->transfer_buffer;
 	struct bcm_mini_adapter *psAdapter = intf_ad->psAdapter;
 	bool bpowerDownMsg = false;
@@ -114,7 +114,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 
 	if (TRUE == psAdapter->bPreparingForLowPowerMode) {
 		prepare_low_power_mode(urb, intf_ad, psAdapter, Adapter,
-				       pControlMsg, &bpowerDownMsg);
+				       cntr_msg, &bpowerDownMsg);
 	}
 
 	usb_free_coherent(urb->dev, urb->transfer_buffer_length,

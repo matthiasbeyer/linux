@@ -114,14 +114,14 @@ This function despatches packet from the specified queue.
 */
 static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 			       struct bcm_packet_info *sf, /**<Queue identifier*/
-			       struct sk_buff *Packet)	/**<Pointer to the packet to be sent*/
+			       struct sk_buff *packet)	/**<Pointer to the packet to be sent*/
 {
 	INT Status = STATUS_FAILURE;
 	UINT uiIndex = 0, PktLen = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 			"=====>");
-	if (!ad || !Packet || !sf) {
+	if (!ad || !packet || !sf) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 				"Got NULL Adapter or Packet");
 		return -EINVAL;
@@ -130,8 +130,8 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 	if (sf->liDrainCalculated == 0)
 		sf->liDrainCalculated = jiffies;
 	/* send the packet to the fifo.. */
-	PktLen = Packet->len;
-	Status = SetupNextSend(ad, Packet, sf->usVCID_Value);
+	PktLen = packet->len;
+	Status = SetupNextSend(ad, packet, sf->usVCID_Value);
 	if (Status == 0) {
 		for (uiIndex = 0; uiIndex < MIBS_MAX_HIST_ENTRIES; uiIndex++) {
 			if ((PktLen <= MIBS_PKTSIZEHIST_RANGE*(uiIndex+1)) &&

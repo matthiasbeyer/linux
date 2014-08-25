@@ -62,9 +62,9 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 
 	case IPV6HDR_TYPE_DESTOPTS:
 		{
-			struct bcm_ipv6_dest_options_hdr *pstIpv6DestOptsHdr =
+			struct bcm_ipv6_dest_options_hdr *ipv6_dest_opts_hdr =
 				(struct bcm_ipv6_dest_options_hdr *)pld;
-			int nTotalOptions = pstIpv6DestOptsHdr->ucHdrExtLen;
+			int nTotalOptions = ipv6_dest_opts_hdr->ucHdrExtLen;
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,

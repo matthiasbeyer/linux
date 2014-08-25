@@ -9,7 +9,7 @@ static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr);
 static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	UCHAR *nxt_hdr, bool *parse_done, USHORT *payload_len)
 {
-	UCHAR *pucRetHeaderPtr = NULL;
+	UCHAR *ret_hdr = NULL;
 	UCHAR *pucPayloadPtr = NULL;
 	USHORT  usNextHeaderOffset = 0;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
@@ -20,10 +20,10 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		return NULL;
 	}
 
-	pucRetHeaderPtr = *payload;
+	ret_hdr = *payload;
 	pucPayloadPtr = *payload;
 
-	if (!pucRetHeaderPtr || !pucPayloadPtr) {
+	if (!ret_hdr || !pucPayloadPtr) {
 		*parse_done = TRUE;
 		return NULL;
 	}
@@ -131,7 +131,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	}
 
 	*payload = pucPayloadPtr;
-	return pucRetHeaderPtr;
+	return ret_hdr;
 }
 
 

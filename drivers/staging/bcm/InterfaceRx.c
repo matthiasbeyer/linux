@@ -126,7 +126,7 @@ static void read_bulk_callback(struct urb *urb)
 {
 	struct sk_buff *skb = NULL;
 	bool hdr_suppression_enabled = false;
-	int QueueIndex = NO_OF_QUEUES + 1;
+	int queue_idx = NO_OF_QUEUES + 1;
 	UINT uiIndex = 0;
 	struct bcm_usb_rcb *rcb = (struct bcm_usb_rcb *)urb->context;
 	struct bcm_interface_adapter *intf_ad = rcb->psIntfAdapter;
@@ -187,10 +187,10 @@ static void read_bulk_callback(struct urb *urb)
 		return;
 	}
 
-	QueueIndex = SearchVcid(ad, pLeader->Vcid);
-	if (QueueIndex < NO_OF_QUEUES) {
+	queue_idx = SearchVcid(ad, pLeader->Vcid);
+	if (queue_idx < NO_OF_QUEUES) {
 		hdr_suppression_enabled =
-			ad->PackInfo[QueueIndex].bHeaderSuppressionEnabled;
+			ad->PackInfo[queue_idx].bHeaderSuppressionEnabled;
 		hdr_suppression_enabled =
 			hdr_suppression_enabled & ad->bPHSEnabled;
 	}
@@ -210,7 +210,7 @@ static void read_bulk_callback(struct urb *urb)
 				      urb);
 	} else {
 		format_eth_hdr_to_stack(intf_ad, ad, pLeader, skb,
-					urb, uiIndex, QueueIndex,
+					urb, uiIndex, queue_idx,
 					hdr_suppression_enabled);
 	}
 	ad->PrevNumRecvDescs++;

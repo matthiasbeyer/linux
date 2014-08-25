@@ -86,10 +86,10 @@ static void prepare_low_power_mode(struct urb *urb,
 static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 {
 	struct bcm_usb_tcb *tcb = (struct bcm_usb_tcb *)urb->context;
-	struct bcm_interface_adapter *psIntfAdapter = tcb->psIntfAdapter;
+	struct bcm_interface_adapter *intf_ad = tcb->psIntfAdapter;
 	struct bcm_link_request *pControlMsg =
 		(struct bcm_link_request *)urb->transfer_buffer;
-	struct bcm_mini_adapter *psAdapter = psIntfAdapter->psAdapter;
+	struct bcm_mini_adapter *psAdapter = intf_ad->psAdapter;
 	bool bpowerDownMsg = false;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
@@ -99,8 +99,8 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 
 	if (urb->status != STATUS_SUCCESS) {
 		if (urb->status == -EPIPE) {
-			psIntfAdapter->psAdapter->bEndPointHalted = TRUE;
-			wake_up(&psIntfAdapter->psAdapter->tx_packet_wait_queue);
+			intf_ad->psAdapter->bEndPointHalted = TRUE;
+			wake_up(&intf_ad->psAdapter->tx_packet_wait_queue);
 		} else {
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, NEXT_SEND,
 					DBG_LVL_ALL,
@@ -110,10 +110,10 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	}
 
 	tcb->bUsed = false;
-	atomic_dec(&psIntfAdapter->uNumTcbUsed);
+	atomic_dec(&intf_ad->uNumTcbUsed);
 
 	if (TRUE == psAdapter->bPreparingForLowPowerMode) {
-		prepare_low_power_mode(urb, psIntfAdapter, psAdapter, Adapter,
+		prepare_low_power_mode(urb, intf_ad, psAdapter, Adapter,
 				       pControlMsg, &bpowerDownMsg);
 	}
 
@@ -122,75 +122,75 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 }
 
 
-static struct bcm_usb_tcb *GetBulkOutTcb(struct bcm_interface_adapter *psIntfAdapter)
+static struct bcm_usb_tcb *GetBulkOutTcb(struct bcm_interface_adapter *intf_ad)
 {
 	struct bcm_usb_tcb *tcb = NULL;
 	UINT index = 0;
 
-	if ((atomic_read(&psIntfAdapter->uNumTcbUsed) < MAXIMUM_USB_TCB) &&
-		(psIntfAdapter->psAdapter->StopAllXaction == false)) {
-		index = atomic_read(&psIntfAdapter->uCurrTcb);
-		tcb = &psIntfAdapter->asUsbTcb[index];
+	if ((atomic_read(&intf_ad->uNumTcbUsed) < MAXIMUM_USB_TCB) &&
+		(intf_ad->psAdapter->StopAllXaction == false)) {
+		index = atomic_read(&intf_ad->uCurrTcb);
+		tcb = &intf_ad->asUsbTcb[index];
 		tcb->bUsed = TRUE;
-		tcb->psIntfAdapter = psIntfAdapter;
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_TX,
+		tcb->psIntfAdapter = intf_ad;
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_TX,
 				NEXT_SEND, DBG_LVL_ALL,
 				"Got Tx desc %d used %d",
 				index,
-				atomic_read(&psIntfAdapter->uNumTcbUsed));
+				atomic_read(&intf_ad->uNumTcbUsed));
 		index = (index + 1) % MAXIMUM_USB_TCB;
-		atomic_set(&psIntfAdapter->uCurrTcb, index);
-		atomic_inc(&psIntfAdapter->uNumTcbUsed);
+		atomic_set(&intf_ad->uCurrTcb, index);
+		atomic_inc(&intf_ad->uNumTcbUsed);
 	}
 	return tcb;
 }
 
-static int TransmitTcb(struct bcm_interface_adapter *psIntfAdapter,
+static int TransmitTcb(struct bcm_interface_adapter *intf_ad,
 		       struct bcm_usb_tcb *tcb, PVOID data, int len)
 {
 
 	struct urb *urb = tcb->urb;
 	int retval = 0;
 
-	urb->transfer_buffer = usb_alloc_coherent(psIntfAdapter->udev, len,
+	urb->transfer_buffer = usb_alloc_coherent(intf_ad->udev, len,
 						GFP_ATOMIC, &urb->transfer_dma);
 	if (!urb->transfer_buffer) {
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_PRINTK, 0, 0,
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_PRINTK, 0, 0,
 				"Error allocating memory\n");
 		return  -ENOMEM;
 	}
 	memcpy(urb->transfer_buffer, data, len);
 	urb->transfer_buffer_length = len;
 
-	BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_TX, NEXT_SEND,
+	BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_TX, NEXT_SEND,
 			DBG_LVL_ALL, "Sending Bulk out packet\n");
 	/* For T3B,INT OUT end point will be used as bulk out end point */
-	if ((psIntfAdapter->psAdapter->chip_id == T3B) &&
-			(psIntfAdapter->bHighSpeedDevice == TRUE)) {
-		usb_fill_int_urb(urb, psIntfAdapter->udev,
-			psIntfAdapter->sBulkOut.bulk_out_pipe,
+	if ((intf_ad->psAdapter->chip_id == T3B) &&
+			(intf_ad->bHighSpeedDevice == TRUE)) {
+		usb_fill_int_urb(urb, intf_ad->udev,
+			intf_ad->sBulkOut.bulk_out_pipe,
 			urb->transfer_buffer, len, write_bulk_callback, tcb,
-			psIntfAdapter->sBulkOut.int_out_interval);
+			intf_ad->sBulkOut.int_out_interval);
 	} else {
-	usb_fill_bulk_urb(urb, psIntfAdapter->udev,
-		  psIntfAdapter->sBulkOut.bulk_out_pipe,
+	usb_fill_bulk_urb(urb, intf_ad->udev,
+		  intf_ad->sBulkOut.bulk_out_pipe,
 		  urb->transfer_buffer, len, write_bulk_callback, tcb);
 	}
 	urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP; /* For DMA transfer */
 
-	if (false == psIntfAdapter->psAdapter->device_removed &&
-	   false == psIntfAdapter->psAdapter->bEndPointHalted &&
-	   false == psIntfAdapter->bSuspended &&
-	   false == psIntfAdapter->bPreparingForBusSuspend) {
+	if (false == intf_ad->psAdapter->device_removed &&
+	   false == intf_ad->psAdapter->bEndPointHalted &&
+	   false == intf_ad->bSuspended &&
+	   false == intf_ad->bPreparingForBusSuspend) {
 		retval = usb_submit_urb(urb, GFP_ATOMIC);
 		if (retval) {
-			BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_TX,
+			BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_TX,
 					NEXT_SEND, DBG_LVL_ALL,
 					"failed submitting write urb, error %d",
 					retval);
 			if (retval == -EPIPE) {
-				psIntfAdapter->psAdapter->bEndPointHalted = TRUE;
-				wake_up(&psIntfAdapter->psAdapter->tx_packet_wait_queue);
+				intf_ad->psAdapter->bEndPointHalted = TRUE;
+				wake_up(&intf_ad->psAdapter->tx_packet_wait_queue);
 			}
 		}
 	}
@@ -200,14 +200,14 @@ static int TransmitTcb(struct bcm_interface_adapter *psIntfAdapter,
 int InterfaceTransmitPacket(PVOID arg, PVOID data, UINT len)
 {
 	struct bcm_usb_tcb *tcb = NULL;
-	struct bcm_interface_adapter *psIntfAdapter = arg;
+	struct bcm_interface_adapter *intf_ad = arg;
 
-	tcb = GetBulkOutTcb(psIntfAdapter);
+	tcb = GetBulkOutTcb(intf_ad);
 	if (tcb == NULL) {
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_PRINTK, 0, 0,
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_PRINTK, 0, 0,
 				"No URB to transmit packet, dropping packet");
 		return -EFAULT;
 	}
-	return TransmitTcb(psIntfAdapter, tcb, data, len);
+	return TransmitTcb(intf_ad, tcb, data, len);
 }
 

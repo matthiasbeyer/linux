@@ -136,7 +136,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 
 
 static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
-	USHORT *dest_port, USHORT payload_len, UCHAR ucNextHeader)
+	USHORT *dest_port, USHORT payload_len, UCHAR next_header)
 {
 	UCHAR *pIpv6HdrScanContext = payload;
 	bool bDone = false;
@@ -148,7 +148,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 		return 0;
 
 	*src_port = *dest_port = 0;
-	ucHeaderType = ucNextHeader;
+	ucHeaderType = next_header;
 	while (!bDone) {
 		nxt_hdr = GetNextIPV6ChainedHeader(&pIpv6HdrScanContext,
 							 &ucHeaderType,

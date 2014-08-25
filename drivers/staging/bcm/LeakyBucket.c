@@ -296,7 +296,7 @@ static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *ad,
 ********************************************************************/
 VOID transmit_packets(struct bcm_mini_adapter *ad)
 {
-	UINT uiPrevTotalCount = 0;
+	UINT prev_total_cnt = 0;
 	int iIndex = 0;
 
 	bool exit_flag = TRUE;
@@ -325,10 +325,10 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 
 	PruneQueueAllSF(ad);
 
-	uiPrevTotalCount = atomic_read(&ad->TotalPacketCount);
+	prev_total_cnt = atomic_read(&ad->TotalPacketCount);
 
 	for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
-		if (!uiPrevTotalCount || (TRUE == ad->device_removed))
+		if (!prev_total_cnt || (TRUE == ad->device_removed))
 				break;
 
 		if (ad->PackInfo[iIndex].bValid &&
@@ -339,15 +339,15 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 					"Calling CheckAndSendPacketFromIndex..");
 			CheckAndSendPacketFromIndex(ad,
 						    &ad->PackInfo[iIndex]);
-			uiPrevTotalCount--;
+			prev_total_cnt--;
 		}
 	}
 
-	while (uiPrevTotalCount > 0 && !ad->device_removed) {
+	while (prev_total_cnt > 0 && !ad->device_removed) {
 		exit_flag = TRUE;
 		/* second iteration to parse non-pending queues */
 		for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
-			if (!uiPrevTotalCount ||
+			if (!prev_total_cnt ||
 			    (TRUE == ad->device_removed))
 				break;
 
@@ -358,7 +358,7 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 						TX_PACKETS, DBG_LVL_ALL,
 						"Calling CheckAndSendPacketFromIndex..");
 				CheckAndSendPacketFromIndex(ad, &ad->PackInfo[iIndex]);
-				uiPrevTotalCount--;
+				prev_total_cnt--;
 				exit_flag = false;
 			}
 		}

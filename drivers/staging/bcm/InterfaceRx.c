@@ -102,15 +102,15 @@ static int SearchVcid(struct bcm_mini_adapter *ad, unsigned short vcid)
 static struct bcm_usb_rcb *
 GetBulkInRcb(struct bcm_interface_adapter *intf_ad)
 {
-	struct bcm_usb_rcb *pRcb = NULL;
+	struct bcm_usb_rcb *rcb = NULL;
 	UINT index = 0;
 
 	if ((atomic_read(&intf_ad->uNumRcbUsed) < MAXIMUM_USB_RCB) &&
 	    (intf_ad->psAdapter->StopAllXaction == false)) {
 		index = atomic_read(&intf_ad->uCurrRcb);
-		pRcb = &intf_ad->asUsbRcb[index];
-		pRcb->bUsed = TRUE;
-		pRcb->psIntfAdapter = intf_ad;
+		rcb = &intf_ad->asUsbRcb[index];
+		rcb->bUsed = TRUE;
+		rcb->psIntfAdapter = intf_ad;
 		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_RX, RX_DPC,
 				DBG_LVL_ALL, "Got Rx desc %d used %d", index,
 				atomic_read(&intf_ad->uNumRcbUsed));
@@ -118,7 +118,7 @@ GetBulkInRcb(struct bcm_interface_adapter *intf_ad)
 		atomic_set(&intf_ad->uCurrRcb, index);
 		atomic_inc(&intf_ad->uNumRcbUsed);
 	}
-	return pRcb;
+	return rcb;
 }
 
 /*this is receive call back - when pkt available for receive (BULK IN- end point)*/
@@ -128,8 +128,8 @@ static void read_bulk_callback(struct urb *urb)
 	bool bHeaderSupressionEnabled = false;
 	int QueueIndex = NO_OF_QUEUES + 1;
 	UINT uiIndex = 0;
-	struct bcm_usb_rcb *pRcb = (struct bcm_usb_rcb *)urb->context;
-	struct bcm_interface_adapter *intf_ad = pRcb->psIntfAdapter;
+	struct bcm_usb_rcb *rcb = (struct bcm_usb_rcb *)urb->context;
+	struct bcm_interface_adapter *intf_ad = rcb->psIntfAdapter;
 	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
 	struct bcm_leader *pLeader = urb->transfer_buffer;
 
@@ -140,7 +140,7 @@ static void read_bulk_callback(struct urb *urb)
 	if ((ad->device_removed == TRUE) ||
 	    (TRUE == ad->bEndPointHalted) ||
 	    (0 == urb->actual_length)) {
-		pRcb->bUsed = false;
+		rcb->bUsed = false;
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		return;
 	}
@@ -155,7 +155,7 @@ static void read_bulk_callback(struct urb *urb)
 					"Rx URB has got cancelled. status :%d",
 					urb->status);
 		}
-		pRcb->bUsed = false;
+		rcb->bUsed = false;
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		urb->status = STATUS_SUCCESS;
 		return;
@@ -214,14 +214,14 @@ static void read_bulk_callback(struct urb *urb)
 					bHeaderSupressionEnabled);
 	}
 	ad->PrevNumRecvDescs++;
-	pRcb->bUsed = false;
+	rcb->bUsed = false;
 	atomic_dec(&intf_ad->uNumRcbUsed);
 }
 
 static int ReceiveRcb(struct bcm_interface_adapter *intf_ad,
-		      struct bcm_usb_rcb *pRcb)
+		      struct bcm_usb_rcb *rcb)
 {
-	struct urb *urb = pRcb->urb;
+	struct urb *urb = rcb->urb;
 	int retval = 0;
 
 	usb_fill_bulk_urb(urb, intf_ad->udev,
@@ -229,7 +229,7 @@ static int ReceiveRcb(struct bcm_interface_adapter *intf_ad,
 					  intf_ad->sBulkIn.bulk_in_endpointAddr),
 			  urb->transfer_buffer,
 			  BCM_USB_MAX_READ_LENGTH,
-			  read_bulk_callback, pRcb);
+			  read_bulk_callback, rcb);
 
 	if (false == intf_ad->psAdapter->device_removed &&
 	    false == intf_ad->psAdapter->bEndPointHalted &&
@@ -271,17 +271,17 @@ bool InterfaceRx(struct bcm_interface_adapter *intf_ad)
 	USHORT RxDescCount = NUM_RX_DESC -
 		atomic_read(&intf_ad->uNumRcbUsed);
 
-	struct bcm_usb_rcb *pRcb = NULL;
+	struct bcm_usb_rcb *rcb = NULL;
 
 	while (RxDescCount) {
-		pRcb = GetBulkInRcb(intf_ad);
-		if (pRcb == NULL) {
+		rcb = GetBulkInRcb(intf_ad);
+		if (rcb == NULL) {
 			BCM_DEBUG_PRINT(intf_ad->psAdapter,
 					DBG_TYPE_PRINTK, 0, 0,
 					"Unable to get Rcb pointer");
 			return false;
 		}
-		ReceiveRcb(intf_ad, pRcb);
+		ReceiveRcb(intf_ad, rcb);
 		RxDescCount--;
 	}
 	return TRUE;

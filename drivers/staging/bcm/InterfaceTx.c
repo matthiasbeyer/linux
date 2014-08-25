@@ -89,7 +89,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	struct bcm_interface_adapter *intf_ad = tcb->psIntfAdapter;
 	struct bcm_link_request *cntr_msg =
 		(struct bcm_link_request *)urb->transfer_buffer;
-	struct bcm_mini_adapter *psAdapter = intf_ad->psAdapter;
+	struct bcm_mini_adapter *ps_ad = intf_ad->psAdapter;
 	bool power_down_msg = false;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
@@ -112,8 +112,8 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	tcb->bUsed = false;
 	atomic_dec(&intf_ad->uNumTcbUsed);
 
-	if (TRUE == psAdapter->bPreparingForLowPowerMode) {
-		prepare_low_power_mode(urb, intf_ad, psAdapter, Adapter,
+	if (TRUE == ps_ad->bPreparingForLowPowerMode) {
+		prepare_low_power_mode(urb, intf_ad, ps_ad, Adapter,
 				       cntr_msg, &power_down_msg);
 	}
 

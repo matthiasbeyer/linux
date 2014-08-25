@@ -176,9 +176,9 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 /*
  * Arg 1 struct bcm_mini_adapter *ad is a pointer ot the driver control
  * structure
- * Arg 2 PVOID pcIpHeader is a pointer to the IP header of the packet
+ * Arg 2 PVOID ip_hdr is a pointer to the IP header of the packet
  */
-USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID pcIpHeader,
+USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		   struct bcm_classifier_rule *classifier_rule)
 {
 	USHORT	ushDestPort = 0;
@@ -190,7 +190,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID pcIpHeader,
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
 			DBG_LVL_ALL, "IpVersion6 ==========>\n");
 
-	ipv6_hdr = pcIpHeader;
+	ipv6_hdr = ip_hdr;
 
 	DumpIpv6Header(ipv6_hdr);
 
@@ -198,7 +198,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID pcIpHeader,
 	 * Try to get the next higher layer protocol
 	 * and the Ports Nos if TCP or UDP
 	 */
-	ucNextProtocolAboveIP = GetIpv6ProtocolPorts((UCHAR *)(pcIpHeader +
+	ucNextProtocolAboveIP = GetIpv6ProtocolPorts((UCHAR *)(ip_hdr +
 						     sizeof(struct bcm_ipv6_hdr)),
 						     &ushSrcPort,
 						     &ushDestPort,

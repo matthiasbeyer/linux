@@ -297,7 +297,7 @@ static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *ad,
 VOID transmit_packets(struct bcm_mini_adapter *ad)
 {
 	UINT prev_total_cnt = 0;
-	int iIndex = 0;
+	int i = 0;
 
 	bool exit_flag = TRUE;
 
@@ -327,18 +327,18 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 
 	prev_total_cnt = atomic_read(&ad->TotalPacketCount);
 
-	for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
+	for (i = HiPriority; i >= 0; i--) {
 		if (!prev_total_cnt || (TRUE == ad->device_removed))
 				break;
 
-		if (ad->PackInfo[iIndex].bValid &&
-		    ad->PackInfo[iIndex].uiPendedLast &&
-		    ad->PackInfo[iIndex].uiCurrentBytesOnHost) {
+		if (ad->PackInfo[i].bValid &&
+		    ad->PackInfo[i].uiPendedLast &&
+		    ad->PackInfo[i].uiCurrentBytesOnHost) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS,
 					DBG_LVL_ALL,
 					"Calling CheckAndSendPacketFromIndex..");
 			CheckAndSendPacketFromIndex(ad,
-						    &ad->PackInfo[iIndex]);
+						    &ad->PackInfo[i]);
 			prev_total_cnt--;
 		}
 	}
@@ -346,18 +346,18 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 	while (prev_total_cnt > 0 && !ad->device_removed) {
 		exit_flag = TRUE;
 		/* second iteration to parse non-pending queues */
-		for (iIndex = HiPriority; iIndex >= 0; iIndex--) {
+		for (i = HiPriority; i >= 0; i--) {
 			if (!prev_total_cnt ||
 			    (TRUE == ad->device_removed))
 				break;
 
-			if (ad->PackInfo[iIndex].bValid &&
-			    ad->PackInfo[iIndex].uiCurrentBytesOnHost &&
-			    !ad->PackInfo[iIndex].uiPendedLast) {
+			if (ad->PackInfo[i].bValid &&
+			    ad->PackInfo[i].uiCurrentBytesOnHost &&
+			    !ad->PackInfo[i].uiPendedLast) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX,
 						TX_PACKETS, DBG_LVL_ALL,
 						"Calling CheckAndSendPacketFromIndex..");
-				CheckAndSendPacketFromIndex(ad, &ad->PackInfo[iIndex]);
+				CheckAndSendPacketFromIndex(ad, &ad->PackInfo[i]);
 				prev_total_cnt--;
 				exit_flag = false;
 			}

@@ -26,7 +26,7 @@ static int adapter_err_occurred(const struct bcm_interface_adapter *ad)
 	return 0;
 }
 
-int InterfaceRDM(struct bcm_interface_adapter *psIntfAdapter,
+int InterfaceRDM(struct bcm_interface_adapter *intf_ad,
 		unsigned int addr,
 		void *buff,
 		int len)
@@ -34,17 +34,17 @@ int InterfaceRDM(struct bcm_interface_adapter *psIntfAdapter,
 	int bytes;
 	int err = 0;
 
-	if (!psIntfAdapter)
+	if (!intf_ad)
 		return -EINVAL;
 
-	err = adapter_err_occurred(psIntfAdapter);
+	err = adapter_err_occurred(intf_ad);
 	if (err)
 		return err;
 
-	psIntfAdapter->psAdapter->DeviceAccess = TRUE;
+	intf_ad->psAdapter->DeviceAccess = TRUE;
 
-	bytes = usb_control_msg(psIntfAdapter->udev,
-				usb_rcvctrlpipe(psIntfAdapter->udev, 0),
+	bytes = usb_control_msg(intf_ad->udev,
+				usb_rcvctrlpipe(intf_ad->udev, 0),
 				0x02,
 				0xC2,
 				(addr & 0xFFFF),
@@ -54,20 +54,20 @@ int InterfaceRDM(struct bcm_interface_adapter *psIntfAdapter,
 				5000);
 
 	if (-ENODEV == bytes)
-		psIntfAdapter->psAdapter->device_removed = TRUE;
+		intf_ad->psAdapter->device_removed = TRUE;
 
 	if (bytes < 0)
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS, RDM,
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS, RDM,
 				DBG_LVL_ALL, "RDM failed status :%d", bytes);
 	else
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS, RDM,
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS, RDM,
 				DBG_LVL_ALL, "RDM sent %d", bytes);
 
-	psIntfAdapter->psAdapter->DeviceAccess = false;
+	intf_ad->psAdapter->DeviceAccess = false;
 	return bytes;
 }
 
-int InterfaceWRM(struct bcm_interface_adapter *psIntfAdapter,
+int InterfaceWRM(struct bcm_interface_adapter *intf_ad,
 		unsigned int addr,
 		void *buff,
 		int len)
@@ -75,17 +75,17 @@ int InterfaceWRM(struct bcm_interface_adapter *psIntfAdapter,
 	int retval = 0;
 	int err = 0;
 
-	if (!psIntfAdapter)
+	if (!intf_ad)
 		return -EINVAL;
 
-	err = adapter_err_occurred(psIntfAdapter);
+	err = adapter_err_occurred(intf_ad);
 	if (err)
 		return err;
 
-	psIntfAdapter->psAdapter->DeviceAccess = TRUE;
+	intf_ad->psAdapter->DeviceAccess = TRUE;
 
-	retval = usb_control_msg(psIntfAdapter->udev,
-				usb_sndctrlpipe(psIntfAdapter->udev, 0),
+	retval = usb_control_msg(intf_ad->udev,
+				usb_sndctrlpipe(intf_ad->udev, 0),
 				0x01,
 				0x42,
 				(addr & 0xFFFF),
@@ -95,16 +95,16 @@ int InterfaceWRM(struct bcm_interface_adapter *psIntfAdapter,
 				5000);
 
 	if (-ENODEV == retval)
-		psIntfAdapter->psAdapter->device_removed = TRUE;
+		intf_ad->psAdapter->device_removed = TRUE;
 
 	if (retval < 0)	{
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS, WRM,
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS, WRM,
 				DBG_LVL_ALL, "WRM failed status :%d", retval);
-		psIntfAdapter->psAdapter->DeviceAccess = false;
+		intf_ad->psAdapter->DeviceAccess = false;
 		return retval;
 	} else {
-		psIntfAdapter->psAdapter->DeviceAccess = false;
-		BCM_DEBUG_PRINT(psIntfAdapter->psAdapter, DBG_TYPE_OTHERS, WRM,
+		intf_ad->psAdapter->DeviceAccess = false;
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_OTHERS, WRM,
 				DBG_LVL_ALL, "WRM sent %d", retval);
 		return STATUS_SUCCESS;
 	}
@@ -130,7 +130,7 @@ int BcmWRM(void *arg,
 
 int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 {
-	struct bcm_interface_adapter *psIntfAdapter =
+	struct bcm_interface_adapter *intf_ad =
 		(struct bcm_interface_adapter *)(Adapter->pvInterfaceAdapter);
 	int status = STATUS_SUCCESS;
 
@@ -152,27 +152,27 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 	 */
 
 	/* Killing all the submitted urbs to different end points. */
-	Bcm_kill_all_URBs(psIntfAdapter);
+	Bcm_kill_all_URBs(intf_ad);
 
 	/* clear the halted/stalled state for every end point */
-	status = usb_clear_halt(psIntfAdapter->udev,
-				psIntfAdapter->sIntrIn.int_in_pipe);
+	status = usb_clear_halt(intf_ad->udev,
+				intf_ad->sIntrIn.int_in_pipe);
 	if (status != STATUS_SUCCESS)
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Unable to Clear Halt of Interrupt IN end point. :%d ",
 				status);
 
-	status = usb_clear_halt(psIntfAdapter->udev,
-				psIntfAdapter->sBulkIn.bulk_in_pipe);
+	status = usb_clear_halt(intf_ad->udev,
+				intf_ad->sBulkIn.bulk_in_pipe);
 	if (status != STATUS_SUCCESS)
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
 				"Unable to Clear Halt of Bulk IN end point. :%d ",
 				status);
 
-	status = usb_clear_halt(psIntfAdapter->udev,
-				psIntfAdapter->sBulkOut.bulk_out_pipe);
+	status = usb_clear_halt(intf_ad->udev,
+				intf_ad->sBulkOut.bulk_out_pipe);
 	if (status != STATUS_SUCCESS)
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_OTHERS, INTF_INIT,
 				DBG_LVL_ALL,
@@ -182,7 +182,7 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *Adapter)
 	return status;
 }
 
-void Bcm_kill_all_URBs(struct bcm_interface_adapter *psIntfAdapter)
+void Bcm_kill_all_URBs(struct bcm_interface_adapter *intf_ad)
 {
 	struct urb *tempUrb = NULL;
 	unsigned int i;
@@ -203,14 +203,14 @@ void Bcm_kill_all_URBs(struct bcm_interface_adapter *psIntfAdapter)
 	 */
 
 	/* Cancel submitted Interrupt-URB's */
-	if (psIntfAdapter->psInterruptUrb) {
-		if (psIntfAdapter->psInterruptUrb->status == -EINPROGRESS)
-			usb_kill_urb(psIntfAdapter->psInterruptUrb);
+	if (intf_ad->psInterruptUrb) {
+		if (intf_ad->psInterruptUrb->status == -EINPROGRESS)
+			usb_kill_urb(intf_ad->psInterruptUrb);
 	}
 
 	/* Cancel All submitted TX URB's */
 	for (i = 0; i < MAXIMUM_USB_TCB; i++) {
-		tempUrb = psIntfAdapter->asUsbTcb[i].urb;
+		tempUrb = intf_ad->asUsbTcb[i].urb;
 		if (tempUrb) {
 			if (tempUrb->status == -EINPROGRESS)
 				usb_kill_urb(tempUrb);
@@ -218,30 +218,30 @@ void Bcm_kill_all_URBs(struct bcm_interface_adapter *psIntfAdapter)
 	}
 
 	for (i = 0; i < MAXIMUM_USB_RCB; i++) {
-		tempUrb = psIntfAdapter->asUsbRcb[i].urb;
+		tempUrb = intf_ad->asUsbRcb[i].urb;
 		if (tempUrb) {
 			if (tempUrb->status == -EINPROGRESS)
 				usb_kill_urb(tempUrb);
 		}
 	}
 
-	atomic_set(&psIntfAdapter->uNumTcbUsed, 0);
-	atomic_set(&psIntfAdapter->uCurrTcb, 0);
+	atomic_set(&intf_ad->uNumTcbUsed, 0);
+	atomic_set(&intf_ad->uCurrTcb, 0);
 
-	atomic_set(&psIntfAdapter->uNumRcbUsed, 0);
-	atomic_set(&psIntfAdapter->uCurrRcb, 0);
+	atomic_set(&intf_ad->uNumRcbUsed, 0);
+	atomic_set(&intf_ad->uCurrRcb, 0);
 }
 
 void putUsbSuspend(struct work_struct *work)
 {
-	struct bcm_interface_adapter *psIntfAdapter = NULL;
+	struct bcm_interface_adapter *intf_ad = NULL;
 	struct usb_interface *intf = NULL;
 
-	psIntfAdapter = container_of(work, struct bcm_interface_adapter,
+	intf_ad = container_of(work, struct bcm_interface_adapter,
 				     usbSuspendWork);
-	intf = psIntfAdapter->interface;
+	intf = intf_ad->interface;
 
-	if (psIntfAdapter->bSuspended == false)
+	if (intf_ad->bSuspended == false)
 		usb_autopm_put_interface(intf);
 }
 

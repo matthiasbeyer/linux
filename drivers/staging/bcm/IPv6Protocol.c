@@ -1,8 +1,8 @@
 #include "headers.h"
 
-static bool MatchSrcIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
+static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 	struct bcm_ipv6_hdr *pstIpv6Header);
-static bool MatchDestIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
+static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 	struct bcm_ipv6_hdr *pstIpv6Header);
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *pstIpv6Header);
 
@@ -179,7 +179,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *pucPayload, USHORT *pusSrcPort,
  * Arg 2 PVOID pcIpHeader is a pointer to the IP header of the packet
  */
 USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
-		   struct bcm_classifier_rule *pstClassifierRule)
+		   struct bcm_classifier_rule *classifier_rule)
 {
 	USHORT	ushDestPort = 0;
 	USHORT	ushSrcPort = 0;
@@ -206,7 +206,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 						     pstIpv6Header->ucNextHeader);
 
 	do {
-		if (pstClassifierRule->ucDirection == 0) {
+		if (classifier_rule->ucDirection == 0) {
 			/*
 			 * cannot be processed for classification.
 			 * it is a down link connection
@@ -214,7 +214,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 			break;
 		}
 
-		if (!pstClassifierRule->bIpv6Protocol) {
+		if (!classifier_rule->bIpv6Protocol) {
 			/*
 			 * We are looking for Ipv6 Classifiers
 			 * Lets ignore this classifier and try the next one
@@ -222,12 +222,12 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 			break;
 		}
 
-		bClassificationSucceed = MatchSrcIpv6Address(pstClassifierRule,
+		bClassificationSucceed = MatchSrcIpv6Address(classifier_rule,
 							     pstIpv6Header);
 		if (!bClassificationSucceed)
 			break;
 
-		bClassificationSucceed = MatchDestIpv6Address(pstClassifierRule,
+		bClassificationSucceed = MatchDestIpv6Address(classifier_rule,
 							      pstIpv6Header);
 		if (!bClassificationSucceed)
 			break;
@@ -237,7 +237,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 		 * For IPv6 the next protocol at end of
 		 * Chain of IPv6 prot headers
 		 */
-		bClassificationSucceed = MatchProtocol(pstClassifierRule,
+		bClassificationSucceed = MatchProtocol(classifier_rule,
 						       ucNextProtocolAboveIP);
 		if (!bClassificationSucceed)
 			break;
@@ -251,7 +251,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL, "\nIPv6 Source Port:%x\n",
 					ntohs(ushSrcPort));
-			bClassificationSucceed = MatchSrcPort(pstClassifierRule,
+			bClassificationSucceed = MatchSrcPort(classifier_rule,
 							      ntohs(ushSrcPort));
 			if (!bClassificationSucceed)
 				break;
@@ -264,7 +264,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 					DBG_LVL_ALL,
 					"\nIPv6 Destination Port:%x\n",
 					ntohs(ushDestPort));
-			bClassificationSucceed = MatchDestPort(pstClassifierRule,
+			bClassificationSucceed = MatchDestPort(classifier_rule,
 							       ntohs(ushDestPort));
 			if (!bClassificationSucceed)
 				break;
@@ -278,7 +278,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 		INT iMatchedSFQueueIndex = 0;
 
 		iMatchedSFQueueIndex = SearchSfid(Adapter,
-						  pstClassifierRule->ulSFID);
+						  classifier_rule->ulSFID);
 		if ((iMatchedSFQueueIndex >= NO_OF_QUEUES) ||
 		    (Adapter->PackInfo[iMatchedSFQueueIndex].bActive == false))
 			bClassificationSucceed = false;
@@ -288,7 +288,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *Adapter, PVOID pcIpHeader,
 }
 
 
-static bool MatchSrcIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
+static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				struct bcm_ipv6_hdr *pstIpv6Header)
 {
 	UINT uiLoopIndex = 0;
@@ -296,14 +296,14 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
 	UINT uiIpv6AddrNoLongWords = 4;
 	ULONG aulSrcIP[4];
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
-	union u_ip_address *src_addr = &pstClassifierRule->stSrcIpAddress;
+	union u_ip_address *src_addr = &classifier_rule->stSrcIpAddress;
 
 	/*
 	 * This is the no. of Src Addresses ie Range of IP Addresses contained
 	 * in the classifier rule for which we need to match
 	 */
 	UINT  uiCountIPSrcAddresses =
-		(UINT)pstClassifierRule->ucIPSourceAddressLength;
+		(UINT)classifier_rule->ucIPSourceAddressLength;
 
 
 	if (uiCountIPSrcAddresses == 0)
@@ -355,7 +355,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
 	return false;
 }
 
-static bool MatchDestIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
+static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 				 struct bcm_ipv6_hdr *pstIpv6Header)
 {
 	UINT uiLoopIndex = 0;
@@ -363,7 +363,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
 	UINT uiIpv6AddrNoLongWords = 4;
 	ULONG aulDestIP[4];
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
-	union u_ip_address *dest_addr = &pstClassifierRule->stDestIpAddress;
+	union u_ip_address *dest_addr = &classifier_rule->stDestIpAddress;
 
 	/*
 	 * This is the no. of Destination Addresses
@@ -371,7 +371,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *pstClassifierRule,
 	 * for which we need to match
 	 */
 	UINT uiCountIPDestinationAddresses =
-		(UINT)pstClassifierRule->ucIPDestinationAddressLength;
+		(UINT)classifier_rule->ucIPDestinationAddressLength;
 
 	if (uiCountIPDestinationAddresses == 0)
 		return TRUE;

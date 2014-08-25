@@ -14,8 +14,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	USHORT  nxt_hdr_offset = 0;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	if ((payload == NULL) || (*payload_len == 0) ||
-		(*parse_done)) {
+	if ((payload == NULL) || (*payload_len == 0) || (*parse_done)) {
 		*parse_done = TRUE;
 		return NULL;
 	}
@@ -34,8 +33,8 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 
 	switch (*nxt_hdr) {
 	case IPV6HDR_TYPE_HOPBYHOP:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL, "\nIPv6 HopByHop Header");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+				"\nIPv6 HopByHop Header");
 		nxt_hdr_offset += sizeof(struct bcm_ipv6_options_hdr);
 		break;
 
@@ -43,10 +42,9 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		{
 			struct bcm_ipv6_routing_hdr *ipv6_routing_hdr;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL, "\nIPv6 Routing Header");
-			ipv6_routing_hdr =
-				(struct bcm_ipv6_routing_hdr *)pld;
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+					"\nIPv6 Routing Header");
+			ipv6_routing_hdr = (struct bcm_ipv6_routing_hdr *)pld;
 			nxt_hdr_offset += sizeof(struct bcm_ipv6_routing_hdr);
 			nxt_hdr_offset += ipv6_routing_hdr->ucNumAddresses *
 					      IPV6_ADDRESS_SIZEINBYTES;
@@ -54,8 +52,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		break;
 
 	case IPV6HDR_TYPE_FRAGMENTATION:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 				"\nIPv6 Fragmentation Header");
 		nxt_hdr_offset += sizeof(struct bcm_ipv6_fragment_hdr);
 		break;
@@ -66,8 +63,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 				(struct bcm_ipv6_dest_options_hdr *)pld;
 			int total_opts = ipv6_dest_opts_hdr->ucHdrExtLen;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 					"\nIPv6 DestOpts Header Header");
 			nxt_hdr_offset += sizeof(struct bcm_ipv6_dest_options_hdr);
 			nxt_hdr_offset += total_opts *
@@ -82,35 +78,33 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 				(struct bcm_ipv6_authentication_hdr *)pld;
 			int nHdrLen = ipv6_auth_hdr->ucLength;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 					"\nIPv6 Authentication Header");
 			nxt_hdr_offset += nHdrLen * 4;
 		}
 		break;
 
 	case IPV6HDR_TYPE_ENCRYPTEDSECURITYPAYLOAD:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 				"\nIPv6 Encrypted Security Payload Header");
 		*parse_done = TRUE;
 		break;
 
 	case IPV6_ICMP_HDR_TYPE:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL, "\nICMP Header");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+				"\nICMP Header");
 		*parse_done = TRUE;
 		break;
 
 	case TCP_HEADER_TYPE:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL, "\nTCP Header");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+				"\nTCP Header");
 		*parse_done = TRUE;
 		break;
 
 	case UDP_HEADER_TYPE:
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL, "\nUDP Header");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+				"\nUDP Header");
 		*parse_done = TRUE;
 		break;
 
@@ -135,8 +129,11 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 }
 
 
-static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
-	USHORT *dest_port, USHORT payload_len, UCHAR next_header)
+static UCHAR GetIpv6ProtocolPorts(UCHAR *payload,
+				  USHORT *src_port,
+				  USHORT *dest_port,
+				  USHORT payload_len,
+				  UCHAR next_header)
 {
 	UCHAR *ipv6_hdr_scan_context = payload;
 	bool done = false;
@@ -151,9 +148,9 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 	hdr_type = next_header;
 	while (!done) {
 		nxt_hdr = GetNextIPV6ChainedHeader(&ipv6_hdr_scan_context,
-							 &hdr_type,
-							 &done,
-							 &payload_len);
+						   &hdr_type,
+						   &done,
+						   &payload_len);
 		if (done) {
 			if ((hdr_type == TCP_HEADER_TYPE) ||
 				(hdr_type == UDP_HEADER_TYPE)) {
@@ -187,8 +184,8 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 	struct bcm_ipv6_hdr *ipv6_hdr = NULL;
 	bool classif_succeed = false;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-			DBG_LVL_ALL, "IpVersion6 ==========>\n");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+			"IpVersion6 ==========>\n");
 
 	ipv6_hdr = ip_hdr;
 
@@ -223,12 +220,12 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		}
 
 		classif_succeed = MatchSrcIpv6Address(classifier_rule,
-							     ipv6_hdr);
+						      ipv6_hdr);
 		if (!classif_succeed)
 			break;
 
 		classif_succeed = MatchDestIpv6Address(classifier_rule,
-							      ipv6_hdr);
+						       ipv6_hdr);
 		if (!classif_succeed)
 			break;
 
@@ -238,38 +235,36 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 		 * Chain of IPv6 prot headers
 		 */
 		classif_succeed = MatchProtocol(classifier_rule,
-						       nxt_prot_above_ip);
+						nxt_prot_above_ip);
 		if (!classif_succeed)
 			break;
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-				DBG_LVL_ALL, "\nIPv6 Protocol Matched");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+				"\nIPv6 Protocol Matched");
 
 		if ((nxt_prot_above_ip == TCP_HEADER_TYPE) ||
 			(nxt_prot_above_ip == UDP_HEADER_TYPE)) {
 			/* Match Src Port */
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL, "\nIPv6 Source Port:%x\n",
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+					"\nIPv6 Source Port:%x\n",
 					ntohs(src_port));
 			classif_succeed = MatchSrcPort(classifier_rule,
-							      ntohs(src_port));
+						       ntohs(src_port));
 			if (!classif_succeed)
 				break;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL, "\nIPv6 Src Port Matched");
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
+					"\nIPv6 Src Port Matched");
 
 			/* Match Dest Port */
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 					"\nIPv6 Destination Port:%x\n",
 					ntohs(dest_port));
 			classif_succeed = MatchDestPort(classifier_rule,
-							       ntohs(dest_port));
+							ntohs(dest_port));
 			if (!classif_succeed)
 				break;
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
-					DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 					"\nIPv6 Dest Port Matched");
 		}
 	} while (0);
@@ -277,8 +272,7 @@ USHORT	IpVersion6(struct bcm_mini_adapter *ad, PVOID ip_hdr,
 	if (classif_succeed == TRUE) {
 		INT iMatchedSFQueueIndex = 0;
 
-		iMatchedSFQueueIndex = SearchSfid(ad,
-						  classifier_rule->ulSFID);
+		iMatchedSFQueueIndex = SearchSfid(ad, classifier_rule->ulSFID);
 		if ((iMatchedSFQueueIndex >= NO_OF_QUEUES) ||
 		    (ad->PackInfo[iMatchedSFQueueIndex].bActive == false))
 			classif_succeed = false;
@@ -317,9 +311,7 @@ static bool MatchSrcIpv6Address(struct bcm_classifier_rule *classifier_rule,
 		src_ip[ipv6_add_idx] =
 			ntohl(ipv6_hdr->ulSrcIpAddress[ipv6_add_idx]);
 
-	for (i = 0;
-	     i < uiCountIPSrcAddresses;
-	     i += ipv6_addr_no_long_words) {
+	for (i = 0; i < uiCountIPSrcAddresses; i += ipv6_addr_no_long_words) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 				"\n Src Ipv6 Address In Received Packet :\n ");
 		DumpIpv6Address(src_ip);
@@ -384,9 +376,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 		dest_ip[ipv6_add_idx] =
 			ntohl(ipv6_hdr->ulDestIpAddress[ipv6_add_idx]);
 
-	for (i = 0;
-	     i < ip_dest_addr_cnt;
-	     i += ipv6_addr_no_long_words) {
+	for (i = 0; i < ip_dest_addr_cnt; i += ipv6_addr_no_long_words) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 				"\n Destination Ipv6 Address In Received Packet :\n ");
 		DumpIpv6Address(dest_ip);
@@ -432,8 +422,8 @@ VOID DumpIpv6Address(ULONG *puIpv6Address)
 	for (ipv6_add_idx = 0;
 	     ipv6_add_idx < ipv6_addr_no_long_words;
 	     ipv6_add_idx++) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-				":%lx", puIpv6Address[ipv6_add_idx]);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL, ":%lx",
+				puIpv6Address[ipv6_add_idx]);
 	}
 
 }

@@ -73,34 +73,34 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 * Returns     - The number of bytes allowed for transmission.
 *
 ***********************************************************************/
-static ULONG GetSFTokenCount(struct bcm_mini_adapter *ad, struct bcm_packet_info *psSF)
+static ULONG GetSFTokenCount(struct bcm_mini_adapter *ad, struct bcm_packet_info *sf)
 {
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"IsPacketAllowedForFlow ===>");
 
 	/* Validate the parameters */
-	if (NULL == ad || (psSF < ad->PackInfo &&
-	    (uintptr_t)psSF > (uintptr_t) &ad->PackInfo[HiPriority])) {
+	if (NULL == ad || (sf < ad->PackInfo &&
+	    (uintptr_t)sf > (uintptr_t) &ad->PackInfo[HiPriority])) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 				"IPAFF: Got wrong Parameters:Adapter: %p, QIndex: %zd\n",
-				ad, (psSF-ad->PackInfo));
+				ad, (sf-ad->PackInfo));
 		return 0;
 	}
 
-	if (false != psSF->bValid && psSF->ucDirection) {
-		if (0 != psSF->uiCurrentTokenCount) {
-			return psSF->uiCurrentTokenCount;
+	if (false != sf->bValid && sf->ucDirection) {
+		if (0 != sf->uiCurrentTokenCount) {
+			return sf->uiCurrentTokenCount;
 		} else {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS,
 					DBG_LVL_ALL,
 					"Not enough tokens in queue %zd Available %u\n",
-					psSF-ad->PackInfo, psSF->uiCurrentTokenCount);
-			psSF->uiPendedLast = 1;
+					sf-ad->PackInfo, sf->uiCurrentTokenCount);
+			sf->uiPendedLast = 1;
 		}
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 				"IPAFF: Queue %zd not valid\n",
-				psSF-ad->PackInfo);
+				sf-ad->PackInfo);
 	}
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
 			"IsPacketAllowedForFlow <===");
@@ -113,7 +113,7 @@ This function despatches packet from the specified queue.
 @return Zero(success) or Negative value(failure)
 */
 static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
-			       struct bcm_packet_info *psSF, /**<Queue identifier*/
+			       struct bcm_packet_info *sf, /**<Queue identifier*/
 			       struct sk_buff *Packet)	/**<Pointer to the packet to be sent*/
 {
 	INT Status = STATUS_FAILURE;
@@ -121,17 +121,17 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 			"=====>");
-	if (!ad || !Packet || !psSF) {
+	if (!ad || !Packet || !sf) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 				"Got NULL Adapter or Packet");
 		return -EINVAL;
 	}
 
-	if (psSF->liDrainCalculated == 0)
-		psSF->liDrainCalculated = jiffies;
+	if (sf->liDrainCalculated == 0)
+		sf->liDrainCalculated = jiffies;
 	/* send the packet to the fifo.. */
 	PktLen = Packet->len;
-	Status = SetupNextSend(ad, Packet, psSF->usVCID_Value);
+	Status = SetupNextSend(ad, Packet, sf->usVCID_Value);
 	if (Status == 0) {
 		for (uiIndex = 0; uiIndex < MIBS_MAX_HIST_ENTRIES; uiIndex++) {
 			if ((PktLen <= MIBS_PKTSIZEHIST_RANGE*(uiIndex+1)) &&
@@ -269,17 +269,17 @@ static void send_control_packet(struct bcm_mini_adapter *ad,
 *
 ****************************************************************************/
 static VOID CheckAndSendPacketFromIndex(struct bcm_mini_adapter *ad,
-					struct bcm_packet_info *psSF)
+					struct bcm_packet_info *sf)
 {
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
-			"%zd ====>", (psSF-ad->PackInfo));
-	if ((psSF != &ad->PackInfo[HiPriority]) &&
+			"%zd ====>", (sf-ad->PackInfo));
+	if ((sf != &ad->PackInfo[HiPriority]) &&
 	    ad->LinkUpStatus &&
-	    atomic_read(&psSF->uiPerSFTxResourceCount)) { /* Get data packet */
+	    atomic_read(&sf->uiPerSFTxResourceCount)) { /* Get data packet */
 
-		get_data_packet(ad, psSF);
+		get_data_packet(ad, sf);
 	} else {
-		send_control_packet(ad, psSF);
+		send_control_packet(ad, sf);
 	}
 }
 

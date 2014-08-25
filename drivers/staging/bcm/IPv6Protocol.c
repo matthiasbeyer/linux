@@ -10,7 +10,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	UCHAR *nxt_hdr, bool *parse_done, USHORT *payload_len)
 {
 	UCHAR *ret_hdr = NULL;
-	UCHAR *pucPayloadPtr = NULL;
+	UCHAR *pld = NULL;
 	USHORT  usNextHeaderOffset = 0;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
@@ -21,9 +21,9 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	}
 
 	ret_hdr = *payload;
-	pucPayloadPtr = *payload;
+	pld = *payload;
 
-	if (!ret_hdr || !pucPayloadPtr) {
+	if (!ret_hdr || !pld) {
 		*parse_done = TRUE;
 		return NULL;
 	}
@@ -46,7 +46,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL, "\nIPv6 Routing Header");
 			pstIpv6RoutingHeader =
-				(struct bcm_ipv6_routing_hdr *)pucPayloadPtr;
+				(struct bcm_ipv6_routing_hdr *)pld;
 			usNextHeaderOffset += sizeof(struct bcm_ipv6_routing_hdr);
 			usNextHeaderOffset += pstIpv6RoutingHeader->ucNumAddresses *
 					      IPV6_ADDRESS_SIZEINBYTES;
@@ -63,7 +63,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	case IPV6HDR_TYPE_DESTOPTS:
 		{
 			struct bcm_ipv6_dest_options_hdr *pstIpv6DestOptsHdr =
-				(struct bcm_ipv6_dest_options_hdr *)pucPayloadPtr;
+				(struct bcm_ipv6_dest_options_hdr *)pld;
 			int nTotalOptions = pstIpv6DestOptsHdr->ucHdrExtLen;
 
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
@@ -79,7 +79,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	case IPV6HDR_TYPE_AUTHENTICATION:
 		{
 			struct bcm_ipv6_authentication_hdr *pstIpv6AuthHdr =
-				(struct bcm_ipv6_authentication_hdr *)pucPayloadPtr;
+				(struct bcm_ipv6_authentication_hdr *)pld;
 			int nHdrLen = pstIpv6AuthHdr->ucLength;
 
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
@@ -123,14 +123,14 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		if (*payload_len <= usNextHeaderOffset) {
 			*parse_done = TRUE;
 		} else {
-			*nxt_hdr = *pucPayloadPtr;
-			pucPayloadPtr += usNextHeaderOffset;
+			*nxt_hdr = *pld;
+			pld += usNextHeaderOffset;
 			(*payload_len) -= usNextHeaderOffset;
 		}
 
 	}
 
-	*payload = pucPayloadPtr;
+	*payload = pld;
 	return ret_hdr;
 }
 

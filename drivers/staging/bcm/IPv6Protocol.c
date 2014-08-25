@@ -140,7 +140,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 {
 	UCHAR *ipv6_hdr_scan_context = payload;
 	bool done = false;
-	UCHAR ucHeaderType = 0;
+	UCHAR hdr_type = 0;
 	UCHAR *nxt_hdr = NULL;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
@@ -148,15 +148,15 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 		return 0;
 
 	*src_port = *dest_port = 0;
-	ucHeaderType = next_header;
+	hdr_type = next_header;
 	while (!done) {
 		nxt_hdr = GetNextIPV6ChainedHeader(&ipv6_hdr_scan_context,
-							 &ucHeaderType,
+							 &hdr_type,
 							 &done,
 							 &payload_len);
 		if (done) {
-			if ((ucHeaderType == TCP_HEADER_TYPE) ||
-				(ucHeaderType == UDP_HEADER_TYPE)) {
+			if ((hdr_type == TCP_HEADER_TYPE) ||
+				(hdr_type == UDP_HEADER_TYPE)) {
 				*src_port = *((PUSHORT)(nxt_hdr));
 				*dest_port = *((PUSHORT)(nxt_hdr+2));
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG,
@@ -169,7 +169,7 @@ static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *src_port,
 
 		}
 	}
-	return ucHeaderType;
+	return hdr_type;
 }
 
 

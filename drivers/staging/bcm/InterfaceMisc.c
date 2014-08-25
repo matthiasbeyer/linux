@@ -184,7 +184,7 @@ int Bcm_clear_halt_of_endpoints(struct bcm_mini_adapter *ad)
 
 void Bcm_kill_all_URBs(struct bcm_interface_adapter *intf_ad)
 {
-	struct urb *tempUrb = NULL;
+	struct urb *tmp_urb = NULL;
 	unsigned int i;
 
 	/*
@@ -210,18 +210,18 @@ void Bcm_kill_all_URBs(struct bcm_interface_adapter *intf_ad)
 
 	/* Cancel All submitted TX URB's */
 	for (i = 0; i < MAXIMUM_USB_TCB; i++) {
-		tempUrb = intf_ad->asUsbTcb[i].urb;
-		if (tempUrb) {
-			if (tempUrb->status == -EINPROGRESS)
-				usb_kill_urb(tempUrb);
+		tmp_urb = intf_ad->asUsbTcb[i].urb;
+		if (tmp_urb) {
+			if (tmp_urb->status == -EINPROGRESS)
+				usb_kill_urb(tmp_urb);
 		}
 	}
 
 	for (i = 0; i < MAXIMUM_USB_RCB; i++) {
-		tempUrb = intf_ad->asUsbRcb[i].urb;
-		if (tempUrb) {
-			if (tempUrb->status == -EINPROGRESS)
-				usb_kill_urb(tempUrb);
+		tmp_urb = intf_ad->asUsbRcb[i].urb;
+		if (tmp_urb) {
+			if (tmp_urb->status == -EINPROGRESS)
+				usb_kill_urb(tmp_urb);
 		}
 	}
 

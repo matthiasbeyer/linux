@@ -127,11 +127,11 @@ static void read_bulk_callback(struct urb *urb)
 	struct sk_buff *skb = NULL;
 	bool hdr_suppression_enabled = false;
 	int queue_idx = NO_OF_QUEUES + 1;
-	UINT uiIndex = 0;
+	UINT index = 0;
 	struct bcm_usb_rcb *rcb = (struct bcm_usb_rcb *)urb->context;
 	struct bcm_interface_adapter *intf_ad = rcb->psIntfAdapter;
 	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
-	struct bcm_leader *pLeader = urb->transfer_buffer;
+	struct bcm_leader *leader = urb->transfer_buffer;
 
 	if (unlikely(netif_msg_rx_status(ad)))
 		pr_info(PFX "%s: rx urb status %d length %d\n",
@@ -168,8 +168,8 @@ static void read_bulk_callback(struct urb *urb)
 	}
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
-			"Read back done len %d\n", pLeader->PLength);
-	if (!pLeader->PLength) {
+			"Read back done len %d\n", leader->PLength);
+	if (!leader->PLength) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 				"Leader Length 0");
 		atomic_dec(&intf_ad->uNumRcbUsed);
@@ -177,17 +177,17 @@ static void read_bulk_callback(struct urb *urb)
 	}
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 			"Leader Status:0x%hX, Length:0x%hX, VCID:0x%hX",
-			pLeader->Status, pLeader->PLength, pLeader->Vcid);
-	if (MAX_CNTL_PKT_SIZE < pLeader->PLength) {
+			leader->Status, leader->PLength, leader->Vcid);
+	if (MAX_CNTL_PKT_SIZE < leader->PLength) {
 		if (netif_msg_rx_err(ad))
 			pr_info(PFX "%s: corrupted leader length...%d\n",
-				ad->dev->name, pLeader->PLength);
+				ad->dev->name, leader->PLength);
 		++ad->dev->stats.rx_dropped;
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		return;
 	}
 
-	queue_idx = SearchVcid(ad, pLeader->Vcid);
+	queue_idx = SearchVcid(ad, leader->Vcid);
 	if (queue_idx < NO_OF_QUEUES) {
 		hdr_suppression_enabled =
 			ad->PackInfo[queue_idx].bHeaderSuppressionEnabled;
@@ -195,7 +195,7 @@ static void read_bulk_callback(struct urb *urb)
 			hdr_suppression_enabled & ad->bPHSEnabled;
 	}
 
-	skb = dev_alloc_skb(pLeader->PLength + SKB_RESERVE_PHS_BYTES +
+	skb = dev_alloc_skb(leader->PLength + SKB_RESERVE_PHS_BYTES +
 			    SKB_RESERVE_ETHERNET_HEADER);
 	if (!skb) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
@@ -204,13 +204,13 @@ static void read_bulk_callback(struct urb *urb)
 		return;
 	}
 	/* If it is a control Packet, then call handle_bcm_packet ()*/
-	if ((ntohs(pLeader->Vcid) == VCID_CONTROL_PACKET) ||
-	    (!(pLeader->Status >= 0x20  &&  pLeader->Status <= 0x3F))) {
-		handle_control_packet(intf_ad, ad, pLeader, skb,
+	if ((ntohs(leader->Vcid) == VCID_CONTROL_PACKET) ||
+	    (!(leader->Status >= 0x20  &&  leader->Status <= 0x3F))) {
+		handle_control_packet(intf_ad, ad, leader, skb,
 				      urb);
 	} else {
-		format_eth_hdr_to_stack(intf_ad, ad, pLeader, skb,
-					urb, uiIndex, queue_idx,
+		format_eth_hdr_to_stack(intf_ad, ad, leader, skb,
+					urb, index, queue_idx,
 					hdr_suppression_enabled);
 	}
 	ad->PrevNumRecvDescs++;

@@ -102,8 +102,7 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 			intf_ad->psAdapter->bEndPointHalted = TRUE;
 			wake_up(&intf_ad->psAdapter->tx_packet_wait_queue);
 		} else {
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, NEXT_SEND,
-					DBG_LVL_ALL,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, NEXT_SEND, DBG_LVL_ALL,
 					"Tx URB has got cancelled. status :%d",
 					urb->status);
 		}
@@ -113,8 +112,8 @@ static void write_bulk_callback(struct urb *urb/*, struct pt_regs *regs*/)
 	atomic_dec(&intf_ad->uNumTcbUsed);
 
 	if (TRUE == ps_ad->bPreparingForLowPowerMode) {
-		prepare_low_power_mode(urb, intf_ad, ps_ad, ad,
-				       cntr_msg, &power_down_msg);
+		prepare_low_power_mode(urb, intf_ad, ps_ad, ad, cntr_msg,
+				       &power_down_msg);
 	}
 
 	usb_free_coherent(urb->dev, urb->transfer_buffer_length,
@@ -133,11 +132,9 @@ static struct bcm_usb_tcb *GetBulkOutTcb(struct bcm_interface_adapter *intf_ad)
 		tcb = &intf_ad->asUsbTcb[index];
 		tcb->bUsed = TRUE;
 		tcb->psIntfAdapter = intf_ad;
-		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_TX,
-				NEXT_SEND, DBG_LVL_ALL,
-				"Got Tx desc %d used %d",
-				index,
-				atomic_read(&intf_ad->uNumTcbUsed));
+		BCM_DEBUG_PRINT(intf_ad->psAdapter, DBG_TYPE_TX, NEXT_SEND,
+				DBG_LVL_ALL, "Got Tx desc %d used %d",
+				index, atomic_read(&intf_ad->uNumTcbUsed));
 		index = (index + 1) % MAXIMUM_USB_TCB;
 		atomic_set(&intf_ad->uCurrTcb, index);
 		atomic_inc(&intf_ad->uNumTcbUsed);
@@ -172,9 +169,10 @@ static int TransmitTcb(struct bcm_interface_adapter *intf_ad,
 			urb->transfer_buffer, len, write_bulk_callback, tcb,
 			intf_ad->sBulkOut.int_out_interval);
 	} else {
-	usb_fill_bulk_urb(urb, intf_ad->udev,
-		  intf_ad->sBulkOut.bulk_out_pipe,
-		  urb->transfer_buffer, len, write_bulk_callback, tcb);
+		usb_fill_bulk_urb(urb, intf_ad->udev,
+				  intf_ad->sBulkOut.bulk_out_pipe,
+				  urb->transfer_buffer, len,
+				  write_bulk_callback, tcb);
 	}
 	urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP; /* For DMA transfer */
 

@@ -22,11 +22,10 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 	struct timeval tv;
 	struct bcm_packet_info *curr_pi;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
-			"=====>\n");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL, "=====>\n");
 	if (NULL == ad) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS,
-				DBG_LVL_ALL, "Adapter found NULL!\n");
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
+				"Adapter found NULL!\n");
 		return;
 	}
 
@@ -54,8 +53,7 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 			}
 		}
 	}
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL,
-			"<=====\n");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL, "<=====\n");
 }
 
 
@@ -119,8 +117,7 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 	INT status = STATUS_FAILURE;
 	UINT i = 0, pkt_len = 0;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
-			"=====>");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL, "=====>");
 	if (!ad || !packet || !sf) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
 				"Got NULL Adapter or Packet");
@@ -139,8 +136,7 @@ static INT SendPacketFromQueue(struct bcm_mini_adapter *ad,/**<Logical Adapter*/
 				ad->aTxPktSizeHist[i]++;
 		}
 	}
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL,
-			"<=====");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, SEND_QUEUE, DBG_LVL_ALL, "<=====");
 	return status;
 }
 
@@ -301,8 +297,7 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 
 	bool exit_flag = TRUE;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
-			"=====>");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL, "=====>");
 
 	if (NULL == ad) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
@@ -337,8 +332,7 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS,
 					DBG_LVL_ALL,
 					"Calling CheckAndSendPacketFromIndex..");
-			CheckAndSendPacketFromIndex(ad,
-						    &ad->PackInfo[i]);
+			CheckAndSendPacketFromIndex(ad, &ad->PackInfo[i]);
 			prev_total_cnt--;
 		}
 	}
@@ -347,15 +341,14 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 		exit_flag = TRUE;
 		/* second iteration to parse non-pending queues */
 		for (i = HiPriority; i >= 0; i--) {
-			if (!prev_total_cnt ||
-			    (TRUE == ad->device_removed))
+			if (!prev_total_cnt || (TRUE == ad->device_removed))
 				break;
 
 			if (ad->PackInfo[i].bValid &&
 			    ad->PackInfo[i].uiCurrentBytesOnHost &&
 			    !ad->PackInfo[i].uiPendedLast) {
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX,
-						TX_PACKETS, DBG_LVL_ALL,
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS,
+						DBG_LVL_ALL,
 						"Calling CheckAndSendPacketFromIndex..");
 				CheckAndSendPacketFromIndex(ad, &ad->PackInfo[i]);
 				prev_total_cnt--;
@@ -374,6 +367,5 @@ VOID transmit_packets(struct bcm_mini_adapter *ad)
 
 	update_per_cid_rx(ad);
 	ad->txtransmit_running = 0;
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL,
-			"<======");
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_PACKETS, DBG_LVL_ALL, "<======");
 }

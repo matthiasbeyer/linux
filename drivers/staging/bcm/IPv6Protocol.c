@@ -135,16 +135,16 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 }
 
 
-static UCHAR GetIpv6ProtocolPorts(UCHAR *pucPayload, USHORT *pusSrcPort,
+static UCHAR GetIpv6ProtocolPorts(UCHAR *payload, USHORT *pusSrcPort,
 	USHORT *pusDestPort, USHORT usPayloadLength, UCHAR ucNextHeader)
 {
-	UCHAR *pIpv6HdrScanContext = pucPayload;
+	UCHAR *pIpv6HdrScanContext = payload;
 	bool bDone = false;
 	UCHAR ucHeaderType = 0;
 	UCHAR *nxt_hdr = NULL;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
-	if (!pucPayload || (usPayloadLength == 0))
+	if (!payload || (usPayloadLength == 0))
 		return 0;
 
 	*pusSrcPort = *pusDestPort = 0;

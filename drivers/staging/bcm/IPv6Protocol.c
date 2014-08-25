@@ -11,7 +11,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 {
 	UCHAR *ret_hdr = NULL;
 	UCHAR *pld = NULL;
-	USHORT  usNextHeaderOffset = 0;
+	USHORT  nxt_hdr_offset = 0;
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
 	if ((payload == NULL) || (*payload_len == 0) ||
@@ -36,7 +36,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	case IPV6HDR_TYPE_HOPBYHOP:
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nIPv6 HopByHop Header");
-		usNextHeaderOffset += sizeof(struct bcm_ipv6_options_hdr);
+		nxt_hdr_offset += sizeof(struct bcm_ipv6_options_hdr);
 		break;
 
 	case IPV6HDR_TYPE_ROUTING:
@@ -47,8 +47,8 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 					DBG_LVL_ALL, "\nIPv6 Routing Header");
 			pstIpv6RoutingHeader =
 				(struct bcm_ipv6_routing_hdr *)pld;
-			usNextHeaderOffset += sizeof(struct bcm_ipv6_routing_hdr);
-			usNextHeaderOffset += pstIpv6RoutingHeader->ucNumAddresses *
+			nxt_hdr_offset += sizeof(struct bcm_ipv6_routing_hdr);
+			nxt_hdr_offset += pstIpv6RoutingHeader->ucNumAddresses *
 					      IPV6_ADDRESS_SIZEINBYTES;
 		}
 		break;
@@ -57,7 +57,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL,
 				"\nIPv6 Fragmentation Header");
-		usNextHeaderOffset += sizeof(struct bcm_ipv6_fragment_hdr);
+		nxt_hdr_offset += sizeof(struct bcm_ipv6_fragment_hdr);
 		break;
 
 	case IPV6HDR_TYPE_DESTOPTS:
@@ -69,8 +69,8 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,
 					"\nIPv6 DestOpts Header Header");
-			usNextHeaderOffset += sizeof(struct bcm_ipv6_dest_options_hdr);
-			usNextHeaderOffset += nTotalOptions *
+			nxt_hdr_offset += sizeof(struct bcm_ipv6_dest_options_hdr);
+			nxt_hdr_offset += nTotalOptions *
 					      IPV6_DESTOPTS_HDR_OPTIONSIZE;
 		}
 		break;
@@ -85,7 +85,7 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 					DBG_LVL_ALL,
 					"\nIPv6 Authentication Header");
-			usNextHeaderOffset += nHdrLen * 4;
+			nxt_hdr_offset += nHdrLen * 4;
 		}
 		break;
 
@@ -120,12 +120,12 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	}
 
 	if (*parse_done == false) {
-		if (*payload_len <= usNextHeaderOffset) {
+		if (*payload_len <= nxt_hdr_offset) {
 			*parse_done = TRUE;
 		} else {
 			*nxt_hdr = *pld;
-			pld += usNextHeaderOffset;
-			(*payload_len) -= usNextHeaderOffset;
+			pld += nxt_hdr_offset;
+			(*payload_len) -= nxt_hdr_offset;
 		}
 
 	}

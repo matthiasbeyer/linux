@@ -7,7 +7,7 @@ static bool MatchDestIpv6Address(struct bcm_classifier_rule *classifier_rule,
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr);
 
 static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
-	UCHAR *nxt_hdr, bool *bParseDone, USHORT *pusPayloadLength)
+	UCHAR *nxt_hdr, bool *parse_done, USHORT *pusPayloadLength)
 {
 	UCHAR *pucRetHeaderPtr = NULL;
 	UCHAR *pucPayloadPtr = NULL;
@@ -15,8 +15,8 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	struct bcm_mini_adapter *Adapter = GET_BCM_ADAPTER(gblpnetdev);
 
 	if ((payload == NULL) || (*pusPayloadLength == 0) ||
-		(*bParseDone)) {
-		*bParseDone = TRUE;
+		(*parse_done)) {
+		*parse_done = TRUE;
 		return NULL;
 	}
 
@@ -24,12 +24,12 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 	pucPayloadPtr = *payload;
 
 	if (!pucRetHeaderPtr || !pucPayloadPtr) {
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		return NULL;
 	}
 
 	/* Get the Nextt Header Type */
-	*bParseDone = false;
+	*parse_done = false;
 
 
 	switch (*nxt_hdr) {
@@ -93,35 +93,35 @@ static UCHAR *GetNextIPV6ChainedHeader(UCHAR **payload,
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL,
 				"\nIPv6 Encrypted Security Payload Header");
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		break;
 
 	case IPV6_ICMP_HDR_TYPE:
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nICMP Header");
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		break;
 
 	case TCP_HEADER_TYPE:
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nTCP Header");
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		break;
 
 	case UDP_HEADER_TYPE:
 		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_TX, IPV6_DBG,
 				DBG_LVL_ALL, "\nUDP Header");
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		break;
 
 	default:
-		*bParseDone = TRUE;
+		*parse_done = TRUE;
 		break;
 	}
 
-	if (*bParseDone == false) {
+	if (*parse_done == false) {
 		if (*pusPayloadLength <= usNextHeaderOffset) {
-			*bParseDone = TRUE;
+			*parse_done = TRUE;
 		} else {
 			*nxt_hdr = *pucPayloadPtr;
 			pucPayloadPtr += usNextHeaderOffset;

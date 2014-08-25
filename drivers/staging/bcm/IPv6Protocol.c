@@ -441,7 +441,7 @@ VOID DumpIpv6Address(ULONG *puIpv6Address)
 static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr)
 {
 	UCHAR version;
-	UCHAR ucPrio;
+	UCHAR prio;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
@@ -449,9 +449,9 @@ static VOID DumpIpv6Header(struct bcm_ipv6_hdr *ipv6_hdr)
 	version = ipv6_hdr->ucVersionPrio & 0xf0;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 			"Version : %x\n", version);
-	ucPrio = ipv6_hdr->ucVersionPrio & 0x0f;
+	prio = ipv6_hdr->ucVersionPrio & 0x0f;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
-			"Priority : %x\n", ucPrio);
+			"Priority : %x\n", prio);
 	/*
 	 * BCM_DEBUG_PRINT( ad,DBG_TYPE_TX, IPV6_DBG, DBG_LVL_ALL,
 	 * "Flow Label : %x\n",(ipv6_hdr->ucVersionPrio &0xf0);

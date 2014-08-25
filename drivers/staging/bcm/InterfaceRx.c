@@ -89,11 +89,11 @@ static void format_eth_hdr_to_stack(struct bcm_interface_adapter *interface,
 
 static int SearchVcid(struct bcm_mini_adapter *ad, unsigned short vcid)
 {
-	int iIndex = 0;
+	int i = 0;
 
-	for (iIndex = (NO_OF_QUEUES-1); iIndex >= 0; iIndex--)
-		if (ad->PackInfo[iIndex].usVCID_Value == vcid)
-			return iIndex;
+	for (i = (NO_OF_QUEUES-1); i >= 0; i--)
+		if (ad->PackInfo[i].usVCID_Value == vcid)
+			return i;
 	return NO_OF_QUEUES+1;
 
 }

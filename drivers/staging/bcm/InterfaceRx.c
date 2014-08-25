@@ -87,12 +87,12 @@ static void format_eth_hdr_to_stack(struct bcm_interface_adapter *interface,
 	}
 }
 
-static int SearchVcid(struct bcm_mini_adapter *Adapter, unsigned short usVcid)
+static int SearchVcid(struct bcm_mini_adapter *ad, unsigned short usVcid)
 {
 	int iIndex = 0;
 
 	for (iIndex = (NO_OF_QUEUES-1); iIndex >= 0; iIndex--)
-		if (Adapter->PackInfo[iIndex].usVCID_Value == usVcid)
+		if (ad->PackInfo[iIndex].usVCID_Value == usVcid)
 			return iIndex;
 	return NO_OF_QUEUES+1;
 
@@ -130,15 +130,15 @@ static void read_bulk_callback(struct urb *urb)
 	UINT uiIndex = 0;
 	struct bcm_usb_rcb *pRcb = (struct bcm_usb_rcb *)urb->context;
 	struct bcm_interface_adapter *intf_ad = pRcb->psIntfAdapter;
-	struct bcm_mini_adapter *Adapter = intf_ad->psAdapter;
+	struct bcm_mini_adapter *ad = intf_ad->psAdapter;
 	struct bcm_leader *pLeader = urb->transfer_buffer;
 
-	if (unlikely(netif_msg_rx_status(Adapter)))
+	if (unlikely(netif_msg_rx_status(ad)))
 		pr_info(PFX "%s: rx urb status %d length %d\n",
-			Adapter->dev->name, urb->status, urb->actual_length);
+			ad->dev->name, urb->status, urb->actual_length);
 
-	if ((Adapter->device_removed == TRUE) ||
-	    (TRUE == Adapter->bEndPointHalted) ||
+	if ((ad->device_removed == TRUE) ||
+	    (TRUE == ad->bEndPointHalted) ||
 	    (0 == urb->actual_length)) {
 		pRcb->bUsed = false;
 		atomic_dec(&intf_ad->uNumRcbUsed);
@@ -147,10 +147,10 @@ static void read_bulk_callback(struct urb *urb)
 
 	if (urb->status != STATUS_SUCCESS) {
 		if (urb->status == -EPIPE) {
-			Adapter->bEndPointHalted = TRUE;
-			wake_up(&Adapter->tx_packet_wait_queue);
+			ad->bEndPointHalted = TRUE;
+			wake_up(&ad->tx_packet_wait_queue);
 		} else {
-			BCM_DEBUG_PRINT(Adapter, DBG_TYPE_RX, RX_DPC,
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC,
 					DBG_LVL_ALL,
 					"Rx URB has got cancelled. status :%d",
 					urb->status);
@@ -161,44 +161,44 @@ static void read_bulk_callback(struct urb *urb)
 		return;
 	}
 
-	if (Adapter->bDoSuspend && (Adapter->bPreparingForLowPowerMode)) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
+	if (ad->bDoSuspend && (ad->bPreparingForLowPowerMode)) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 				"device is going in low power mode while PMU option selected..hence rx packet should not be process");
 		return;
 	}
 
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 			"Read back done len %d\n", pLeader->PLength);
 	if (!pLeader->PLength) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 				"Leader Length 0");
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		return;
 	}
-	BCM_DEBUG_PRINT(Adapter, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL,
 			"Leader Status:0x%hX, Length:0x%hX, VCID:0x%hX",
 			pLeader->Status, pLeader->PLength, pLeader->Vcid);
 	if (MAX_CNTL_PKT_SIZE < pLeader->PLength) {
-		if (netif_msg_rx_err(Adapter))
+		if (netif_msg_rx_err(ad))
 			pr_info(PFX "%s: corrupted leader length...%d\n",
-				Adapter->dev->name, pLeader->PLength);
-		++Adapter->dev->stats.rx_dropped;
+				ad->dev->name, pLeader->PLength);
+		++ad->dev->stats.rx_dropped;
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		return;
 	}
 
-	QueueIndex = SearchVcid(Adapter, pLeader->Vcid);
+	QueueIndex = SearchVcid(ad, pLeader->Vcid);
 	if (QueueIndex < NO_OF_QUEUES) {
 		bHeaderSupressionEnabled =
-			Adapter->PackInfo[QueueIndex].bHeaderSuppressionEnabled;
+			ad->PackInfo[QueueIndex].bHeaderSuppressionEnabled;
 		bHeaderSupressionEnabled =
-			bHeaderSupressionEnabled & Adapter->bPHSEnabled;
+			bHeaderSupressionEnabled & ad->bPHSEnabled;
 	}
 
 	skb = dev_alloc_skb(pLeader->PLength + SKB_RESERVE_PHS_BYTES +
 			    SKB_RESERVE_ETHERNET_HEADER);
 	if (!skb) {
-		BCM_DEBUG_PRINT(Adapter, DBG_TYPE_PRINTK, 0, 0,
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0,
 				"NO SKBUFF!!! Dropping the Packet");
 		atomic_dec(&intf_ad->uNumRcbUsed);
 		return;
@@ -206,14 +206,14 @@ static void read_bulk_callback(struct urb *urb)
 	/* If it is a control Packet, then call handle_bcm_packet ()*/
 	if ((ntohs(pLeader->Vcid) == VCID_CONTROL_PACKET) ||
 	    (!(pLeader->Status >= 0x20  &&  pLeader->Status <= 0x3F))) {
-		handle_control_packet(intf_ad, Adapter, pLeader, skb,
+		handle_control_packet(intf_ad, ad, pLeader, skb,
 				      urb);
 	} else {
-		format_eth_hdr_to_stack(intf_ad, Adapter, pLeader, skb,
+		format_eth_hdr_to_stack(intf_ad, ad, pLeader, skb,
 					urb, uiIndex, QueueIndex,
 					bHeaderSupressionEnabled);
 	}
-	Adapter->PrevNumRecvDescs++;
+	ad->PrevNumRecvDescs++;
 	pRcb->bUsed = false;
 	atomic_dec(&intf_ad->uNumRcbUsed);
 }

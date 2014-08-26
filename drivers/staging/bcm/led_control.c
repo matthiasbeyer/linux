@@ -617,7 +617,7 @@ static VOID LedGpioInit(struct bcm_mini_adapter *ad)
 static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 			     UCHAR *gpio_num_tx,
 			     UCHAR *gpio_num_rx,
-			     UCHAR *uiLedTxIndex,
+			     UCHAR *led_tx_idx,
 			     UCHAR *uiLedRxIndex,
 			     enum bcm_led_events currdriverstate)
 {
@@ -637,7 +637,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 		    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
 			if (*gpio_num_tx == DISABLE_GPIO_NUM) {
 				*gpio_num_tx = led_state_info->GPIO_Num;
-				*uiLedTxIndex = i;
+				*led_tx_idx = i;
 			} else {
 				*gpio_num_rx = led_state_info->GPIO_Num;
 				*uiLedRxIndex = i;
@@ -646,7 +646,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 			if ((led_state_info->LED_On_State & currdriverstate) &&
 			    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
 				*gpio_num_tx = led_state_info->GPIO_Num;
-				*uiLedTxIndex = i;
+				*led_tx_idx = i;
 			}
 		}
 	}

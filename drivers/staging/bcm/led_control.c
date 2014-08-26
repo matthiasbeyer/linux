@@ -486,7 +486,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	int status = STATUS_SUCCESS;
 	/* Array to store GPIO numbers from EEPROM */
 	UCHAR gpio_ary[NUM_OF_LEDS+1];
-	UINT uiIndex = 0;
+	UINT i = 0;
 	UINT uiNum_of_LED_Type = 0;
 	PUCHAR puCFGData	= NULL;
 	UCHAR bData = 0;
@@ -525,9 +525,9 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	 * driver state and LED blink state.
 	 */
 
-	for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
+	for (i = 0; i < NUM_OF_LEDS; i++) {
 		bData = *puCFGData;
-		curr_led_state = &ad->LEDInfo.LEDState[uiIndex];
+		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		/*
 		 * Check Bit 8 for polarity. If it is set,
@@ -558,8 +558,8 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	 * Check if all the LED settings are disabled. If it is disabled,
 	 * dont launch the LED control thread.
 	 */
-	for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-		curr_led_state = &ad->LEDInfo.LEDState[uiIndex];
+	for (i = 0; i < NUM_OF_LEDS; i++) {
+		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		if ((curr_led_state->LED_Type == DISABLE_GPIO_NUM) ||
 			(curr_led_state->LED_Type == 0x7f) ||
@@ -589,7 +589,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 static VOID LedGpioInit(struct bcm_mini_adapter *ad)
 {
 	UINT uiResetValue = 0;
-	UINT uiIndex      = 0;
+	UINT i      = 0;
 	struct bcm_led_state_info *curr_led_state;
 
 	/* Set all LED GPIO Mode to output mode */
@@ -597,13 +597,13 @@ static VOID LedGpioInit(struct bcm_mini_adapter *ad)
 		   sizeof(uiResetValue)) < 0)
 		BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 			DBG_LVL_ALL, "LED Thread: RDM Failed\n");
-	for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-		curr_led_state = &ad->LEDInfo.LEDState[uiIndex];
+	for (i = 0; i < NUM_OF_LEDS; i++) {
+		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		if (curr_led_state->GPIO_Num != DISABLE_GPIO_NUM)
 			uiResetValue |= (1 << curr_led_state->GPIO_Num);
 
-		TURN_OFF_LED(ad, 1 << curr_led_state->GPIO_Num, uiIndex);
+		TURN_OFF_LED(ad, 1 << curr_led_state->GPIO_Num, i);
 
 	}
 	if (wrmalt(ad, GPIO_MODE_REGISTER, &uiResetValue,
@@ -621,14 +621,14 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 			     UCHAR *uiLedRxIndex,
 			     enum bcm_led_events currdriverstate)
 {
-	UINT uiIndex = 0;
+	UINT i = 0;
 	struct bcm_led_state_info *led_state_info;
 
 	*GPIO_num_tx = DISABLE_GPIO_NUM;
 	*GPIO_num_rx = DISABLE_GPIO_NUM;
 
-	for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-		led_state_info = &ad->LEDInfo.LEDState[uiIndex];
+	for (i = 0; i < NUM_OF_LEDS; i++) {
+		led_state_info = &ad->LEDInfo.LEDState[i];
 
 		if (((currdriverstate == NORMAL_OPERATION) ||
 			(currdriverstate == IDLEMODE_EXIT) ||
@@ -637,16 +637,16 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 		    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
 			if (*GPIO_num_tx == DISABLE_GPIO_NUM) {
 				*GPIO_num_tx = led_state_info->GPIO_Num;
-				*uiLedTxIndex = uiIndex;
+				*uiLedTxIndex = i;
 			} else {
 				*GPIO_num_rx = led_state_info->GPIO_Num;
-				*uiLedRxIndex = uiIndex;
+				*uiLedRxIndex = i;
 			}
 		} else {
 			if ((led_state_info->LED_On_State & currdriverstate) &&
 			    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
 				*GPIO_num_tx = led_state_info->GPIO_Num;
-				*uiLedTxIndex = uiIndex;
+				*uiLedTxIndex = i;
 			}
 		}
 	}
@@ -661,7 +661,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					UCHAR dummyIndex,
 					ulong timeout,
 					UINT uiResetValue,
-					UINT uiIndex)
+					UINT i)
 {
 	switch (ad->DriverState) {
 	case DRIVER_INIT:
@@ -756,11 +756,11 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				ad->ulPowerSaveMode) {
 			/* Turn OFF all the LED */
 			uiResetValue = 0;
-			for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-				if (ad->LEDInfo.LEDState[uiIndex].GPIO_Num != DISABLE_GPIO_NUM)
+			for (i = 0; i < NUM_OF_LEDS; i++) {
+				if (ad->LEDInfo.LEDState[i].GPIO_Num != DISABLE_GPIO_NUM)
 					TURN_OFF_LED(ad,
-						     (1 << ad->LEDInfo.LEDState[uiIndex].GPIO_Num),
-						     uiIndex);
+						     (1 << ad->LEDInfo.LEDState[i].GPIO_Num),
+						     i);
 			}
 
 		}
@@ -779,12 +779,12 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 	case DRIVER_HALT:
 		currdriverstate = DRIVER_HALT;
 		GPIO_num = DISABLE_GPIO_NUM;
-		for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-			if (ad->LEDInfo.LEDState[uiIndex].GPIO_Num !=
+		for (i = 0; i < NUM_OF_LEDS; i++) {
+			if (ad->LEDInfo.LEDState[i].GPIO_Num !=
 					DISABLE_GPIO_NUM)
 				TURN_OFF_LED(ad,
-					     (1 << ad->LEDInfo.LEDState[uiIndex].GPIO_Num),
-					     uiIndex);
+					     (1 << ad->LEDInfo.LEDState[i].GPIO_Num),
+					     i);
 		}
 		/* ad->DriverState = DRIVER_INIT; */
 		break;
@@ -796,12 +796,12 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				BCM_LED_THREAD_RUNNING_INACTIVELY;
 		ad->LEDInfo.bLedInitDone = false;
 		/* disable ALL LED */
-		for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++) {
-			if (ad->LEDInfo.LEDState[uiIndex].GPIO_Num !=
+		for (i = 0; i < NUM_OF_LEDS; i++) {
+			if (ad->LEDInfo.LEDState[i].GPIO_Num !=
 					DISABLE_GPIO_NUM)
 				TURN_OFF_LED(ad,
-					     (1 << ad->LEDInfo.LEDState[uiIndex].GPIO_Num),
-					     uiIndex);
+					     (1 << ad->LEDInfo.LEDState[i].GPIO_Num),
+					     i);
 		}
 		break;
 	case LED_THREAD_ACTIVE:
@@ -823,7 +823,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 
 static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 {
-	UINT uiIndex = 0;
+	UINT i = 0;
 	UCHAR GPIO_num = 0;
 	UCHAR led_idx = 0;
 	UINT uiResetValue = 0;
@@ -887,7 +887,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 					    dummyIndex,
 					    timeout,
 					    uiResetValue,
-					    uiIndex
+					    i
 					    );
 	}
 	ad->LEDInfo.led_thread_running = BCM_LED_THREAD_DISABLED;
@@ -897,15 +897,15 @@ int InitLedSettings(struct bcm_mini_adapter *ad)
 {
 	int status = STATUS_SUCCESS;
 	bool enable_thread = TRUE;
-	UCHAR uiIndex = 0;
+	UCHAR i = 0;
 
 	/*
 	 * Initially set BitPolarity to normal polarity. The bit 8 of LED type
 	 * is used to change the polarity of the LED.
 	 */
 
-	for (uiIndex = 0; uiIndex < NUM_OF_LEDS; uiIndex++)
-		ad->LEDInfo.LEDState[uiIndex].BitPolarity = 1;
+	for (i = 0; i < NUM_OF_LEDS; i++)
+		ad->LEDInfo.LEDState[i].BitPolarity = 1;
 
 	/*
 	 * Read the LED settings of CONFIG file and map it

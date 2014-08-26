@@ -252,7 +252,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *      ad - Pointer to Adapter structure.
- *      ulParamOffset - Start offset of the DSD parameter to be read and
+ *      param_offset - Start offset of the DSD parameter to be read and
  *			validated.
  *      usParamLen - Length of the DSD Parameter.
  *
@@ -261,7 +261,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
  * -----------------------------------------------------------------------------
  */
 static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
-				     ULONG ulParamOffset,
+				     ULONG param_offset,
 				     USHORT usParamLen)
 {
 	INT status = STATUS_SUCCESS;
@@ -271,7 +271,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread:ValidateDSDParamsChecksum: 0x%lx 0x%X",
-			ulParamOffset, usParamLen);
+			param_offset, usParamLen);
 
 	puBuffer = kmalloc(usParamLen, GFP_KERNEL);
 	if (!puBuffer) {
@@ -284,7 +284,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 
 	/* Read the DSD data from the parameter offset. */
 	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)puBuffer,
-					    ulParamOffset, usParamLen)) {
+					    param_offset, usParamLen)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum BeceemNVMRead failed");
@@ -303,7 +303,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	 * Read it and compare with the calculated Checksum.
 	 */
 	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)&usChksmOrg,
-					    ulParamOffset+usParamLen, 2)) {
+					    param_offset+usParamLen, 2)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum BeceemNVMRead failed");

@@ -489,7 +489,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	UINT i = 0;
 	UINT num_of_led_type = 0;
 	PUCHAR cfg_data	= NULL;
-	UCHAR bData = 0;
+	UCHAR data = 0;
 	struct bcm_led_state_info *curr_led_state;
 
 	memset(gpio_ary, DISABLE_GPIO_NUM, NUM_OF_LEDS+1);
@@ -526,31 +526,31 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	 */
 
 	for (i = 0; i < NUM_OF_LEDS; i++) {
-		bData = *cfg_data;
+		data = *cfg_data;
 		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		/*
 		 * Check Bit 8 for polarity. If it is set,
 		 * polarity is reverse polarity
 		 */
-		if (bData & 0x80) {
+		if (data & 0x80) {
 			curr_led_state->BitPolarity = 0;
 			/* unset the bit 8 */
-			bData = bData & 0x7f;
+			data = data & 0x7f;
 		}
 
-		curr_led_state->LED_Type = bData;
-		if (bData <= NUM_OF_LEDS)
-			curr_led_state->GPIO_Num = gpio_ary[bData];
+		curr_led_state->LED_Type = data;
+		if (data <= NUM_OF_LEDS)
+			curr_led_state->GPIO_Num = gpio_ary[data];
 		else
 			curr_led_state->GPIO_Num = DISABLE_GPIO_NUM;
 
 		cfg_data++;
-		bData = *cfg_data;
-		curr_led_state->LED_On_State = bData;
+		data = *cfg_data;
+		curr_led_state->LED_On_State = data;
 		cfg_data++;
-		bData = *cfg_data;
-		curr_led_state->LED_Blink_State = bData;
+		data = *cfg_data;
+		curr_led_state->LED_Blink_State = data;
 		cfg_data++;
 	}
 

@@ -156,7 +156,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 	/* Initial values of TX and RX packets */
 	ULONG64 init_num_tx_pkts = 0, init_num_rx_pkts = 0;
 	/* values of TX and RX packets after 1 sec */
-	ULONG64 Final_num_of_packts_tx = 0, Final_num_of_packts_rx = 0;
+	ULONG64 final_num_tx_pkts = 0, Final_num_of_packts_rx = 0;
 	/* Rate of transfer of Tx and Rx in 1 sec */
 	ULONG64 rate_of_transfer_tx = 0, rate_of_transfer_rx = 0;
 	int status = STATUS_SUCCESS;
@@ -222,16 +222,16 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 		 * Read the Tx & Rx packets transmission after 1 second and
 		 * calculate rate of transfer
 		 */
-		Final_num_of_packts_tx = ad->dev->stats.tx_packets;
+		final_num_tx_pkts = ad->dev->stats.tx_packets;
 		Final_num_of_packts_rx = ad->dev->stats.rx_packets;
 
-		rate_of_transfer_tx = Final_num_of_packts_tx -
+		rate_of_transfer_tx = final_num_tx_pkts -
 						init_num_tx_pkts;
 		rate_of_transfer_rx = Final_num_of_packts_rx -
 						init_num_rx_pkts;
 
 		/* Read initial value of packets sent/received */
-		init_num_tx_pkts = Final_num_of_packts_tx;
+		init_num_tx_pkts = final_num_tx_pkts;
 		init_num_rx_pkts = Final_num_of_packts_rx;
 
 		/* Scale the rate of transfer to no of blinks. */

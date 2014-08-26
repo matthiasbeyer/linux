@@ -340,7 +340,7 @@ exit:
  *
  * Arguments:
  *      ad - Pointer to Adapter structure.
- *      ulHwParamOffset - Start offset of the HW parameter Section to be read
+ *      hw_param_offset - Start offset of the HW parameter Section to be read
  *				and validated.
  *
  * Returns:
@@ -348,7 +348,7 @@ exit:
  * -----------------------------------------------------------------------------
  */
 static INT ValidateHWParmStructure(struct bcm_mini_adapter *ad,
-				   ULONG ulHwParamOffset)
+				   ULONG hw_param_offset)
 {
 
 	INT status = STATUS_SUCCESS;
@@ -357,17 +357,17 @@ static INT ValidateHWParmStructure(struct bcm_mini_adapter *ad,
 	 * Add DSD start offset to the hwParamOffset to get
 	 * the actual address.
 	 */
-	ulHwParamOffset += DSD_START_OFFSET;
+	hw_param_offset += DSD_START_OFFSET;
 
 	/* Read the Length of HW_PARAM structure */
-	BeceemNVMRead(ad, (PUINT)&HwParamLen, ulHwParamOffset, 2);
+	BeceemNVMRead(ad, (PUINT)&HwParamLen, hw_param_offset, 2);
 	HwParamLen = ntohs(HwParamLen);
 	if (0 == HwParamLen || HwParamLen > ad->uiNVMDSDSize)
 		return STATUS_IMAGE_CHECKSUM_MISMATCH;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread:HwParamLen = 0x%x", HwParamLen);
-	status = ValidateDSDParamsChecksum(ad, ulHwParamOffset,
+	status = ValidateDSDParamsChecksum(ad, hw_param_offset,
 					   HwParamLen);
 	return status;
 } /* ValidateHWParmStructure() */

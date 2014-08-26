@@ -33,11 +33,11 @@ static INT LED_Blink(struct bcm_mini_adapter *ad,
 		     enum bcm_led_events currdriverstate)
 {
 	int status = STATUS_SUCCESS;
-	bool bInfinite = false;
+	bool infinite = false;
 
 	/* Check if num_of_time is -ve. If yes, blink led in infinite loop */
 	if (num_of_time < 0) {
-		bInfinite = TRUE;
+		infinite = TRUE;
 		num_of_time = 1;
 	}
 	while (num_of_time) {
@@ -73,7 +73,7 @@ static INT LED_Blink(struct bcm_mini_adapter *ad,
 				currdriverstate != ad->DriverState ||
 					kthread_should_stop(),
 				msecs_to_jiffies(timeout));
-		if (bInfinite == false)
+		if (infinite == false)
 			num_of_time--;
 	}
 	return status;

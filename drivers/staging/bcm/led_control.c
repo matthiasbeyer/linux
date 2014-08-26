@@ -588,26 +588,26 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
  */
 static VOID LedGpioInit(struct bcm_mini_adapter *ad)
 {
-	UINT uiResetValue = 0;
+	UINT reset_val = 0;
 	UINT i      = 0;
 	struct bcm_led_state_info *curr_led_state;
 
 	/* Set all LED GPIO Mode to output mode */
-	if (rdmalt(ad, GPIO_MODE_REGISTER, &uiResetValue,
-		   sizeof(uiResetValue)) < 0)
+	if (rdmalt(ad, GPIO_MODE_REGISTER, &reset_val,
+		   sizeof(reset_val)) < 0)
 		BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 			DBG_LVL_ALL, "LED Thread: RDM Failed\n");
 	for (i = 0; i < NUM_OF_LEDS; i++) {
 		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		if (curr_led_state->GPIO_Num != DISABLE_GPIO_NUM)
-			uiResetValue |= (1 << curr_led_state->GPIO_Num);
+			reset_val |= (1 << curr_led_state->GPIO_Num);
 
 		TURN_OFF_LED(ad, 1 << curr_led_state->GPIO_Num, i);
 
 	}
-	if (wrmalt(ad, GPIO_MODE_REGISTER, &uiResetValue,
-		   sizeof(uiResetValue)) < 0)
+	if (wrmalt(ad, GPIO_MODE_REGISTER, &reset_val,
+		   sizeof(reset_val)) < 0)
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL, "LED Thread: WRM Failed\n");
 
@@ -660,7 +660,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					UCHAR led_idx,
 					UCHAR dummyIndex,
 					ulong timeout,
-					UINT uiResetValue,
+					UINT reset_val,
 					UINT i)
 {
 	switch (ad->DriverState) {
@@ -755,7 +755,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		if (DEVICE_POWERSAVE_MODE_AS_MANUAL_CLOCK_GATING ==
 				ad->ulPowerSaveMode) {
 			/* Turn OFF all the LED */
-			uiResetValue = 0;
+			reset_val = 0;
 			for (i = 0; i < NUM_OF_LEDS; i++) {
 				if (ad->LEDInfo.LEDState[i].GPIO_Num != DISABLE_GPIO_NUM)
 					TURN_OFF_LED(ad,
@@ -826,7 +826,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 	UINT i = 0;
 	UCHAR GPIO_num = 0;
 	UCHAR led_idx = 0;
-	UINT uiResetValue = 0;
+	UINT reset_val = 0;
 	enum bcm_led_events currdriverstate = 0;
 	ulong timeout = 0;
 
@@ -886,7 +886,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 					    led_idx,
 					    dummyIndex,
 					    timeout,
-					    uiResetValue,
+					    reset_val,
 					    i
 					    );
 	}

@@ -618,7 +618,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 			     UCHAR *gpio_num_tx,
 			     UCHAR *gpio_num_rx,
 			     UCHAR *led_tx_idx,
-			     UCHAR *uiLedRxIndex,
+			     UCHAR *led_rx_idx,
 			     enum bcm_led_events currdriverstate)
 {
 	UINT i = 0;
@@ -640,7 +640,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 				*led_tx_idx = i;
 			} else {
 				*gpio_num_rx = led_state_info->GPIO_Num;
-				*uiLedRxIndex = i;
+				*led_rx_idx = i;
 			}
 		} else {
 			if ((led_state_info->LED_On_State & currdriverstate) &&

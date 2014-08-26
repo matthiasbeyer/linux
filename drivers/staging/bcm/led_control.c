@@ -266,7 +266,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 {
 	INT status = STATUS_SUCCESS;
 	PUCHAR buff = NULL;
-	USHORT usChksmOrg = 0;
+	USHORT chksm_org = 0;
 	USHORT usChecksumCalculated = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
@@ -302,7 +302,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	 * End of the DSD parameter will have a TWO bytes checksum stored in it.
 	 * Read it and compare with the calculated Checksum.
 	 */
-	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)&usChksmOrg,
+	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)&chksm_org,
 					    param_offset+param_len, 2)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
@@ -310,15 +310,15 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 		status = STATUS_IMAGE_CHECKSUM_MISMATCH;
 		goto exit;
 	}
-	usChksmOrg = ntohs(usChksmOrg);
+	chksm_org = ntohs(chksm_org);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
-			"LED Thread: usChksmOrg = 0x%x", usChksmOrg);
+			"LED Thread: chksm_org = 0x%x", chksm_org);
 
 	/*
 	 * Compare the checksum calculated with the checksum read
 	 * from DSD section
 	 */
-	if (usChecksumCalculated ^ usChksmOrg) {
+	if (usChecksumCalculated ^ chksm_org) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum: Checksums don't match");

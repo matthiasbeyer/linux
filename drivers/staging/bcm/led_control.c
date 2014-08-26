@@ -615,7 +615,7 @@ static VOID LedGpioInit(struct bcm_mini_adapter *ad)
 }
 
 static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
-			     UCHAR *GPIO_num_tx,
+			     UCHAR *gpio_num_tx,
 			     UCHAR *GPIO_num_rx,
 			     UCHAR *uiLedTxIndex,
 			     UCHAR *uiLedRxIndex,
@@ -624,7 +624,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 	UINT i = 0;
 	struct bcm_led_state_info *led_state_info;
 
-	*GPIO_num_tx = DISABLE_GPIO_NUM;
+	*gpio_num_tx = DISABLE_GPIO_NUM;
 	*GPIO_num_rx = DISABLE_GPIO_NUM;
 
 	for (i = 0; i < NUM_OF_LEDS; i++) {
@@ -635,8 +635,8 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 			(currdriverstate == FW_DOWNLOAD)) &&
 		    (led_state_info->LED_Blink_State & currdriverstate) &&
 		    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
-			if (*GPIO_num_tx == DISABLE_GPIO_NUM) {
-				*GPIO_num_tx = led_state_info->GPIO_Num;
+			if (*gpio_num_tx == DISABLE_GPIO_NUM) {
+				*gpio_num_tx = led_state_info->GPIO_Num;
 				*uiLedTxIndex = i;
 			} else {
 				*GPIO_num_rx = led_state_info->GPIO_Num;
@@ -645,7 +645,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 		} else {
 			if ((led_state_info->LED_On_State & currdriverstate) &&
 			    (led_state_info->GPIO_Num != DISABLE_GPIO_NUM)) {
-				*GPIO_num_tx = led_state_info->GPIO_Num;
+				*gpio_num_tx = led_state_info->GPIO_Num;
 				*uiLedTxIndex = i;
 			}
 		}
@@ -714,7 +714,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		break;
 	case NORMAL_OPERATION:
 		{
-			UCHAR GPIO_num_tx = DISABLE_GPIO_NUM;
+			UCHAR gpio_num_tx = DISABLE_GPIO_NUM;
 			UCHAR GPIO_num_rx = DISABLE_GPIO_NUM;
 			UCHAR uiLEDTx = 0;
 			UCHAR uiLEDRx = 0;
@@ -722,9 +722,9 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 			currdriverstate = NORMAL_OPERATION;
 			ad->LEDInfo.bIdle_led_off = false;
 
-			BcmGetGPIOPinInfo(ad, &GPIO_num_tx, &GPIO_num_rx,
+			BcmGetGPIOPinInfo(ad, &gpio_num_tx, &GPIO_num_rx,
 					  &uiLEDTx, &uiLEDRx, currdriverstate);
-			if ((GPIO_num_tx == DISABLE_GPIO_NUM) &&
+			if ((gpio_num_tx == DISABLE_GPIO_NUM) &&
 					(GPIO_num_rx == DISABLE_GPIO_NUM)) {
 				GPIO_num = DISABLE_GPIO_NUM;
 			} else {
@@ -732,11 +732,11 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				 * If single LED is selected, use same
 				 * for both Tx and Rx
 				 */
-				if (GPIO_num_tx == DISABLE_GPIO_NUM) {
-					GPIO_num_tx = GPIO_num_rx;
+				if (gpio_num_tx == DISABLE_GPIO_NUM) {
+					gpio_num_tx = GPIO_num_rx;
 					uiLEDTx = uiLEDRx;
 				} else if (GPIO_num_rx == DISABLE_GPIO_NUM) {
-					GPIO_num_rx = GPIO_num_tx;
+					GPIO_num_rx = gpio_num_tx;
 					uiLEDRx = uiLEDTx;
 				}
 				/*
@@ -744,7 +744,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				 * to Tx and Rx transmissions.
 				 */
 				LED_Proportional_Blink(ad,
-						       GPIO_num_tx, uiLEDTx,
+						       gpio_num_tx, uiLEDTx,
 						       GPIO_num_rx, uiLEDRx,
 						       currdriverstate);
 			}

@@ -379,20 +379,20 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 
 	ULONG  read_val	= 0;
 	USHORT hw_param_data	= 0;
-	USHORT usEEPROMVersion	= 0;
+	USHORT eeprom_version	= 0;
 	UCHAR  ucIndex		= 0;
 	UCHAR  ucGPIOInfo[32]	= {0};
 
-	BeceemNVMRead(ad, (PUINT)&usEEPROMVersion,
+	BeceemNVMRead(ad, (PUINT)&eeprom_version,
 		      EEPROM_VERSION_OFFSET, 2);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
-			"usEEPROMVersion: Minor:0x%X Major:0x%x",
-			usEEPROMVersion & 0xFF,
-			((usEEPROMVersion >> 8) & 0xFF));
+			"eeprom_version: Minor:0x%X Major:0x%x",
+			eeprom_version & 0xFF,
+			((eeprom_version >> 8) & 0xFF));
 
 
-	if (((usEEPROMVersion>>8)&0xFF) < EEPROM_MAP5_MAJORVERSION) {
+	if (((eeprom_version>>8)&0xFF) < EEPROM_MAP5_MAJORVERSION) {
 		BeceemNVMRead(ad, (PUINT)&hw_param_data,
 			      EEPROM_HW_PARAM_POINTER_ADDRESS, 2);
 		hw_param_data = ntohs(hw_param_data);

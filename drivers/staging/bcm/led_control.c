@@ -488,7 +488,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	UCHAR gpio_ary[NUM_OF_LEDS+1];
 	UINT i = 0;
 	UINT num_of_led_type = 0;
-	PUCHAR puCFGData	= NULL;
+	PUCHAR cfg_data	= NULL;
 	UCHAR bData = 0;
 	struct bcm_led_state_info *curr_led_state;
 
@@ -517,7 +517,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	 */
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread: Config file read successfully\n");
-	puCFGData = (PUCHAR) &ad->pstargetparams->HostDrvrConfig1;
+	cfg_data = (PUCHAR) &ad->pstargetparams->HostDrvrConfig1;
 
 	/*
 	 * Offset for HostDrvConfig1, HostDrvConfig2, HostDrvConfig3 which
@@ -526,7 +526,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	 */
 
 	for (i = 0; i < NUM_OF_LEDS; i++) {
-		bData = *puCFGData;
+		bData = *cfg_data;
 		curr_led_state = &ad->LEDInfo.LEDState[i];
 
 		/*
@@ -545,13 +545,13 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 		else
 			curr_led_state->GPIO_Num = DISABLE_GPIO_NUM;
 
-		puCFGData++;
-		bData = *puCFGData;
+		cfg_data++;
+		bData = *cfg_data;
 		curr_led_state->LED_On_State = bData;
-		puCFGData++;
-		bData = *puCFGData;
+		cfg_data++;
+		bData = *cfg_data;
 		curr_led_state->LED_Blink_State = bData;
-		puCFGData++;
+		cfg_data++;
 	}
 
 	/*

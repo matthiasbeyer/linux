@@ -26,7 +26,7 @@ bool IsReqGpioIsLedInNVM(struct bcm_mini_adapter *ad, UINT gpios)
 }
 
 static INT LED_Blink(struct bcm_mini_adapter *ad,
-		     UINT GPIO_Num,
+		     UINT gpio_num,
 		     UCHAR uiLedIndex,
 		     ULONG timeout,
 		     INT num_of_time,
@@ -42,7 +42,7 @@ static INT LED_Blink(struct bcm_mini_adapter *ad,
 	}
 	while (num_of_time) {
 		if (currdriverstate == ad->DriverState)
-			TURN_ON_LED(ad, GPIO_Num, uiLedIndex);
+			TURN_ON_LED(ad, gpio_num, uiLedIndex);
 
 		/* Wait for timeout after setting on the LED */
 		status = wait_event_interruptible_timeout(
@@ -57,17 +57,17 @@ static INT LED_Blink(struct bcm_mini_adapter *ad,
 				"Led thread got signal to exit..hence exiting");
 			ad->LEDInfo.led_thread_running =
 					BCM_LED_THREAD_DISABLED;
-			TURN_OFF_LED(ad, GPIO_Num, uiLedIndex);
+			TURN_OFF_LED(ad, gpio_num, uiLedIndex);
 			status = EVENT_SIGNALED;
 			break;
 		}
 		if (status) {
-			TURN_OFF_LED(ad, GPIO_Num, uiLedIndex);
+			TURN_OFF_LED(ad, gpio_num, uiLedIndex);
 			status = EVENT_SIGNALED;
 			break;
 		}
 
-		TURN_OFF_LED(ad, GPIO_Num, uiLedIndex);
+		TURN_OFF_LED(ad, gpio_num, uiLedIndex);
 		status = wait_event_interruptible_timeout(
 				ad->LEDInfo.notify_led_event,
 				currdriverstate != ad->DriverState ||

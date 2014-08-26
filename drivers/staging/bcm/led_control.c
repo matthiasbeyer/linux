@@ -487,7 +487,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	/* Array to store GPIO numbers from EEPROM */
 	UCHAR gpio_ary[NUM_OF_LEDS+1];
 	UINT i = 0;
-	UINT uiNum_of_LED_Type = 0;
+	UINT num_of_led_type = 0;
 	PUCHAR puCFGData	= NULL;
 	UCHAR bData = 0;
 	struct bcm_led_state_info *curr_led_state;
@@ -564,9 +564,9 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 		if ((curr_led_state->LED_Type == DISABLE_GPIO_NUM) ||
 			(curr_led_state->LED_Type == 0x7f) ||
 			(curr_led_state->LED_Type == 0))
-			uiNum_of_LED_Type++;
+			num_of_led_type++;
 	}
-	if (uiNum_of_LED_Type >= NUM_OF_LEDS)
+	if (num_of_led_type >= NUM_OF_LEDS)
 		*enable_thread = false;
 
 	return status;

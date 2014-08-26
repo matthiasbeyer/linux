@@ -265,7 +265,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 				     USHORT param_len)
 {
 	INT status = STATUS_SUCCESS;
-	PUCHAR puBuffer = NULL;
+	PUCHAR buff = NULL;
 	USHORT usChksmOrg = 0;
 	USHORT usChecksumCalculated = 0;
 
@@ -273,8 +273,8 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 			"LED Thread:ValidateDSDParamsChecksum: 0x%lx 0x%X",
 			param_offset, param_len);
 
-	puBuffer = kmalloc(param_len, GFP_KERNEL);
-	if (!puBuffer) {
+	buff = kmalloc(param_len, GFP_KERNEL);
+	if (!buff) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum Allocation failed");
@@ -283,7 +283,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	}
 
 	/* Read the DSD data from the parameter offset. */
-	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)puBuffer,
+	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)buff,
 					    param_offset, param_len)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
@@ -293,7 +293,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	}
 
 	/* Calculate the checksum of the data read from the DSD parameter. */
-	usChecksumCalculated = CFG_CalculateChecksum(puBuffer, param_len);
+	usChecksumCalculated = CFG_CalculateChecksum(buff, param_len);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread: usCheckSumCalculated = 0x%x\n",
 			usChecksumCalculated);
@@ -327,7 +327,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	}
 
 exit:
-	kfree(puBuffer);
+	kfree(buff);
 	return status;
 }
 

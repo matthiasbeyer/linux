@@ -105,7 +105,7 @@ static INT blink_in_normal_bandwidth(struct bcm_mini_adapter *ad,
 				     INT *time_rx,
 				     UCHAR gpio_num_tx,
 				     UCHAR tx_led_idx,
-				     UCHAR GPIO_Num_rx,
+				     UCHAR gpio_num_rx,
 				     UCHAR uiRxLedIndex,
 				     enum bcm_led_events currdriverstate,
 				     ulong *timeout)
@@ -120,14 +120,14 @@ static INT blink_in_normal_bandwidth(struct bcm_mini_adapter *ad,
 		/* Blink both Tx and Rx LEDs */
 		if ((LED_Blink(ad, 1 << gpio_num_tx, tx_led_idx, *timeout,
 			      *time, currdriverstate) == EVENT_SIGNALED) ||
-		    (LED_Blink(ad, 1 << GPIO_Num_rx, uiRxLedIndex, *timeout,
+		    (LED_Blink(ad, 1 << gpio_num_rx, uiRxLedIndex, *timeout,
 			      *time, currdriverstate) == EVENT_SIGNALED))
 			return EVENT_SIGNALED;
 	}
 
 	if (*time == *time_tx) {
 		/* Blink pending rate of Rx */
-		if (LED_Blink(ad, (1 << GPIO_Num_rx), uiRxLedIndex, *timeout,
+		if (LED_Blink(ad, (1 << gpio_num_rx), uiRxLedIndex, *timeout,
 			      *time_rx - *time,
 			      currdriverstate) == EVENT_SIGNALED)
 			return EVENT_SIGNALED;
@@ -149,7 +149,7 @@ static INT blink_in_normal_bandwidth(struct bcm_mini_adapter *ad,
 static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 				  UCHAR gpio_num_tx,
 				  UCHAR tx_led_idx,
-				  UCHAR GPIO_Num_rx,
+				  UCHAR gpio_num_rx,
 				  UCHAR uiRxLedIndex,
 				  enum bcm_led_events currdriverstate)
 {
@@ -182,7 +182,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 								&num_of_time_rx,
 								gpio_num_tx,
 								tx_led_idx,
-								GPIO_Num_rx,
+								gpio_num_rx,
 								uiRxLedIndex,
 								currdriverstate,
 								&timeout))
@@ -216,7 +216,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 
 		/* Turn off both Tx and Rx LEDs before next second */
 		TURN_OFF_LED(ad, 1 << gpio_num_tx, tx_led_idx);
-		TURN_OFF_LED(ad, 1 << GPIO_Num_rx, tx_led_idx);
+		TURN_OFF_LED(ad, 1 << gpio_num_rx, tx_led_idx);
 
 		/*
 		 * Read the Tx & Rx packets transmission after 1 second and

@@ -254,7 +254,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
  *      ad - Pointer to Adapter structure.
  *      param_offset - Start offset of the DSD parameter to be read and
  *			validated.
- *      usParamLen - Length of the DSD Parameter.
+ *      param_len - Length of the DSD Parameter.
  *
  * Returns:
  *  <OSAL_STATUS_CODE>
@@ -262,7 +262,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
  */
 static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 				     ULONG param_offset,
-				     USHORT usParamLen)
+				     USHORT param_len)
 {
 	INT status = STATUS_SUCCESS;
 	PUCHAR puBuffer = NULL;
@@ -271,9 +271,9 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread:ValidateDSDParamsChecksum: 0x%lx 0x%X",
-			param_offset, usParamLen);
+			param_offset, param_len);
 
-	puBuffer = kmalloc(usParamLen, GFP_KERNEL);
+	puBuffer = kmalloc(param_len, GFP_KERNEL);
 	if (!puBuffer) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
@@ -284,7 +284,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 
 	/* Read the DSD data from the parameter offset. */
 	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)puBuffer,
-					    param_offset, usParamLen)) {
+					    param_offset, param_len)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum BeceemNVMRead failed");
@@ -293,7 +293,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	}
 
 	/* Calculate the checksum of the data read from the DSD parameter. */
-	usChecksumCalculated = CFG_CalculateChecksum(puBuffer, usParamLen);
+	usChecksumCalculated = CFG_CalculateChecksum(puBuffer, param_len);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread: usCheckSumCalculated = 0x%x\n",
 			usChecksumCalculated);
@@ -303,7 +303,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	 * Read it and compare with the calculated Checksum.
 	 */
 	if (STATUS_SUCCESS != BeceemNVMRead(ad, (PUINT)&usChksmOrg,
-					    param_offset+usParamLen, 2)) {
+					    param_offset+param_len, 2)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum BeceemNVMRead failed");

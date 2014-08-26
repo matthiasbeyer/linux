@@ -377,7 +377,7 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 {
 	int status = STATUS_SUCCESS;
 
-	ULONG  dwReadValue	= 0;
+	ULONG  read_val	= 0;
 	USHORT usHwParamData	= 0;
 	USHORT usEEPROMVersion	= 0;
 	UCHAR  ucIndex		= 0;
@@ -396,7 +396,7 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 		BeceemNVMRead(ad, (PUINT)&usHwParamData,
 			      EEPROM_HW_PARAM_POINTER_ADDRESS, 2);
 		usHwParamData = ntohs(usHwParamData);
-		dwReadValue   = usHwParamData;
+		read_val   = usHwParamData;
 	} else {
 		/*
 		 * Validate Compatibility section and then read HW param
@@ -409,15 +409,15 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 		if (status != STATUS_SUCCESS)
 			return status;
 
-		BeceemNVMRead(ad, (PUINT)&dwReadValue,
+		BeceemNVMRead(ad, (PUINT)&read_val,
 			      EEPROM_HW_PARAM_POINTER_ADDRRES_MAP5, 4);
-		dwReadValue = ntohl(dwReadValue);
+		read_val = ntohl(read_val);
 	}
 
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread: Start address of HW_PARAM structure = 0x%lx",
-			dwReadValue);
+			read_val);
 
 	/*
 	 * Validate if the address read out is within the DSD.
@@ -425,11 +425,11 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 	 * lower limit should be above DSD_START_OFFSET and
 	 * upper limit should be below (ad->uiNVMDSDSize-DSD_START_OFFSET)
 	 */
-	if (dwReadValue < DSD_START_OFFSET ||
-			dwReadValue > (ad->uiNVMDSDSize-DSD_START_OFFSET))
+	if (read_val < DSD_START_OFFSET ||
+			read_val > (ad->uiNVMDSDSize-DSD_START_OFFSET))
 		return STATUS_IMAGE_CHECKSUM_MISMATCH;
 
-	status = ValidateHWParmStructure(ad, dwReadValue);
+	status = ValidateHWParmStructure(ad, read_val);
 	if (status)
 		return status;
 
@@ -439,16 +439,16 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 	 * To read GPIO section, add GPIO offset further.
 	 */
 
-	dwReadValue += DSD_START_OFFSET;
+	read_val += DSD_START_OFFSET;
 			/* = start address of hw param section. */
-	dwReadValue += GPIO_SECTION_START_OFFSET;
+	read_val += GPIO_SECTION_START_OFFSET;
 			/* = GPIO start offset within HW Param section. */
 
 	/*
 	 * Read the GPIO values for 32 GPIOs from EEPROM and map the function
 	 * number to GPIO pin number to gpio_ary
 	 */
-	BeceemNVMRead(ad, (UINT *)ucGPIOInfo, dwReadValue, 32);
+	BeceemNVMRead(ad, (UINT *)ucGPIOInfo, read_val, 32);
 	for (ucIndex = 0; ucIndex < 32; ucIndex++) {
 
 		switch (ucGPIOInfo[ucIndex]) {

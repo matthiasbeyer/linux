@@ -656,7 +656,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					enum bcm_led_events currdriverstate,
 					UCHAR gpio_num,
-					UCHAR dummyGPIONum,
+					UCHAR dummy_gpio_num,
 					UCHAR led_idx,
 					UCHAR dummyIndex,
 					ulong timeout,
@@ -667,7 +667,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 	case DRIVER_INIT:
 		currdriverstate = DRIVER_INIT;
 				/* ad->DriverState; */
-		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
 				  &led_idx, &dummyIndex,
 				  currdriverstate);
 
@@ -682,7 +682,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		 *	"LED Thread: FW_DN_DONE called\n");
 		 */
 		currdriverstate = FW_DOWNLOAD;
-		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
 				  &led_idx, &dummyIndex,
 				  currdriverstate);
 
@@ -694,7 +694,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		break;
 	case FW_DOWNLOAD_DONE:
 		currdriverstate = FW_DOWNLOAD_DONE;
-		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
 				  &led_idx, &dummyIndex, currdriverstate);
 		if (gpio_num != DISABLE_GPIO_NUM)
 			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
@@ -707,8 +707,8 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		 */
 	case NO_NETWORK_ENTRY:
 		currdriverstate = NO_NETWORK_ENTRY;
-		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
-				  &led_idx, &dummyGPIONum, currdriverstate);
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
+				  &led_idx, &dummy_gpio_num, currdriverstate);
 		if (gpio_num != DISABLE_GPIO_NUM)
 			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
 		break;
@@ -832,7 +832,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 
 	INT status = 0;
 
-	UCHAR dummyGPIONum = 0;
+	UCHAR dummy_gpio_num = 0;
 	UCHAR dummyIndex = 0;
 
 	/* currdriverstate = ad->DriverState; */
@@ -882,7 +882,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 		handle_adapter_driver_state(ad,
 					    currdriverstate,
 					    gpio_num,
-					    dummyGPIONum,
+					    dummy_gpio_num,
 					    led_idx,
 					    dummyIndex,
 					    timeout,

@@ -267,7 +267,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	INT status = STATUS_SUCCESS;
 	PUCHAR buff = NULL;
 	USHORT chksm_org = 0;
-	USHORT usChecksumCalculated = 0;
+	USHORT checksum_calculated = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread:ValidateDSDParamsChecksum: 0x%lx 0x%X",
@@ -293,10 +293,10 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	}
 
 	/* Calculate the checksum of the data read from the DSD parameter. */
-	usChecksumCalculated = CFG_CalculateChecksum(buff, param_len);
+	checksum_calculated = CFG_CalculateChecksum(buff, param_len);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO, DBG_LVL_ALL,
 			"LED Thread: usCheckSumCalculated = 0x%x\n",
-			usChecksumCalculated);
+			checksum_calculated);
 
 	/*
 	 * End of the DSD parameter will have a TWO bytes checksum stored in it.
@@ -318,7 +318,7 @@ static INT ValidateDSDParamsChecksum(struct bcm_mini_adapter *ad,
 	 * Compare the checksum calculated with the checksum read
 	 * from DSD section
 	 */
-	if (usChecksumCalculated ^ chksm_org) {
+	if (checksum_calculated ^ chksm_org) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
 				"LED Thread: ValidateDSDParamsChecksum: Checksums don't match");

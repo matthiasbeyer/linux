@@ -655,7 +655,7 @@ static INT BcmGetGPIOPinInfo(struct bcm_mini_adapter *ad,
 
 static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					enum bcm_led_events currdriverstate,
-					UCHAR GPIO_num,
+					UCHAR gpio_num,
 					UCHAR dummyGPIONum,
 					UCHAR led_idx,
 					UCHAR dummyIndex,
@@ -667,12 +667,12 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 	case DRIVER_INIT:
 		currdriverstate = DRIVER_INIT;
 				/* ad->DriverState; */
-		BcmGetGPIOPinInfo(ad, &GPIO_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
 				  &led_idx, &dummyIndex,
 				  currdriverstate);
 
-		if (GPIO_num != DISABLE_GPIO_NUM)
-			TURN_ON_LED(ad, 1 << GPIO_num, led_idx);
+		if (gpio_num != DISABLE_GPIO_NUM)
+			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
 
 		break;
 	case FW_DOWNLOAD:
@@ -682,22 +682,22 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		 *	"LED Thread: FW_DN_DONE called\n");
 		 */
 		currdriverstate = FW_DOWNLOAD;
-		BcmGetGPIOPinInfo(ad, &GPIO_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
 				  &led_idx, &dummyIndex,
 				  currdriverstate);
 
-		if (GPIO_num != DISABLE_GPIO_NUM) {
+		if (gpio_num != DISABLE_GPIO_NUM) {
 			timeout = 50;
-			LED_Blink(ad, 1 << GPIO_num, led_idx, timeout,
+			LED_Blink(ad, 1 << gpio_num, led_idx, timeout,
 				  -1, currdriverstate);
 		}
 		break;
 	case FW_DOWNLOAD_DONE:
 		currdriverstate = FW_DOWNLOAD_DONE;
-		BcmGetGPIOPinInfo(ad, &GPIO_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
 				  &led_idx, &dummyIndex, currdriverstate);
-		if (GPIO_num != DISABLE_GPIO_NUM)
-			TURN_ON_LED(ad, 1 << GPIO_num, led_idx);
+		if (gpio_num != DISABLE_GPIO_NUM)
+			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
 		break;
 
 	case SHUTDOWN_EXIT:
@@ -707,10 +707,10 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		 */
 	case NO_NETWORK_ENTRY:
 		currdriverstate = NO_NETWORK_ENTRY;
-		BcmGetGPIOPinInfo(ad, &GPIO_num, &dummyGPIONum,
+		BcmGetGPIOPinInfo(ad, &gpio_num, &dummyGPIONum,
 				  &led_idx, &dummyGPIONum, currdriverstate);
-		if (GPIO_num != DISABLE_GPIO_NUM)
-			TURN_ON_LED(ad, 1 << GPIO_num, led_idx);
+		if (gpio_num != DISABLE_GPIO_NUM)
+			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
 		break;
 	case NORMAL_OPERATION:
 		{
@@ -726,7 +726,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					  &uiLEDTx, &uiLEDRx, currdriverstate);
 			if ((gpio_num_tx == DISABLE_GPIO_NUM) &&
 					(gpio_num_rx == DISABLE_GPIO_NUM)) {
-				GPIO_num = DISABLE_GPIO_NUM;
+				gpio_num = DISABLE_GPIO_NUM;
 			} else {
 				/*
 				 * If single LED is selected, use same
@@ -768,17 +768,17 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		ad->LEDInfo.bLedInitDone = false;
 		ad->LEDInfo.bIdle_led_off = TRUE;
 		wake_up(&ad->LEDInfo.idleModeSyncEvent);
-		GPIO_num = DISABLE_GPIO_NUM;
+		gpio_num = DISABLE_GPIO_NUM;
 		break;
 	case IDLEMODE_CONTINUE:
 		currdriverstate = IDLEMODE_CONTINUE;
-		GPIO_num = DISABLE_GPIO_NUM;
+		gpio_num = DISABLE_GPIO_NUM;
 		break;
 	case IDLEMODE_EXIT:
 		break;
 	case DRIVER_HALT:
 		currdriverstate = DRIVER_HALT;
-		GPIO_num = DISABLE_GPIO_NUM;
+		gpio_num = DISABLE_GPIO_NUM;
 		for (i = 0; i < NUM_OF_LEDS; i++) {
 			if (ad->LEDInfo.LEDState[i].GPIO_Num !=
 					DISABLE_GPIO_NUM)
@@ -824,7 +824,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 {
 	UINT i = 0;
-	UCHAR GPIO_num = 0;
+	UCHAR gpio_num = 0;
 	UCHAR led_idx = 0;
 	UINT reset_val = 0;
 	enum bcm_led_events currdriverstate = 0;
@@ -845,11 +845,11 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 	 *	currdriverstate!= ad->DriverState);
 	 */
 
-	GPIO_num = DISABLE_GPIO_NUM;
+	gpio_num = DISABLE_GPIO_NUM;
 
 	while (TRUE) {
 		/* Wait till event is triggered */
-		if ((GPIO_num == DISABLE_GPIO_NUM)
+		if ((gpio_num == DISABLE_GPIO_NUM)
 						||
 				((currdriverstate != FW_DOWNLOAD) &&
 				 (currdriverstate != NORMAL_OPERATION) &&
@@ -867,12 +867,12 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 				"Led thread got signal to exit..hence exiting");
 			ad->LEDInfo.led_thread_running =
 						BCM_LED_THREAD_DISABLED;
-			TURN_OFF_LED(ad, 1 << GPIO_num, led_idx);
+			TURN_OFF_LED(ad, 1 << gpio_num, led_idx);
 			return; /* STATUS_FAILURE; */
 		}
 
-		if (GPIO_num != DISABLE_GPIO_NUM)
-			TURN_OFF_LED(ad, 1 << GPIO_num, led_idx);
+		if (gpio_num != DISABLE_GPIO_NUM)
+			TURN_OFF_LED(ad, 1 << gpio_num, led_idx);
 
 		if (ad->LEDInfo.bLedInitDone == false) {
 			LedGpioInit(ad);
@@ -881,7 +881,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 
 		handle_adapter_driver_state(ad,
 					    currdriverstate,
-					    GPIO_num,
+					    gpio_num,
 					    dummyGPIONum,
 					    led_idx,
 					    dummyIndex,

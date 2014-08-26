@@ -161,7 +161,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 	ULONG64 rate_of_transfer_tx = 0, rate_of_transfer_rx = 0;
 	int status = STATUS_SUCCESS;
 	INT num_of_time = 0, num_of_time_tx = 0, num_of_time_rx = 0;
-	UINT remDelay = 0;
+	UINT rem_delay = 0;
 	/* UINT GPIO_num = DISABLE_GPIO_NUM; */
 	ulong timeout = 0;
 
@@ -193,9 +193,9 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 		 * If Tx/Rx rate is less than maximum blinks per second,
 		 * wait till delay completes to 1 second
 		 */
-		remDelay = MAX_NUM_OF_BLINKS - num_of_time;
-		if (remDelay > 0) {
-			timeout = 100 * remDelay;
+		rem_delay = MAX_NUM_OF_BLINKS - num_of_time;
+		if (rem_delay > 0) {
+			timeout = 100 * rem_delay;
 			status = wait_event_interruptible_timeout(
 					ad->LEDInfo.notify_led_event,
 					currdriverstate != ad->DriverState

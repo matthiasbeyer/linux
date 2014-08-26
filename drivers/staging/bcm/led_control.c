@@ -154,7 +154,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 				  enum bcm_led_events currdriverstate)
 {
 	/* Initial values of TX and RX packets */
-	ULONG64 Initial_num_of_packts_tx = 0, Initial_num_of_packts_rx = 0;
+	ULONG64 init_num_tx_pkts = 0, Initial_num_of_packts_rx = 0;
 	/* values of TX and RX packets after 1 sec */
 	ULONG64 Final_num_of_packts_tx = 0, Final_num_of_packts_rx = 0;
 	/* Rate of transfer of Tx and Rx in 1 sec */
@@ -166,7 +166,7 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 	ulong timeout = 0;
 
 	/* Read initial value of packets sent/received */
-	Initial_num_of_packts_tx = ad->dev->stats.tx_packets;
+	init_num_tx_pkts = ad->dev->stats.tx_packets;
 	Initial_num_of_packts_rx = ad->dev->stats.rx_packets;
 
 	/* Scale the rate of transfer to no of blinks. */
@@ -226,12 +226,12 @@ static INT LED_Proportional_Blink(struct bcm_mini_adapter *ad,
 		Final_num_of_packts_rx = ad->dev->stats.rx_packets;
 
 		rate_of_transfer_tx = Final_num_of_packts_tx -
-						Initial_num_of_packts_tx;
+						init_num_tx_pkts;
 		rate_of_transfer_rx = Final_num_of_packts_rx -
 						Initial_num_of_packts_rx;
 
 		/* Read initial value of packets sent/received */
-		Initial_num_of_packts_tx = Final_num_of_packts_tx;
+		init_num_tx_pkts = Final_num_of_packts_tx;
 		Initial_num_of_packts_rx = Final_num_of_packts_rx;
 
 		/* Scale the rate of transfer to no of blinks. */

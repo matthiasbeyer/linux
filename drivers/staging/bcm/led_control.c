@@ -380,7 +380,7 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 	ULONG  read_val	= 0;
 	USHORT hw_param_data	= 0;
 	USHORT eeprom_version	= 0;
-	UCHAR  ucIndex		= 0;
+	UCHAR  i		= 0;
 	UCHAR  ucGPIOInfo[32]	= {0};
 
 	BeceemNVMRead(ad, (PUINT)&eeprom_version,
@@ -449,24 +449,24 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 	 * number to GPIO pin number to gpio_ary
 	 */
 	BeceemNVMRead(ad, (UINT *)ucGPIOInfo, read_val, 32);
-	for (ucIndex = 0; ucIndex < 32; ucIndex++) {
+	for (i = 0; i < 32; i++) {
 
-		switch (ucGPIOInfo[ucIndex]) {
+		switch (ucGPIOInfo[i]) {
 		case RED_LED:
-			gpio_ary[RED_LED] = ucIndex;
-			ad->gpioBitMap |= (1 << ucIndex);
+			gpio_ary[RED_LED] = i;
+			ad->gpioBitMap |= (1 << i);
 			break;
 		case BLUE_LED:
-			gpio_ary[BLUE_LED] = ucIndex;
-			ad->gpioBitMap |= (1 << ucIndex);
+			gpio_ary[BLUE_LED] = i;
+			ad->gpioBitMap |= (1 << i);
 			break;
 		case YELLOW_LED:
-			gpio_ary[YELLOW_LED] = ucIndex;
-			ad->gpioBitMap |= (1 << ucIndex);
+			gpio_ary[YELLOW_LED] = i;
+			ad->gpioBitMap |= (1 << i);
 			break;
 		case GREEN_LED:
-			gpio_ary[GREEN_LED] = ucIndex;
-			ad->gpioBitMap |= (1 << ucIndex);
+			gpio_ary[GREEN_LED] = i;
+			ad->gpioBitMap |= (1 << i);
 			break;
 		default:
 			break;

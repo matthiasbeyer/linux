@@ -373,7 +373,7 @@ static INT ValidateHWParmStructure(struct bcm_mini_adapter *ad,
 } /* ValidateHWParmStructure() */
 
 static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
-					UCHAR GPIO_Array[])
+					UCHAR gpio_ary[])
 {
 	int status = STATUS_SUCCESS;
 
@@ -446,26 +446,26 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 
 	/*
 	 * Read the GPIO values for 32 GPIOs from EEPROM and map the function
-	 * number to GPIO pin number to GPIO_Array
+	 * number to GPIO pin number to gpio_ary
 	 */
 	BeceemNVMRead(ad, (UINT *)ucGPIOInfo, dwReadValue, 32);
 	for (ucIndex = 0; ucIndex < 32; ucIndex++) {
 
 		switch (ucGPIOInfo[ucIndex]) {
 		case RED_LED:
-			GPIO_Array[RED_LED] = ucIndex;
+			gpio_ary[RED_LED] = ucIndex;
 			ad->gpioBitMap |= (1 << ucIndex);
 			break;
 		case BLUE_LED:
-			GPIO_Array[BLUE_LED] = ucIndex;
+			gpio_ary[BLUE_LED] = ucIndex;
 			ad->gpioBitMap |= (1 << ucIndex);
 			break;
 		case YELLOW_LED:
-			GPIO_Array[YELLOW_LED] = ucIndex;
+			gpio_ary[YELLOW_LED] = ucIndex;
 			ad->gpioBitMap |= (1 << ucIndex);
 			break;
 		case GREEN_LED:
-			GPIO_Array[GREEN_LED] = ucIndex;
+			gpio_ary[GREEN_LED] = ucIndex;
 			ad->gpioBitMap |= (1 << ucIndex);
 			break;
 		default:
@@ -485,14 +485,14 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 {
 	int status = STATUS_SUCCESS;
 	/* Array to store GPIO numbers from EEPROM */
-	UCHAR GPIO_Array[NUM_OF_LEDS+1];
+	UCHAR gpio_ary[NUM_OF_LEDS+1];
 	UINT uiIndex = 0;
 	UINT uiNum_of_LED_Type = 0;
 	PUCHAR puCFGData	= NULL;
 	UCHAR bData = 0;
 	struct bcm_led_state_info *curr_led_state;
 
-	memset(GPIO_Array, DISABLE_GPIO_NUM, NUM_OF_LEDS+1);
+	memset(gpio_ary, DISABLE_GPIO_NUM, NUM_OF_LEDS+1);
 
 	if (!ad->pstargetparams || IS_ERR(ad->pstargetparams)) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
@@ -500,9 +500,9 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 		return -ENOENT;
 	}
 
-	/* Populate GPIO_Array with GPIO numbers for LED functions */
+	/* Populate gpio_ary with GPIO numbers for LED functions */
 	/* Read the GPIO numbers from EEPROM */
-	status = ReadLEDInformationFromEEPROM(ad, GPIO_Array);
+	status = ReadLEDInformationFromEEPROM(ad, gpio_ary);
 	if (status == STATUS_IMAGE_CHECKSUM_MISMATCH) {
 		*bEnableThread = false;
 		return STATUS_SUCCESS;
@@ -541,7 +541,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 
 		curr_led_state->LED_Type = bData;
 		if (bData <= NUM_OF_LEDS)
-			curr_led_state->GPIO_Num = GPIO_Array[bData];
+			curr_led_state->GPIO_Num = gpio_ary[bData];
 		else
 			curr_led_state->GPIO_Num = DISABLE_GPIO_NUM;
 

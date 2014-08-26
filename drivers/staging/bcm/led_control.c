@@ -3,11 +3,11 @@
 #define STATUS_IMAGE_CHECKSUM_MISMATCH -199
 #define EVENT_SIGNALED 1
 
-static B_UINT16 CFG_CalculateChecksum(B_UINT8 *buff, B_UINT32 u32Size)
+static B_UINT16 CFG_CalculateChecksum(B_UINT8 *buff, B_UINT32 size)
 {
 	B_UINT16 u16CheckSum = 0;
 
-	while (u32Size--) {
+	while (size--) {
 		u16CheckSum += (B_UINT8)~(*buff);
 		buff++;
 	}

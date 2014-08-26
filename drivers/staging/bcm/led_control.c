@@ -481,7 +481,7 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 
 
 static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
-				   bool *bEnableThread)
+				   bool *enable_thread)
 {
 	int status = STATUS_SUCCESS;
 	/* Array to store GPIO numbers from EEPROM */
@@ -504,10 +504,10 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 	/* Read the GPIO numbers from EEPROM */
 	status = ReadLEDInformationFromEEPROM(ad, gpio_ary);
 	if (status == STATUS_IMAGE_CHECKSUM_MISMATCH) {
-		*bEnableThread = false;
+		*enable_thread = false;
 		return STATUS_SUCCESS;
 	} else if (status) {
-		*bEnableThread = false;
+		*enable_thread = false;
 		return status;
 	}
 
@@ -567,7 +567,7 @@ static int ReadConfigFileStructure(struct bcm_mini_adapter *ad,
 			uiNum_of_LED_Type++;
 	}
 	if (uiNum_of_LED_Type >= NUM_OF_LEDS)
-		*bEnableThread = false;
+		*enable_thread = false;
 
 	return status;
 }
@@ -896,7 +896,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 int InitLedSettings(struct bcm_mini_adapter *ad)
 {
 	int status = STATUS_SUCCESS;
-	bool bEnableThread = TRUE;
+	bool enable_thread = TRUE;
 	UCHAR uiIndex = 0;
 
 	/*
@@ -911,7 +911,7 @@ int InitLedSettings(struct bcm_mini_adapter *ad)
 	 * Read the LED settings of CONFIG file and map it
 	 * to GPIO numbers in EEPROM
 	 */
-	status = ReadConfigFileStructure(ad, &bEnableThread);
+	status = ReadConfigFileStructure(ad, &enable_thread);
 	if (STATUS_SUCCESS != status) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LED_DUMP_INFO,
 				DBG_LVL_ALL,
@@ -920,7 +920,7 @@ int InitLedSettings(struct bcm_mini_adapter *ad)
 	}
 
 	if (ad->LEDInfo.led_thread_running) {
-		if (bEnableThread) {
+		if (enable_thread) {
 			;
 		} else {
 			ad->DriverState = DRIVER_HALT;
@@ -929,7 +929,7 @@ int InitLedSettings(struct bcm_mini_adapter *ad)
 						BCM_LED_THREAD_DISABLED;
 		}
 
-	} else if (bEnableThread) {
+	} else if (enable_thread) {
 		/* Create secondary thread to handle the LEDs */
 		init_waitqueue_head(&ad->LEDInfo.notify_led_event);
 		init_waitqueue_head(&ad->LEDInfo.idleModeSyncEvent);

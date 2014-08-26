@@ -717,13 +717,13 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 			UCHAR gpio_num_tx = DISABLE_GPIO_NUM;
 			UCHAR gpio_num_rx = DISABLE_GPIO_NUM;
 			UCHAR led_tx = 0;
-			UCHAR uiLEDRx = 0;
+			UCHAR led_rx = 0;
 
 			currdriverstate = NORMAL_OPERATION;
 			ad->LEDInfo.bIdle_led_off = false;
 
 			BcmGetGPIOPinInfo(ad, &gpio_num_tx, &gpio_num_rx,
-					  &led_tx, &uiLEDRx, currdriverstate);
+					  &led_tx, &led_rx, currdriverstate);
 			if ((gpio_num_tx == DISABLE_GPIO_NUM) &&
 					(gpio_num_rx == DISABLE_GPIO_NUM)) {
 				gpio_num = DISABLE_GPIO_NUM;
@@ -734,10 +734,10 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				 */
 				if (gpio_num_tx == DISABLE_GPIO_NUM) {
 					gpio_num_tx = gpio_num_rx;
-					led_tx = uiLEDRx;
+					led_tx = led_rx;
 				} else if (gpio_num_rx == DISABLE_GPIO_NUM) {
 					gpio_num_rx = gpio_num_tx;
-					uiLEDRx = led_tx;
+					led_rx = led_tx;
 				}
 				/*
 				 * Blink the LED in proportionate
@@ -745,7 +745,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 				 */
 				LED_Proportional_Blink(ad,
 						       gpio_num_tx, led_tx,
-						       gpio_num_rx, uiLEDRx,
+						       gpio_num_rx, led_rx,
 						       currdriverstate);
 			}
 		}

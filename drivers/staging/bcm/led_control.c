@@ -658,7 +658,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 					UCHAR gpio_num,
 					UCHAR dummy_gpio_num,
 					UCHAR led_idx,
-					UCHAR dummyIndex,
+					UCHAR dummy_idx,
 					ulong timeout,
 					UINT reset_val,
 					UINT i)
@@ -668,7 +668,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		currdriverstate = DRIVER_INIT;
 				/* ad->DriverState; */
 		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
-				  &led_idx, &dummyIndex,
+				  &led_idx, &dummy_idx,
 				  currdriverstate);
 
 		if (gpio_num != DISABLE_GPIO_NUM)
@@ -683,7 +683,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 		 */
 		currdriverstate = FW_DOWNLOAD;
 		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
-				  &led_idx, &dummyIndex,
+				  &led_idx, &dummy_idx,
 				  currdriverstate);
 
 		if (gpio_num != DISABLE_GPIO_NUM) {
@@ -695,7 +695,7 @@ static void handle_adapter_driver_state(struct bcm_mini_adapter *ad,
 	case FW_DOWNLOAD_DONE:
 		currdriverstate = FW_DOWNLOAD_DONE;
 		BcmGetGPIOPinInfo(ad, &gpio_num, &dummy_gpio_num,
-				  &led_idx, &dummyIndex, currdriverstate);
+				  &led_idx, &dummy_idx, currdriverstate);
 		if (gpio_num != DISABLE_GPIO_NUM)
 			TURN_ON_LED(ad, 1 << gpio_num, led_idx);
 		break;
@@ -833,7 +833,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 	INT status = 0;
 
 	UCHAR dummy_gpio_num = 0;
-	UCHAR dummyIndex = 0;
+	UCHAR dummy_idx = 0;
 
 	/* currdriverstate = ad->DriverState; */
 	ad->LEDInfo.bIdleMode_tx_from_host = false;
@@ -884,7 +884,7 @@ static VOID LEDControlThread(struct bcm_mini_adapter *ad)
 					    gpio_num,
 					    dummy_gpio_num,
 					    led_idx,
-					    dummyIndex,
+					    dummy_idx,
 					    timeout,
 					    reset_val,
 					    i

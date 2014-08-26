@@ -378,7 +378,7 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 	int status = STATUS_SUCCESS;
 
 	ULONG  read_val	= 0;
-	USHORT usHwParamData	= 0;
+	USHORT hw_param_data	= 0;
 	USHORT usEEPROMVersion	= 0;
 	UCHAR  ucIndex		= 0;
 	UCHAR  ucGPIOInfo[32]	= {0};
@@ -393,10 +393,10 @@ static int ReadLEDInformationFromEEPROM(struct bcm_mini_adapter *ad,
 
 
 	if (((usEEPROMVersion>>8)&0xFF) < EEPROM_MAP5_MAJORVERSION) {
-		BeceemNVMRead(ad, (PUINT)&usHwParamData,
+		BeceemNVMRead(ad, (PUINT)&hw_param_data,
 			      EEPROM_HW_PARAM_POINTER_ADDRESS, 2);
-		usHwParamData = ntohs(usHwParamData);
-		read_val   = usHwParamData;
+		hw_param_data = ntohs(hw_param_data);
+		read_val = hw_param_data;
 	} else {
 		/*
 		 * Validate Compatibility section and then read HW param

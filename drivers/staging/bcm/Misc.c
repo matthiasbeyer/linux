@@ -780,7 +780,7 @@ int reset_card_proc(struct bcm_mini_adapter *ps_adapter)
 	int retval = STATUS_SUCCESS;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
 	struct bcm_interface_adapter *intf_ad = NULL;
-	unsigned int value = 0, uiResetValue = 0;
+	unsigned int value = 0, reset_val = 0;
 	int bytes;
 
 	intf_ad = ((struct bcm_interface_adapter *)(ps_adapter->pvInterfaceAdapter));
@@ -866,27 +866,27 @@ int reset_card_proc(struct bcm_mini_adapter *ps_adapter)
 		 * So just or with setting bit 30.
 		 * Make the MIPS in Reset state.
 		 */
-		rdmalt(ps_adapter, CLOCK_RESET_CNTRL_REG_1, &uiResetValue, sizeof(uiResetValue));
-		uiResetValue |= (1<<30);
-		wrmalt(ps_adapter, CLOCK_RESET_CNTRL_REG_1, &uiResetValue, sizeof(uiResetValue));
+		rdmalt(ps_adapter, CLOCK_RESET_CNTRL_REG_1, &reset_val, sizeof(reset_val));
+		reset_val |= (1<<30);
+		wrmalt(ps_adapter, CLOCK_RESET_CNTRL_REG_1, &reset_val, sizeof(reset_val));
 	}
 
 	if (ps_adapter->chip_id >= T3LPB) {
-		uiResetValue = 0;
+		reset_val = 0;
 		/*
 		 * WA for SYSConfig Issue.
 		 * Read SYSCFG Twice to make it writable.
 		 */
-		rdmalt(ps_adapter, SYS_CFG, &uiResetValue, sizeof(uiResetValue));
-		if (uiResetValue & (1<<4)) {
-			uiResetValue = 0;
-			rdmalt(ps_adapter, SYS_CFG, &uiResetValue, sizeof(uiResetValue)); /* 2nd read to make it writable. */
-			uiResetValue &= (~(1<<4));
-			wrmalt(ps_adapter, SYS_CFG, &uiResetValue, sizeof(uiResetValue));
+		rdmalt(ps_adapter, SYS_CFG, &reset_val, sizeof(reset_val));
+		if (reset_val & (1<<4)) {
+			reset_val = 0;
+			rdmalt(ps_adapter, SYS_CFG, &reset_val, sizeof(reset_val)); /* 2nd read to make it writable. */
+			reset_val &= (~(1<<4));
+			wrmalt(ps_adapter, SYS_CFG, &reset_val, sizeof(reset_val));
 		}
 	}
-	uiResetValue = 0;
-	wrmalt(ps_adapter, 0x0f01186c, &uiResetValue, sizeof(uiResetValue));
+	reset_val = 0;
+	wrmalt(ps_adapter, 0x0f01186c, &reset_val, sizeof(reset_val));
 
 err_exit:
 	intf_ad->psAdapter->StopAllXaction = false;
@@ -1397,7 +1397,7 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 
 static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR buffer)
 {
-	unsigned int uiResetValue = 0;
+	unsigned int reset_val = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "====>\n");
 
@@ -1411,9 +1411,9 @@ static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR buffer
 			ad->chip_id == BCS250_BC ||
 			ad->chip_id == BCS220_3) {
 
-			rdmalt(ad, HPM_CONFIG_MSW, &uiResetValue, 4);
-			uiResetValue |= (1<<17);
-			wrmalt(ad, HPM_CONFIG_MSW, &uiResetValue, 4);
+			rdmalt(ad, HPM_CONFIG_MSW, &reset_val, 4);
+			reset_val |= (1<<17);
+			wrmalt(ad, HPM_CONFIG_MSW, &reset_val, 4);
 		}
 
 		SendShutModeResponse(ad);

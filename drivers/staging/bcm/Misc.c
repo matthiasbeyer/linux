@@ -449,14 +449,14 @@ void LinkMessage(struct bcm_mini_adapter *ad)
 * Description - This function handles the Statistics response packet.
 *
 * Parameters  - ad: Pointer to the Adapter structure.
-* - pvBuffer: Starting address of Statistic response data.
+* - buff: Starting address of Statistic response data.
 *
 * Returns     - None.
 ************************************************************************/
-void StatisticsResponse(struct bcm_mini_adapter *ad, void *pvBuffer)
+void StatisticsResponse(struct bcm_mini_adapter *ad, void *buff)
 {
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "%s====>", __func__);
-	ad->StatisticsPointer = ntohl(*(__be32 *)pvBuffer);
+	ad->StatisticsPointer = ntohl(*(__be32 *)buff);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "Stats at %x", (unsigned int)ad->StatisticsPointer);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "%s <====", __func__);
 }

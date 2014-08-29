@@ -549,12 +549,12 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 {
 	int status = 0, nvm_access = 0, low_pwr_abort_msg = 0;
 	struct timeval tv;
-	struct bcm_link_request stIdleResponse = {{0} };
+	struct bcm_link_request idle_response = {{0} };
 
 	memset(&tv, 0, sizeof(tv));
-	stIdleResponse.Leader.Status = IDLE_MESSAGE;
-	stIdleResponse.Leader.PLength = IDLE_MODE_PAYLOAD_LENGTH;
-	stIdleResponse.szData[0] = GO_TO_IDLE_MODE_PAYLOAD;
+	idle_response.Leader.Status = IDLE_MESSAGE;
+	idle_response.Leader.PLength = IDLE_MODE_PAYLOAD_LENGTH;
+	idle_response.szData[0] = GO_TO_IDLE_MODE_PAYLOAD;
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, " ============>");
 
 	/*********************************
@@ -579,11 +579,11 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 		if (!low_pwr_abort_msg)
 			up(&ad->LowPowerModeSync);
 
-		stIdleResponse.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
+		idle_response.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "HOST IS NACKING Idle mode To F/W!!!!!!!!");
 		ad->bPreparingForLowPowerMode = false;
 	} else {
-		stIdleResponse.szData[1] = TARGET_CAN_GO_TO_IDLE_MODE; /* 2; Idle ACK */
+		idle_response.szData[1] = TARGET_CAN_GO_TO_IDLE_MODE; /* 2; Idle ACK */
 		ad->StatisticsPointer = 0;
 
 		/* Wait for the LED to TURN OFF before sending ACK response */
@@ -600,14 +600,14 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 
 			/* If Timed Out to Sync IDLE MODE Enter, do IDLE mode Exit and Send NACK to device */
 			if (iRetVal <= 0) {
-				stIdleResponse.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
+				idle_response.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
 				ad->DriverState = NORMAL_OPERATION;
 				wake_up(&ad->LEDInfo.notify_led_event);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "NACKING Idle mode as time out happen from LED side!!!!!!!!");
 			}
 		}
 
-		if (stIdleResponse.szData[1] == TARGET_CAN_GO_TO_IDLE_MODE) {
+		if (idle_response.szData[1] == TARGET_CAN_GO_TO_IDLE_MODE) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "ACKING IDLE MODE !!!!!!!!!");
 			down(&ad->rdmwrmsync);
 			ad->bPreparingForLowPowerMode = TRUE;
@@ -626,7 +626,7 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 			up(&ad->LowPowerModeSync);
 	}
 
-	status = CopyBufferToControlPacket(ad, &stIdleResponse);
+	status = CopyBufferToControlPacket(ad, &idle_response);
 	if (status != STATUS_SUCCESS) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "fail to send the Idle mode Request\n");
 		ad->bPreparingForLowPowerMode = false;

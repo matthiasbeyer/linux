@@ -220,7 +220,7 @@ exit_download:
  */
 int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 {
-	struct bcm_leader *pLeader = NULL;
+	struct bcm_leader *leader = NULL;
 	int status = 0;
 	unsigned char *ctrl_buff;
 	unsigned int pktlen = 0;
@@ -234,7 +234,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	}
 
 	pLinkReq = (struct bcm_link_request *)ioBuffer;
-	pLeader = (struct bcm_leader *)ioBuffer; /* ioBuffer Contains sw_Status and Payload */
+	leader = (struct bcm_leader *)ioBuffer; /* ioBuffer Contains sw_Status and Payload */
 
 	if (ad->bShutStatus == TRUE &&
 		pLinkReq->szData[0] == LINK_DOWN_REQ_PAYLOAD &&
@@ -245,7 +245,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 		return STATUS_FAILURE;
 	}
 
-	if ((pLeader->Status == LINK_UP_CONTROL_REQ) &&
+	if ((leader->Status == LINK_UP_CONTROL_REQ) &&
 		((pLinkReq->szData[0] == LINK_UP_REQ_PAYLOAD &&
 			(pLinkReq->szData[1] == LINK_SYNC_UP_SUBTYPE)) || /* Sync Up Command */
 			pLinkReq->szData[0] == NETWORK_ENTRY_REQ_PAYLOAD)) /* Net Entry Command */ {
@@ -279,10 +279,10 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 
 	if (ad->IdleMode == TRUE) {
 		/* BCM_DEBUG_PRINT(ad,DBG_TYPE_PRINTK, 0, 0,"Device is in Idle mode ... hence\n"); */
-		if (pLeader->Status == LINK_UP_CONTROL_REQ || pLeader->Status == 0x80 ||
-			pLeader->Status == CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ) {
+		if (leader->Status == LINK_UP_CONTROL_REQ || leader->Status == 0x80 ||
+			leader->Status == CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ) {
 
-			if ((pLeader->Status == LINK_UP_CONTROL_REQ) && (pLinkReq->szData[0] == LINK_DOWN_REQ_PAYLOAD))	{
+			if ((leader->Status == LINK_UP_CONTROL_REQ) && (pLinkReq->szData[0] == LINK_DOWN_REQ_PAYLOAD))	{
 				if (pLinkReq->szData[1] == LINK_SYNC_DOWN_SUBTYPE) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Link Down Sent in Idle Mode\n");
 					ad->usIdleModePattern = ABORT_IDLE_SYNCDOWN; /* LINK DOWN sent in Idle Mode */
@@ -321,10 +321,10 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	}
 
 	/* The Driver has to send control messages with a particular VCID */
-	pLeader->Vcid = VCID_CONTROL_PACKET; /* VCID for control packet. */
+	leader->Vcid = VCID_CONTROL_PACKET; /* VCID for control packet. */
 
 	/* Allocate skb for Control Packet */
-	pktlen = pLeader->PLength;
+	pktlen = leader->PLength;
 	ctrl_buff = (char *)ad->txctlpacket[atomic_read(&ad->index_wr_txcntrlpkt)%MAX_CNTRL_PKTS];
 
 	if (!ctrl_buff) {
@@ -335,9 +335,9 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Control packet to be taken =%d and address is =%pincoming address is =%p and packet len=%x",
 			atomic_read(&ad->index_wr_txcntrlpkt), ctrl_buff, ioBuffer, pktlen);
 
-	if (pLeader) {
-		if ((pLeader->Status == 0x80) ||
-			(pLeader->Status == CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ)) {
+	if (leader) {
+		if ((leader->Status == 0x80) ||
+			(leader->Status == CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ)) {
 			/*
 			 * Restructure the DSX message to handle Multiple classifier Support
 			 * Write the Service Flow param Structures directly to the target
@@ -345,7 +345,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			 */
 			/* Lets store the current length of the control packet we are transmitting */
 			pucAddIndication = (PUCHAR)ioBuffer + LEADER_SIZE;
-			pktlen = pLeader->PLength;
+			pktlen = leader->PLength;
 			status = StoreCmControlResponseMessage(ad, pucAddIndication, &pktlen);
 			if (status != 1) {
 				ClearTargetDSXBuffer(ad, ((struct bcm_add_indication_alt *)pucAddIndication)->u16TID, false);
@@ -356,7 +356,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			 * update the leader to use the new length
 			 * The length of the control packet is length of message being sent + Leader length
 			 */
-			pLeader->PLength = pktlen;
+			leader->PLength = pktlen;
 		}
 	}
 
@@ -364,14 +364,14 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 		return -EINVAL;
 
 	memset(ctrl_buff, 0, pktlen+LEADER_SIZE);
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Copying the Control Packet Buffer with length=%d\n", pLeader->PLength);
-	*(struct bcm_leader *)ctrl_buff = *pLeader;
-	memcpy(ctrl_buff + LEADER_SIZE, ((PUCHAR)ioBuffer + LEADER_SIZE), pLeader->PLength);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Copying the Control Packet Buffer with length=%d\n", leader->PLength);
+	*(struct bcm_leader *)ctrl_buff = *leader;
+	memcpy(ctrl_buff + LEADER_SIZE, ((PUCHAR)ioBuffer + LEADER_SIZE), leader->PLength);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Enqueuing the Control Packet");
 
 	/* Update the statistics counters */
 	spin_lock_bh(&ad->PackInfo[HiPriority].SFQueueLock);
-	ad->PackInfo[HiPriority].uiCurrentBytesOnHost += pLeader->PLength;
+	ad->PackInfo[HiPriority].uiCurrentBytesOnHost += leader->PLength;
 	ad->PackInfo[HiPriority].uiCurrentPacketsOnHost++;
 	atomic_inc(&ad->TotalPacketCount);
 	spin_unlock_bh(&ad->PackInfo[HiPriority].SFQueueLock);

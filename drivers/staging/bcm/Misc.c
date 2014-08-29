@@ -224,7 +224,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	int status = 0;
 	unsigned char *ctrl_buff;
 	unsigned int pktlen = 0;
-	struct bcm_link_request *pLinkReq = NULL;
+	struct bcm_link_request *link_req = NULL;
 	PUCHAR pucAddIndication = NULL;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "======>");
@@ -233,12 +233,12 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 		return -EINVAL;
 	}
 
-	pLinkReq = (struct bcm_link_request *)ioBuffer;
+	link_req = (struct bcm_link_request *)ioBuffer;
 	leader = (struct bcm_leader *)ioBuffer; /* ioBuffer Contains sw_Status and Payload */
 
 	if (ad->bShutStatus == TRUE &&
-		pLinkReq->szData[0] == LINK_DOWN_REQ_PAYLOAD &&
-		pLinkReq->szData[1] == LINK_SYNC_UP_SUBTYPE) {
+		link_req->szData[0] == LINK_DOWN_REQ_PAYLOAD &&
+		link_req->szData[1] == LINK_SYNC_UP_SUBTYPE) {
 
 		/* Got sync down in SHUTDOWN..we could not process this. */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "SYNC DOWN Request in Shut Down Mode..\n");
@@ -246,9 +246,9 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	}
 
 	if ((leader->Status == LINK_UP_CONTROL_REQ) &&
-		((pLinkReq->szData[0] == LINK_UP_REQ_PAYLOAD &&
-			(pLinkReq->szData[1] == LINK_SYNC_UP_SUBTYPE)) || /* Sync Up Command */
-			pLinkReq->szData[0] == NETWORK_ENTRY_REQ_PAYLOAD)) /* Net Entry Command */ {
+		((link_req->szData[0] == LINK_UP_REQ_PAYLOAD &&
+			(link_req->szData[1] == LINK_SYNC_UP_SUBTYPE)) || /* Sync Up Command */
+			link_req->szData[0] == NETWORK_ENTRY_REQ_PAYLOAD)) /* Net Entry Command */ {
 
 		if (ad->LinkStatus > PHY_SYNC_ACHIVED) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "LinkStatus is Greater than PHY_SYN_ACHIEVED");
@@ -282,8 +282,8 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 		if (leader->Status == LINK_UP_CONTROL_REQ || leader->Status == 0x80 ||
 			leader->Status == CM_CONTROL_NEWDSX_MULTICLASSIFIER_REQ) {
 
-			if ((leader->Status == LINK_UP_CONTROL_REQ) && (pLinkReq->szData[0] == LINK_DOWN_REQ_PAYLOAD))	{
-				if (pLinkReq->szData[1] == LINK_SYNC_DOWN_SUBTYPE) {
+			if ((leader->Status == LINK_UP_CONTROL_REQ) && (link_req->szData[0] == LINK_DOWN_REQ_PAYLOAD))	{
+				if (link_req->szData[1] == LINK_SYNC_DOWN_SUBTYPE) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Link Down Sent in Idle Mode\n");
 					ad->usIdleModePattern = ABORT_IDLE_SYNCDOWN; /* LINK DOWN sent in Idle Mode */
 				} else {
@@ -303,7 +303,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			wake_up(&ad->process_rx_cntrlpkt);
 
 			/* We should not send DREG message down while in idlemode. */
-			if (LINK_DOWN_REQ_PAYLOAD == pLinkReq->szData[0])
+			if (LINK_DOWN_REQ_PAYLOAD == link_req->szData[0])
 				return STATUS_SUCCESS;
 
 			status = wait_event_interruptible_timeout(ad->lowpower_mode_wait_queue, !ad->IdleMode, (5 * HZ));

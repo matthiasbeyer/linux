@@ -8,12 +8,12 @@ static void beceem_protocol_reset(struct bcm_mini_adapter *ad);
 
 static void default_wimax_protocol_initialize(struct bcm_mini_adapter *ad)
 {
-	unsigned int uiLoopIndex;
+	unsigned int i;
 
-	for (uiLoopIndex = 0; uiLoopIndex < NO_OF_QUEUES-1; uiLoopIndex++) {
-		ad->PackInfo[uiLoopIndex].uiThreshold = TX_PACKET_THRESHOLD;
-		ad->PackInfo[uiLoopIndex].uiMaxAllowedRate = MAX_ALLOWED_RATE;
-		ad->PackInfo[uiLoopIndex].uiMaxBucketSize = 20*1024*1024;
+	for (i = 0; i < NO_OF_QUEUES-1; i++) {
+		ad->PackInfo[i].uiThreshold = TX_PACKET_THRESHOLD;
+		ad->PackInfo[i].uiMaxAllowedRate = MAX_ALLOWED_RATE;
+		ad->PackInfo[i].uiMaxBucketSize = 20*1024*1024;
 	}
 
 	ad->BEBucketSize = BE_BUCKET_SIZE;
@@ -647,34 +647,34 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 *******************************************************************/
 void DumpPackInfo(struct bcm_mini_adapter *ad)
 {
-	unsigned int uiLoopIndex = 0;
+	unsigned int i = 0;
 	unsigned int uiIndex = 0;
 	unsigned int uiClsfrIndex = 0;
 	struct bcm_classifier_rule *pstClassifierEntry = NULL;
 
-	for (uiLoopIndex = 0; uiLoopIndex < NO_OF_QUEUES; uiLoopIndex++) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "*********** Showing Details Of Queue %d***** ******", uiLoopIndex);
-		if (false == ad->PackInfo[uiLoopIndex].bValid) {
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bValid is false for %X index\n", uiLoopIndex);
+	for (i = 0; i < NO_OF_QUEUES; i++) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "*********** Showing Details Of Queue %d***** ******", i);
+		if (false == ad->PackInfo[i].bValid) {
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bValid is false for %X index\n", i);
 			continue;
 		}
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, " Dumping	SF Rule Entry For SFID %lX\n", ad->PackInfo[uiLoopIndex].ulSFID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, " ucDirection %X\n", ad->PackInfo[uiLoopIndex].ucDirection);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, " Dumping	SF Rule Entry For SFID %lX\n", ad->PackInfo[i].ulSFID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, " ucDirection %X\n", ad->PackInfo[i].ucDirection);
 
-		if (ad->PackInfo[uiLoopIndex].ucIpVersion == IPV6)
+		if (ad->PackInfo[i].ucIpVersion == IPV6)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "Ipv6 Service Flow\n");
 		else
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "Ipv4 Service Flow\n");
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SF Traffic Priority %X\n", ad->PackInfo[uiLoopIndex].u8TrafficPriority);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SF Traffic Priority %X\n", ad->PackInfo[i].u8TrafficPriority);
 
 		for (uiClsfrIndex = 0; uiClsfrIndex < MAX_CLASSIFIERS; uiClsfrIndex++) {
 			pstClassifierEntry = &ad->astClassifierTable[uiClsfrIndex];
 			if (!pstClassifierEntry->bUsed)
 				continue;
 
-			if (pstClassifierEntry->ulSFID != ad->PackInfo[uiLoopIndex].ulSFID)
+			if (pstClassifierEntry->ulSFID != ad->PackInfo[i].ulSFID)
 				continue;
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X Classifier Rule ID : %X\n", uiClsfrIndex, pstClassifierEntry->uiClassifierRuleIndex);
@@ -694,7 +694,7 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPSourceAddressLength : 0x%x\n", pstClassifierEntry->ucIPSourceAddressLength);
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPDestinationAddressLength : 0x%x\n", pstClassifierEntry->ucIPDestinationAddressLength);
 			for (uiIndex = 0; uiIndex < pstClassifierEntry->ucIPSourceAddressLength; uiIndex++) {
-				if (ad->PackInfo[uiLoopIndex].ucIpVersion == IPV6)	{
+				if (ad->PackInfo[i].ucIpVersion == IPV6)	{
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpAddr :\n");
 					DumpIpv6Address(pstClassifierEntry->stSrcIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpMask :\n");
@@ -706,7 +706,7 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 			}
 
 			for (uiIndex = 0; uiIndex < pstClassifierEntry->ucIPDestinationAddressLength; uiIndex++) {
-				if (ad->PackInfo[uiLoopIndex].ucIpVersion == IPV6) {
+				if (ad->PackInfo[i].ucIpVersion == IPV6) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpAddr :\n");
 					DumpIpv6Address(pstClassifierEntry->stDestIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpMask :\n");
@@ -719,60 +719,60 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucProtocol:0x%X\n", pstClassifierEntry->ucProtocol[0]);
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tu8ClassifierRulePriority:%X\n", pstClassifierEntry->u8ClassifierRulePriority);
 		}
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ulSFID:%lX\n", ad->PackInfo[uiLoopIndex].ulSFID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "usVCID_Value:%X\n", ad->PackInfo[uiLoopIndex].usVCID_Value);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "PhsEnabled: 0x%X\n", ad->PackInfo[uiLoopIndex].bHeaderSuppressionEnabled);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiThreshold:%X\n", ad->PackInfo[uiLoopIndex].uiThreshold);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ulSFID:%lX\n", ad->PackInfo[i].ulSFID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "usVCID_Value:%X\n", ad->PackInfo[i].usVCID_Value);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "PhsEnabled: 0x%X\n", ad->PackInfo[i].bHeaderSuppressionEnabled);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiThreshold:%X\n", ad->PackInfo[i].uiThreshold);
 
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bValid:%X\n", ad->PackInfo[uiLoopIndex].bValid);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bActive:%X\n", ad->PackInfo[uiLoopIndex].bActive);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ActivateReqSent: %x", ad->PackInfo[uiLoopIndex].bActivateRequestSent);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "u8QueueType:%X\n", ad->PackInfo[uiLoopIndex].u8QueueType);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxBucketSize:%X\n", ad->PackInfo[uiLoopIndex].uiMaxBucketSize);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiPerSFTxResourceCount:%X\n", atomic_read(&ad->PackInfo[uiLoopIndex].uiPerSFTxResourceCount));
-		/* DumpDebug(DUMP_INFO,("bCSSupport:%X\n",ad->PackInfo[uiLoopIndex].bCSSupport)); */
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "CurrQueueDepthOnTarget: %x\n", ad->PackInfo[uiLoopIndex].uiCurrentQueueDepthOnTarget);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentBytesOnHost:%X\n", ad->PackInfo[uiLoopIndex].uiCurrentBytesOnHost);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentPacketsOnHost:%X\n", ad->PackInfo[uiLoopIndex].uiCurrentPacketsOnHost);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiDroppedCountBytes:%X\n", ad->PackInfo[uiLoopIndex].uiDroppedCountBytes);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiDroppedCountPackets:%X\n", ad->PackInfo[uiLoopIndex].uiDroppedCountPackets);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiSentBytes:%X\n", ad->PackInfo[uiLoopIndex].uiSentBytes);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiSentPackets:%X\n", ad->PackInfo[uiLoopIndex].uiSentPackets);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentDrainRate:%X\n", ad->PackInfo[uiLoopIndex].uiCurrentDrainRate);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiThisPeriodSentBytes:%X\n", ad->PackInfo[uiLoopIndex].uiThisPeriodSentBytes);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "liDrainCalculated:%llX\n", ad->PackInfo[uiLoopIndex].liDrainCalculated);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentTokenCount:%X\n", ad->PackInfo[uiLoopIndex].uiCurrentTokenCount);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "liLastUpdateTokenAt:%llX\n", ad->PackInfo[uiLoopIndex].liLastUpdateTokenAt);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxAllowedRate:%X\n", ad->PackInfo[uiLoopIndex].uiMaxAllowedRate);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiPendedLast:%X\n", ad->PackInfo[uiLoopIndex].uiPendedLast);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "NumOfPacketsSent:%X\n", ad->PackInfo[uiLoopIndex].NumOfPacketsSent);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "Direction: %x\n", ad->PackInfo[uiLoopIndex].ucDirection);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "CID: %x\n", ad->PackInfo[uiLoopIndex].usCID);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ProtocolValid: %x\n", ad->PackInfo[uiLoopIndex].bProtocolValid);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "TOSValid: %x\n", ad->PackInfo[uiLoopIndex].bTOSValid);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "DestIpValid: %x\n", ad->PackInfo[uiLoopIndex].bDestIpValid);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SrcIpValid: %x\n", ad->PackInfo[uiLoopIndex].bSrcIpValid);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ActiveSet: %x\n", ad->PackInfo[uiLoopIndex].bActiveSet);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "AdmittedSet: %x\n", ad->PackInfo[uiLoopIndex].bAdmittedSet);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "AuthzSet: %x\n", ad->PackInfo[uiLoopIndex].bAuthorizedSet);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ClassifyPrority: %x\n", ad->PackInfo[uiLoopIndex].bClassifierPriority);
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxLatency: %x\n", ad->PackInfo[uiLoopIndex].uiMaxLatency);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bValid:%X\n", ad->PackInfo[i].bValid);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bActive:%X\n", ad->PackInfo[i].bActive);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ActivateReqSent: %x", ad->PackInfo[i].bActivateRequestSent);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "u8QueueType:%X\n", ad->PackInfo[i].u8QueueType);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxBucketSize:%X\n", ad->PackInfo[i].uiMaxBucketSize);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiPerSFTxResourceCount:%X\n", atomic_read(&ad->PackInfo[i].uiPerSFTxResourceCount));
+		/* DumpDebug(DUMP_INFO,("bCSSupport:%X\n",ad->PackInfo[i].bCSSupport)); */
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "CurrQueueDepthOnTarget: %x\n", ad->PackInfo[i].uiCurrentQueueDepthOnTarget);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentBytesOnHost:%X\n", ad->PackInfo[i].uiCurrentBytesOnHost);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentPacketsOnHost:%X\n", ad->PackInfo[i].uiCurrentPacketsOnHost);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiDroppedCountBytes:%X\n", ad->PackInfo[i].uiDroppedCountBytes);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiDroppedCountPackets:%X\n", ad->PackInfo[i].uiDroppedCountPackets);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiSentBytes:%X\n", ad->PackInfo[i].uiSentBytes);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiSentPackets:%X\n", ad->PackInfo[i].uiSentPackets);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentDrainRate:%X\n", ad->PackInfo[i].uiCurrentDrainRate);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiThisPeriodSentBytes:%X\n", ad->PackInfo[i].uiThisPeriodSentBytes);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "liDrainCalculated:%llX\n", ad->PackInfo[i].liDrainCalculated);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiCurrentTokenCount:%X\n", ad->PackInfo[i].uiCurrentTokenCount);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "liLastUpdateTokenAt:%llX\n", ad->PackInfo[i].liLastUpdateTokenAt);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxAllowedRate:%X\n", ad->PackInfo[i].uiMaxAllowedRate);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiPendedLast:%X\n", ad->PackInfo[i].uiPendedLast);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "NumOfPacketsSent:%X\n", ad->PackInfo[i].NumOfPacketsSent);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "Direction: %x\n", ad->PackInfo[i].ucDirection);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "CID: %x\n", ad->PackInfo[i].usCID);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ProtocolValid: %x\n", ad->PackInfo[i].bProtocolValid);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "TOSValid: %x\n", ad->PackInfo[i].bTOSValid);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "DestIpValid: %x\n", ad->PackInfo[i].bDestIpValid);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SrcIpValid: %x\n", ad->PackInfo[i].bSrcIpValid);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ActiveSet: %x\n", ad->PackInfo[i].bActiveSet);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "AdmittedSet: %x\n", ad->PackInfo[i].bAdmittedSet);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "AuthzSet: %x\n", ad->PackInfo[i].bAuthorizedSet);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ClassifyPrority: %x\n", ad->PackInfo[i].bClassifierPriority);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiMaxLatency: %x\n", ad->PackInfo[i].uiMaxLatency);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO,
 				DBG_LVL_ALL, "ServiceClassName: %*ph\n",
-				4, ad->PackInfo[uiLoopIndex].
+				4, ad->PackInfo[i].
 					    ucServiceClassName);
-/* BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bHeaderSuppressionEnabled :%X\n", ad->PackInfo[uiLoopIndex].bHeaderSuppressionEnabled);
- * BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiTotalTxBytes:%X\n", ad->PackInfo[uiLoopIndex].uiTotalTxBytes);
- * BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiTotalRxBytes:%X\n", ad->PackInfo[uiLoopIndex].uiTotalRxBytes);
- *		DumpDebug(DUMP_INFO,("				uiRanOutOfResCount:%X\n",ad->PackInfo[uiLoopIndex].uiRanOutOfResCount));
+/* BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "bHeaderSuppressionEnabled :%X\n", ad->PackInfo[i].bHeaderSuppressionEnabled);
+ * BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiTotalTxBytes:%X\n", ad->PackInfo[i].uiTotalTxBytes);
+ * BCM_DEBUG_PRINT (ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "uiTotalRxBytes:%X\n", ad->PackInfo[i].uiTotalRxBytes);
+ *		DumpDebug(DUMP_INFO,("				uiRanOutOfResCount:%X\n",ad->PackInfo[i].uiRanOutOfResCount));
  */
 	}
 
-	for (uiLoopIndex = 0; uiLoopIndex < MIBS_MAX_HIST_ENTRIES; uiLoopIndex++)
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ad->aRxPktSizeHist[%x] = %x\n", uiLoopIndex, ad->aRxPktSizeHist[uiLoopIndex]);
+	for (i = 0; i < MIBS_MAX_HIST_ENTRIES; i++)
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ad->aRxPktSizeHist[%x] = %x\n", i, ad->aRxPktSizeHist[i]);
 
-	for (uiLoopIndex = 0; uiLoopIndex < MIBS_MAX_HIST_ENTRIES; uiLoopIndex++)
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ad->aTxPktSizeHist[%x] = %x\n", uiLoopIndex, ad->aTxPktSizeHist[uiLoopIndex]);
+	for (i = 0; i < MIBS_MAX_HIST_ENTRIES; i++)
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ad->aTxPktSizeHist[%x] = %x\n", i, ad->aTxPktSizeHist[i]);
 }
 
 int reset_card_proc(struct bcm_mini_adapter *ps_adapter)

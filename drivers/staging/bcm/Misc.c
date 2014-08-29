@@ -2,7 +2,7 @@
 
 static int BcmFileDownload(struct bcm_mini_adapter *ad, const char *path, unsigned int loc);
 static void doPowerAutoCorrection(struct bcm_mini_adapter *ps_ad);
-static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR pucBuffer);
+static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR buffer);
 static int bcm_parse_target_params(struct bcm_mini_adapter *ad);
 static void beceem_protocol_reset(struct bcm_mini_adapter *ad);
 
@@ -467,16 +467,16 @@ void StatisticsResponse(struct bcm_mini_adapter *ad, void *pvBuffer)
 * Description - This function handles the Link response packets.
 *
 * Parameters  - ad: Pointer to the Adapter structure.
-* - pucBuffer: Starting address of Link response data.
+* - buffer: Starting address of Link response data.
 *
 * Returns     - None.
 ***********************************************************************/
-void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR pucBuffer)
+void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR buffer)
 {
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "=====>");
 
-	if (*pucBuffer == LINK_UP_ACK) {
-		switch (*(pucBuffer+1)) {
+	if (*buffer == LINK_UP_ACK) {
+		switch (*(buffer+1)) {
 		case PHY_SYNC_ACHIVED: /* SYNCed UP */
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "PHY_SYNC_ACHIVED");
 
@@ -497,8 +497,8 @@ void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR pucBuffer)
 		case LINKUP_DONE:
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "LINKUP_DONE");
 			ad->LinkStatus = LINKUP_DONE;
-			ad->bPHSEnabled = *(pucBuffer+3);
-			ad->bETHCSEnabled = *(pucBuffer+4) & ETH_CS_MASK;
+			ad->bPHSEnabled = *(buffer+3);
+			ad->bETHCSEnabled = *(buffer+4) & ETH_CS_MASK;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "PHS Support Status Received In LinkUp Ack : %x\n", ad->bPHSEnabled);
 
 			if ((false == ad->bShutStatus) && (false == ad->IdleMode)) {
@@ -527,15 +527,15 @@ void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR pucBuffer)
 		case LINK_SHUTDOWN_REQ_FROM_FIRMWARE:
 		case COMPLETE_WAKE_UP_NOTIFICATION_FRM_FW:
 		{
-			HandleShutDownModeRequest(ad, pucBuffer);
+			HandleShutDownModeRequest(ad, buffer);
 		}
 		break;
 		default:
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "default case:LinkResponse %x", *(pucBuffer + 1));
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "default case:LinkResponse %x", *(buffer + 1));
 			break;
 		}
-	} else if (SET_MAC_ADDRESS_RESPONSE == *pucBuffer) {
-		PUCHAR puMacAddr = (pucBuffer + 1);
+	} else if (SET_MAC_ADDRESS_RESPONSE == *buffer) {
+		PUCHAR puMacAddr = (buffer + 1);
 
 		ad->LinkStatus = SYNC_UP_REQUEST;
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_RX, RX_DPC, DBG_LVL_ALL, "MAC address response, sending SYNC_UP");
@@ -1395,15 +1395,15 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 	}
 }
 
-static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR pucBuffer)
+static void HandleShutDownModeRequest(struct bcm_mini_adapter *ad, PUCHAR buffer)
 {
 	unsigned int uiResetValue = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "====>\n");
 
-	if (*(pucBuffer+1) ==  COMPLETE_WAKE_UP_NOTIFICATION_FRM_FW) {
+	if (*(buffer+1) ==  COMPLETE_WAKE_UP_NOTIFICATION_FRM_FW) {
 		HandleShutDownModeWakeup(ad);
-	} else if (*(pucBuffer+1) ==  LINK_SHUTDOWN_REQ_FROM_FIRMWARE) {
+	} else if (*(buffer+1) ==  LINK_SHUTDOWN_REQ_FROM_FIRMWARE) {
 		/* Target wants to go to Shut Down Mode */
 		/* InterfacePrepareForShutdown(ad); */
 		if (ad->chip_id == BCS220_2 ||

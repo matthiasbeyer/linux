@@ -649,7 +649,7 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 {
 	unsigned int i = 0;
 	unsigned int index = 0;
-	unsigned int uiClsfrIndex = 0;
+	unsigned int clsfr_index = 0;
 	struct bcm_classifier_rule *pstClassifierEntry = NULL;
 
 	for (i = 0; i < NO_OF_QUEUES; i++) {
@@ -669,20 +669,20 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SF Traffic Priority %X\n", ad->PackInfo[i].u8TrafficPriority);
 
-		for (uiClsfrIndex = 0; uiClsfrIndex < MAX_CLASSIFIERS; uiClsfrIndex++) {
-			pstClassifierEntry = &ad->astClassifierTable[uiClsfrIndex];
+		for (clsfr_index = 0; clsfr_index < MAX_CLASSIFIERS; clsfr_index++) {
+			pstClassifierEntry = &ad->astClassifierTable[clsfr_index];
 			if (!pstClassifierEntry->bUsed)
 				continue;
 
 			if (pstClassifierEntry->ulSFID != ad->PackInfo[i].ulSFID)
 				continue;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X Classifier Rule ID : %X\n", uiClsfrIndex, pstClassifierEntry->uiClassifierRuleIndex);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X usVCID_Value : %X\n", uiClsfrIndex, pstClassifierEntry->usVCID_Value);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bProtocolValid : %X\n", uiClsfrIndex, pstClassifierEntry->bProtocolValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bTOSValid : %X\n", uiClsfrIndex, pstClassifierEntry->bTOSValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bDestIpValid : %X\n", uiClsfrIndex, pstClassifierEntry->bDestIpValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bSrcIpValid : %X\n", uiClsfrIndex, pstClassifierEntry->bSrcIpValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X Classifier Rule ID : %X\n", clsfr_index, pstClassifierEntry->uiClassifierRuleIndex);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X usVCID_Value : %X\n", clsfr_index, pstClassifierEntry->usVCID_Value);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bProtocolValid : %X\n", clsfr_index, pstClassifierEntry->bProtocolValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bTOSValid : %X\n", clsfr_index, pstClassifierEntry->bTOSValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bDestIpValid : %X\n", clsfr_index, pstClassifierEntry->bDestIpValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bSrcIpValid : %X\n", clsfr_index, pstClassifierEntry->bSrcIpValid);
 
 			for (index = 0; index < MAX_PORT_RANGE; index++) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeLo:%X\n", pstClassifierEntry->usSrcPortRangeLo[index]);

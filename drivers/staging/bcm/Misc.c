@@ -225,7 +225,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	unsigned char *ctrl_buff;
 	unsigned int pktlen = 0;
 	struct bcm_link_request *link_req = NULL;
-	PUCHAR pucAddIndication = NULL;
+	PUCHAR add_indication = NULL;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "======>");
 	if (!ioBuffer) {
@@ -344,11 +344,11 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			 * and embed the pointers in the DSX messages sent to target.
 			 */
 			/* Lets store the current length of the control packet we are transmitting */
-			pucAddIndication = (PUCHAR)ioBuffer + LEADER_SIZE;
+			add_indication = (PUCHAR)ioBuffer + LEADER_SIZE;
 			pktlen = leader->PLength;
-			status = StoreCmControlResponseMessage(ad, pucAddIndication, &pktlen);
+			status = StoreCmControlResponseMessage(ad, add_indication, &pktlen);
 			if (status != 1) {
-				ClearTargetDSXBuffer(ad, ((struct bcm_add_indication_alt *)pucAddIndication)->u16TID, false);
+				ClearTargetDSXBuffer(ad, ((struct bcm_add_indication_alt *)add_indication)->u16TID, false);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, " Error Restoring The DSX Control Packet. Dsx Buffers on Target may not be Setup Properly ");
 				return STATUS_FAILURE;
 			}

@@ -779,11 +779,11 @@ int reset_card_proc(struct bcm_mini_adapter *ps_adapter)
 {
 	int retval = STATUS_SUCCESS;
 	struct bcm_mini_adapter *ad = GET_BCM_ADAPTER(gblpnetdev);
-	struct bcm_interface_adapter *psIntfAdapter = NULL;
+	struct bcm_interface_adapter *intf_ad = NULL;
 	unsigned int value = 0, uiResetValue = 0;
 	int bytes;
 
-	psIntfAdapter = ((struct bcm_interface_adapter *)(ps_adapter->pvInterfaceAdapter));
+	intf_ad = ((struct bcm_interface_adapter *)(ps_adapter->pvInterfaceAdapter));
 	ps_adapter->bDDRInitDone = false;
 
 	if (ps_adapter->chip_id >= T3LPB) {
@@ -798,13 +798,13 @@ int reset_card_proc(struct bcm_mini_adapter *ps_adapter)
 	}
 
 	/* killing all submitted URBs. */
-	psIntfAdapter->psAdapter->StopAllXaction = TRUE;
-	Bcm_kill_all_URBs(psIntfAdapter);
+	intf_ad->psAdapter->StopAllXaction = TRUE;
+	Bcm_kill_all_URBs(intf_ad);
 	/* Reset the UMA-B Device */
 	if (ps_adapter->chip_id >= T3LPB) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Resetting UMA-B\n");
-		retval = usb_reset_device(psIntfAdapter->udev);
-		psIntfAdapter->psAdapter->StopAllXaction = false;
+		retval = usb_reset_device(intf_ad->udev);
+		intf_ad->psAdapter->StopAllXaction = false;
 
 		if (retval != STATUS_SUCCESS) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reset failed with ret value :%d", retval);
@@ -889,7 +889,7 @@ int reset_card_proc(struct bcm_mini_adapter *ps_adapter)
 	wrmalt(ps_adapter, 0x0f01186c, &uiResetValue, sizeof(uiResetValue));
 
 err_exit:
-	psIntfAdapter->psAdapter->StopAllXaction = false;
+	intf_ad->psAdapter->StopAllXaction = false;
 	return retval;
 }
 

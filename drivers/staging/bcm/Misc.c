@@ -547,7 +547,7 @@ void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR buffer)
 
 void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 {
-	int status = 0, nvm_access = 0, lowPwrAbortMsg = 0;
+	int status = 0, nvm_access = 0, low_pwr_abort_msg = 0;
 	struct timeval tv;
 	struct bcm_link_request stIdleResponse = {{0} };
 
@@ -567,16 +567,16 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 	 ***********************************/
 
 	nvm_access = down_trylock(&ad->NVMRdmWrmLock);
-	lowPwrAbortMsg = down_trylock(&ad->LowPowerModeSync);
+	low_pwr_abort_msg = down_trylock(&ad->LowPowerModeSync);
 
 
-	if ((nvm_access || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) &&
+	if ((nvm_access || low_pwr_abort_msg || atomic_read(&ad->TotalPacketCount)) &&
 		(ad->ulPowerSaveMode != DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE)) {
 
 		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
-		if (!lowPwrAbortMsg)
+		if (!low_pwr_abort_msg)
 			up(&ad->LowPowerModeSync);
 
 		stIdleResponse.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
@@ -622,7 +622,7 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
-		if (!lowPwrAbortMsg)
+		if (!low_pwr_abort_msg)
 			up(&ad->LowPowerModeSync);
 	}
 
@@ -1314,7 +1314,7 @@ static void HandleShutDownModeWakeup(struct bcm_mini_adapter *ad)
 static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 {
 	struct bcm_link_request stShutdownResponse;
-	unsigned int nvm_access = 0, lowPwrAbortMsg = 0;
+	unsigned int nvm_access = 0, low_pwr_abort_msg = 0;
 	unsigned int Status = 0;
 
 	memset(&stShutdownResponse, 0, sizeof(struct bcm_link_request));
@@ -1333,13 +1333,13 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 	 ***********************************/
 
 	nvm_access = down_trylock(&ad->NVMRdmWrmLock);
-	lowPwrAbortMsg = down_trylock(&ad->LowPowerModeSync);
+	low_pwr_abort_msg = down_trylock(&ad->LowPowerModeSync);
 
-	if (nvm_access || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) {
+	if (nvm_access || low_pwr_abort_msg || atomic_read(&ad->TotalPacketCount)) {
 		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
-		if (!lowPwrAbortMsg)
+		if (!low_pwr_abort_msg)
 			up(&ad->LowPowerModeSync);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "Device Access is going on NACK the Shut Down MODE\n");
@@ -1383,7 +1383,7 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
-		if (!lowPwrAbortMsg)
+		if (!low_pwr_abort_msg)
 			up(&ad->LowPowerModeSync);
 	}
 

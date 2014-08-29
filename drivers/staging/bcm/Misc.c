@@ -403,41 +403,41 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 *******************************************************************/
 void LinkMessage(struct bcm_mini_adapter *ad)
 {
-	struct bcm_link_request *pstLinkRequest = NULL;
+	struct bcm_link_request *link_request = NULL;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "=====>");
 	if (ad->LinkStatus == SYNC_UP_REQUEST && ad->AutoSyncup) {
-		pstLinkRequest = kzalloc(sizeof(struct bcm_link_request), GFP_ATOMIC);
-		if (!pstLinkRequest) {
+		link_request = kzalloc(sizeof(struct bcm_link_request), GFP_ATOMIC);
+		if (!link_request) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "Can not allocate memory for Link request!");
 			return;
 		}
 		/* sync up request... */
 		ad->LinkStatus = WAIT_FOR_SYNC; /* current link status */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "Requesting For SyncUp...");
-		pstLinkRequest->szData[0] = LINK_UP_REQ_PAYLOAD;
-		pstLinkRequest->szData[1] = LINK_SYNC_UP_SUBTYPE;
-		pstLinkRequest->Leader.Status = LINK_UP_CONTROL_REQ;
-		pstLinkRequest->Leader.PLength = sizeof(ULONG);
+		link_request->szData[0] = LINK_UP_REQ_PAYLOAD;
+		link_request->szData[1] = LINK_SYNC_UP_SUBTYPE;
+		link_request->Leader.Status = LINK_UP_CONTROL_REQ;
+		link_request->Leader.PLength = sizeof(ULONG);
 		ad->bSyncUpRequestSent = TRUE;
 
 	} else if (ad->LinkStatus == PHY_SYNC_ACHIVED && ad->AutoLinkUp) {
-		pstLinkRequest = kzalloc(sizeof(struct bcm_link_request), GFP_ATOMIC);
-		if (!pstLinkRequest) {
+		link_request = kzalloc(sizeof(struct bcm_link_request), GFP_ATOMIC);
+		if (!link_request) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "Can not allocate memory for Link request!");
 			return;
 		}
 		/* LINK_UP_REQUEST */
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "Requesting For LinkUp...");
-		pstLinkRequest->szData[0] = LINK_UP_REQ_PAYLOAD;
-		pstLinkRequest->szData[1] = LINK_NET_ENTRY;
-		pstLinkRequest->Leader.Status = LINK_UP_CONTROL_REQ;
-		pstLinkRequest->Leader.PLength = sizeof(ULONG);
+		link_request->szData[0] = LINK_UP_REQ_PAYLOAD;
+		link_request->szData[1] = LINK_NET_ENTRY;
+		link_request->Leader.Status = LINK_UP_CONTROL_REQ;
+		link_request->Leader.PLength = sizeof(ULONG);
 	}
-	if (pstLinkRequest) {
+	if (link_request) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "Calling CopyBufferToControlPacket");
-		CopyBufferToControlPacket(ad, pstLinkRequest);
-		kfree(pstLinkRequest);
+		CopyBufferToControlPacket(ad, link_request);
+		kfree(link_request);
 	}
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, LINK_UP_MSG, DBG_LVL_ALL, "LinkMessage <=====");
 	return;

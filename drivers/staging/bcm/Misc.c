@@ -650,7 +650,7 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 	unsigned int i = 0;
 	unsigned int index = 0;
 	unsigned int clsfr_index = 0;
-	struct bcm_classifier_rule *pstClassifierEntry = NULL;
+	struct bcm_classifier_rule *classif_entry = NULL;
 
 	for (i = 0; i < NO_OF_QUEUES; i++) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "*********** Showing Details Of Queue %d***** ******", i);
@@ -670,54 +670,54 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "SF Traffic Priority %X\n", ad->PackInfo[i].u8TrafficPriority);
 
 		for (clsfr_index = 0; clsfr_index < MAX_CLASSIFIERS; clsfr_index++) {
-			pstClassifierEntry = &ad->astClassifierTable[clsfr_index];
-			if (!pstClassifierEntry->bUsed)
+			classif_entry = &ad->astClassifierTable[clsfr_index];
+			if (!classif_entry->bUsed)
 				continue;
 
-			if (pstClassifierEntry->ulSFID != ad->PackInfo[i].ulSFID)
+			if (classif_entry->ulSFID != ad->PackInfo[i].ulSFID)
 				continue;
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X Classifier Rule ID : %X\n", clsfr_index, pstClassifierEntry->uiClassifierRuleIndex);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X usVCID_Value : %X\n", clsfr_index, pstClassifierEntry->usVCID_Value);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bProtocolValid : %X\n", clsfr_index, pstClassifierEntry->bProtocolValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bTOSValid : %X\n", clsfr_index, pstClassifierEntry->bTOSValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bDestIpValid : %X\n", clsfr_index, pstClassifierEntry->bDestIpValid);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bSrcIpValid : %X\n", clsfr_index, pstClassifierEntry->bSrcIpValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X Classifier Rule ID : %X\n", clsfr_index, classif_entry->uiClassifierRuleIndex);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X usVCID_Value : %X\n", clsfr_index, classif_entry->usVCID_Value);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bProtocolValid : %X\n", clsfr_index, classif_entry->bProtocolValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bTOSValid : %X\n", clsfr_index, classif_entry->bTOSValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bDestIpValid : %X\n", clsfr_index, classif_entry->bDestIpValid);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bSrcIpValid : %X\n", clsfr_index, classif_entry->bSrcIpValid);
 
 			for (index = 0; index < MAX_PORT_RANGE; index++) {
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeLo:%X\n", pstClassifierEntry->usSrcPortRangeLo[index]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeHi:%X\n", pstClassifierEntry->usSrcPortRangeHi[index]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeLo:%X\n", pstClassifierEntry->usDestPortRangeLo[index]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeHi:%X\n", pstClassifierEntry->usDestPortRangeHi[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeLo:%X\n", classif_entry->usSrcPortRangeLo[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeHi:%X\n", classif_entry->usSrcPortRangeHi[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeLo:%X\n", classif_entry->usDestPortRangeLo[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeHi:%X\n", classif_entry->usDestPortRangeHi[index]);
 			}
 
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPSourceAddressLength : 0x%x\n", pstClassifierEntry->ucIPSourceAddressLength);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPDestinationAddressLength : 0x%x\n", pstClassifierEntry->ucIPDestinationAddressLength);
-			for (index = 0; index < pstClassifierEntry->ucIPSourceAddressLength; index++) {
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPSourceAddressLength : 0x%x\n", classif_entry->ucIPSourceAddressLength);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPDestinationAddressLength : 0x%x\n", classif_entry->ucIPDestinationAddressLength);
+			for (index = 0; index < classif_entry->ucIPSourceAddressLength; index++) {
 				if (ad->PackInfo[i].ucIpVersion == IPV6)	{
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpAddr :\n");
-					DumpIpv6Address(pstClassifierEntry->stSrcIpAddress.ulIpv6Addr);
+					DumpIpv6Address(classif_entry->stSrcIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpMask :\n");
-					DumpIpv6Address(pstClassifierEntry->stSrcIpAddress.ulIpv6Mask);
+					DumpIpv6Address(classif_entry->stSrcIpAddress.ulIpv6Mask);
 				} else {
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpAddr:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Addr[index]);
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpMask:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Mask[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpAddr:%lX\n", classif_entry->stSrcIpAddress.ulIpv4Addr[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpMask:%lX\n", classif_entry->stSrcIpAddress.ulIpv4Mask[index]);
 				}
 			}
 
-			for (index = 0; index < pstClassifierEntry->ucIPDestinationAddressLength; index++) {
+			for (index = 0; index < classif_entry->ucIPDestinationAddressLength; index++) {
 				if (ad->PackInfo[i].ucIpVersion == IPV6) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpAddr :\n");
-					DumpIpv6Address(pstClassifierEntry->stDestIpAddress.ulIpv6Addr);
+					DumpIpv6Address(classif_entry->stDestIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpMask :\n");
-					DumpIpv6Address(pstClassifierEntry->stDestIpAddress.ulIpv6Mask);
+					DumpIpv6Address(classif_entry->stDestIpAddress.ulIpv6Mask);
 				} else {
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpAddr:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Addr[index]);
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpMask:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Mask[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpAddr:%lX\n", classif_entry->stDestIpAddress.ulIpv4Addr[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpMask:%lX\n", classif_entry->stDestIpAddress.ulIpv4Mask[index]);
 				}
 			}
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucProtocol:0x%X\n", pstClassifierEntry->ucProtocol[0]);
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tu8ClassifierRulePriority:%X\n", pstClassifierEntry->u8ClassifierRulePriority);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucProtocol:0x%X\n", classif_entry->ucProtocol[0]);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tu8ClassifierRulePriority:%X\n", classif_entry->u8ClassifierRulePriority);
 		}
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "ulSFID:%lX\n", ad->PackInfo[i].ulSFID);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "usVCID_Value:%X\n", ad->PackInfo[i].usVCID_Value);

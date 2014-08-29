@@ -547,7 +547,7 @@ void LinkControlResponseMessage(struct bcm_mini_adapter *ad, PUCHAR buffer)
 
 void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 {
-	int status = 0, NVMAccess = 0, lowPwrAbortMsg = 0;
+	int status = 0, nvm_access = 0, lowPwrAbortMsg = 0;
 	struct timeval tv;
 	struct bcm_link_request stIdleResponse = {{0} };
 
@@ -566,14 +566,14 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 	 *
 	 ***********************************/
 
-	NVMAccess = down_trylock(&ad->NVMRdmWrmLock);
+	nvm_access = down_trylock(&ad->NVMRdmWrmLock);
 	lowPwrAbortMsg = down_trylock(&ad->LowPowerModeSync);
 
 
-	if ((NVMAccess || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) &&
+	if ((nvm_access || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) &&
 		(ad->ulPowerSaveMode != DEVICE_POWERSAVE_MODE_AS_PROTOCOL_IDLE_MODE)) {
 
-		if (!NVMAccess)
+		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
 		if (!lowPwrAbortMsg)
@@ -619,7 +619,7 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 			ad->bPreparingForLowPowerMode = false;
 		}
 
-		if (!NVMAccess)
+		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
 		if (!lowPwrAbortMsg)
@@ -1314,7 +1314,7 @@ static void HandleShutDownModeWakeup(struct bcm_mini_adapter *ad)
 static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 {
 	struct bcm_link_request stShutdownResponse;
-	unsigned int NVMAccess = 0, lowPwrAbortMsg = 0;
+	unsigned int nvm_access = 0, lowPwrAbortMsg = 0;
 	unsigned int Status = 0;
 
 	memset(&stShutdownResponse, 0, sizeof(struct bcm_link_request));
@@ -1332,11 +1332,11 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 	 *
 	 ***********************************/
 
-	NVMAccess = down_trylock(&ad->NVMRdmWrmLock);
+	nvm_access = down_trylock(&ad->NVMRdmWrmLock);
 	lowPwrAbortMsg = down_trylock(&ad->LowPowerModeSync);
 
-	if (NVMAccess || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) {
-		if (!NVMAccess)
+	if (nvm_access || lowPwrAbortMsg || atomic_read(&ad->TotalPacketCount)) {
+		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
 		if (!lowPwrAbortMsg)
@@ -1380,7 +1380,7 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 			ad->bPreparingForLowPowerMode = false;
 		}
 
-		if (!NVMAccess)
+		if (!nvm_access)
 			up(&ad->NVMRdmWrmLock);
 
 		if (!lowPwrAbortMsg)

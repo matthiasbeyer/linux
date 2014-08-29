@@ -1283,14 +1283,14 @@ exit:
 
 static void HandleShutDownModeWakeup(struct bcm_mini_adapter *ad)
 {
-	int clear_abort_pattern = 0, Status = 0;
+	int clear_abort_pattern = 0, status = 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "====>\n");
 	/* target has woken up From Shut Down */
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "Clearing Shut Down Software abort pattern\n");
-	Status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC, (unsigned int *)&clear_abort_pattern, sizeof(clear_abort_pattern));
-	if (Status) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "WRM to SW_ABORT_IDLEMODE_LOC failed with err:%d", Status);
+	status = wrmalt(ad, SW_ABORT_IDLEMODE_LOC, (unsigned int *)&clear_abort_pattern, sizeof(clear_abort_pattern));
+	if (status) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "WRM to SW_ABORT_IDLEMODE_LOC failed with err:%d", status);
 		return;
 	}
 
@@ -1315,7 +1315,7 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 {
 	struct bcm_link_request stShutdownResponse;
 	unsigned int nvm_access = 0, low_pwr_abort_msg = 0;
-	unsigned int Status = 0;
+	unsigned int status = 0;
 
 	memset(&stShutdownResponse, 0, sizeof(struct bcm_link_request));
 	stShutdownResponse.Leader.Status  = LINK_UP_CONTROL_REQ;
@@ -1387,8 +1387,8 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 			up(&ad->LowPowerModeSync);
 	}
 
-	Status = CopyBufferToControlPacket(ad, &stShutdownResponse);
-	if (Status != STATUS_SUCCESS) {
+	status = CopyBufferToControlPacket(ad, &stShutdownResponse);
+	if (status != STATUS_SUCCESS) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "fail to send the Idle mode Request\n");
 		ad->bPreparingForLowPowerMode = false;
 		StartInterruptUrb((struct bcm_interface_adapter *)(ad->pvInterfaceAdapter));

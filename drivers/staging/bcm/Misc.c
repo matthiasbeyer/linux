@@ -26,7 +26,7 @@ static void default_wimax_protocol_initialize(struct bcm_mini_adapter *ad)
 int InitAdapter(struct bcm_mini_adapter *ps_ad)
 {
 	int i = 0;
-	int Status = STATUS_SUCCESS;
+	int status = STATUS_SUCCESS;
 
 	BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Initialising Adapter = %p", ps_ad);
 
@@ -75,17 +75,17 @@ int InitAdapter(struct bcm_mini_adapter *ps_ad)
 		return -ENOMEM;
 	}
 
-	Status = BcmAllocFlashCSStructure(ps_ad);
-	if (Status) {
+	status = BcmAllocFlashCSStructure(ps_ad);
+	if (status) {
 		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Memory Allocation for Flash structure failed");
-		return Status;
+		return status;
 	}
 
-	Status = vendorextnInit(ps_ad);
+	status = vendorextnInit(ps_ad);
 
-	if (STATUS_SUCCESS != Status) {
+	if (STATUS_SUCCESS != status) {
 		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Vendor Init Failed");
-		return Status;
+		return status;
 	}
 
 	BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Adapter initialised");
@@ -221,7 +221,7 @@ exit_download:
 int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 {
 	struct bcm_leader *pLeader = NULL;
-	int Status = 0;
+	int status = 0;
 	unsigned char *ctrl_buff;
 	unsigned int pktlen = 0;
 	struct bcm_link_request *pLinkReq = NULL;
@@ -262,10 +262,10 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 				ad->usIdleModePattern = ABORT_SHUTDOWN_MODE; /* change it to 1 for current support. */
 				ad->bWakeUpDevice = TRUE;
 				wake_up(&ad->process_rx_cntrlpkt);
-				Status = wait_event_interruptible_timeout(ad->lowpower_mode_wait_queue, !ad->bShutStatus, (5 * HZ));
+				status = wait_event_interruptible_timeout(ad->lowpower_mode_wait_queue, !ad->bShutStatus, (5 * HZ));
 
-				if (Status == -ERESTARTSYS)
-					return Status;
+				if (status == -ERESTARTSYS)
+					return status;
 
 				if (ad->bShutStatus) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Shutdown Mode Wake up Failed - No Wake Up Received\n");
@@ -306,10 +306,10 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			if (LINK_DOWN_REQ_PAYLOAD == pLinkReq->szData[0])
 				return STATUS_SUCCESS;
 
-			Status = wait_event_interruptible_timeout(ad->lowpower_mode_wait_queue, !ad->IdleMode, (5 * HZ));
+			status = wait_event_interruptible_timeout(ad->lowpower_mode_wait_queue, !ad->IdleMode, (5 * HZ));
 
-			if (Status == -ERESTARTSYS)
-				return Status;
+			if (status == -ERESTARTSYS)
+				return status;
 
 			if (ad->IdleMode) {
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Idle Mode Wake up Failed - No Wake Up Received\n");
@@ -346,8 +346,8 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 			/* Lets store the current length of the control packet we are transmitting */
 			pucAddIndication = (PUCHAR)ioBuffer + LEADER_SIZE;
 			pktlen = pLeader->PLength;
-			Status = StoreCmControlResponseMessage(ad, pucAddIndication, &pktlen);
-			if (Status != 1) {
+			status = StoreCmControlResponseMessage(ad, pucAddIndication, &pktlen);
+			if (status != 1) {
 				ClearTargetDSXBuffer(ad, ((struct bcm_add_indication_alt *)pucAddIndication)->u16TID, false);
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, " Error Restoring The DSX Control Packet. Dsx Buffers on Target may not be Setup Properly ");
 				return STATUS_FAILURE;
@@ -380,7 +380,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "CurrBytesOnHost: %x bValid: %x",
 			ad->PackInfo[HiPriority].uiCurrentBytesOnHost,
 			ad->PackInfo[HiPriority].bValid);
-	Status = STATUS_SUCCESS;
+	status = STATUS_SUCCESS;
 	/*Queue the packet for transmission */
 	atomic_inc(&ad->index_wr_txcntrlpkt);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "Calling transmit_packets");
@@ -388,7 +388,7 @@ int CopyBufferToControlPacket(struct bcm_mini_adapter *ad, void *ioBuffer)
 	wake_up(&ad->tx_packet_wait_queue);
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TX_CONTROL, DBG_LVL_ALL, "<====");
-	return Status;
+	return status;
 }
 
 /******************************************************************

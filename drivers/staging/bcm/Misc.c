@@ -1,7 +1,7 @@
 #include "headers.h"
 
 static int BcmFileDownload(struct bcm_mini_adapter *Adapter, const char *path, unsigned int loc);
-static void doPowerAutoCorrection(struct bcm_mini_adapter *psAdapter);
+static void doPowerAutoCorrection(struct bcm_mini_adapter *ps_ad);
 static void HandleShutDownModeRequest(struct bcm_mini_adapter *Adapter, PUCHAR pucBuffer);
 static int bcm_parse_target_params(struct bcm_mini_adapter *Adapter);
 static void beceem_protocol_reset(struct bcm_mini_adapter *Adapter);
@@ -23,72 +23,72 @@ static void default_wimax_protocol_initialize(struct bcm_mini_adapter *Adapter)
 	Adapter->usBestEffortQueueIndex = -1;
 }
 
-int InitAdapter(struct bcm_mini_adapter *psAdapter)
+int InitAdapter(struct bcm_mini_adapter *ps_ad)
 {
 	int i = 0;
 	int Status = STATUS_SUCCESS;
 
-	BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Initialising Adapter = %p", psAdapter);
+	BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Initialising Adapter = %p", ps_ad);
 
-	if (psAdapter == NULL) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Adapter is NULL");
+	if (ps_ad == NULL) {
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Adapter is NULL");
 		return -EINVAL;
 	}
 
-	sema_init(&psAdapter->NVMRdmWrmLock, 1);
-	sema_init(&psAdapter->rdmwrmsync, 1);
-	spin_lock_init(&psAdapter->control_queue_lock);
-	spin_lock_init(&psAdapter->txtransmitlock);
-	sema_init(&psAdapter->RxAppControlQueuelock, 1);
-	sema_init(&psAdapter->fw_download_sema, 1);
-	sema_init(&psAdapter->LowPowerModeSync, 1);
+	sema_init(&ps_ad->NVMRdmWrmLock, 1);
+	sema_init(&ps_ad->rdmwrmsync, 1);
+	spin_lock_init(&ps_ad->control_queue_lock);
+	spin_lock_init(&ps_ad->txtransmitlock);
+	sema_init(&ps_ad->RxAppControlQueuelock, 1);
+	sema_init(&ps_ad->fw_download_sema, 1);
+	sema_init(&ps_ad->LowPowerModeSync, 1);
 
 	for (i = 0; i < NO_OF_QUEUES; i++)
-		spin_lock_init(&psAdapter->PackInfo[i].SFQueueLock);
+		spin_lock_init(&ps_ad->PackInfo[i].SFQueueLock);
 	i = 0;
 
-	init_waitqueue_head(&psAdapter->process_rx_cntrlpkt);
-	init_waitqueue_head(&psAdapter->tx_packet_wait_queue);
-	init_waitqueue_head(&psAdapter->process_read_wait_queue);
-	init_waitqueue_head(&psAdapter->ioctl_fw_dnld_wait_queue);
-	init_waitqueue_head(&psAdapter->lowpower_mode_wait_queue);
-	psAdapter->waiting_to_fw_download_done = TRUE;
-	psAdapter->fw_download_done = false;
+	init_waitqueue_head(&ps_ad->process_rx_cntrlpkt);
+	init_waitqueue_head(&ps_ad->tx_packet_wait_queue);
+	init_waitqueue_head(&ps_ad->process_read_wait_queue);
+	init_waitqueue_head(&ps_ad->ioctl_fw_dnld_wait_queue);
+	init_waitqueue_head(&ps_ad->lowpower_mode_wait_queue);
+	ps_ad->waiting_to_fw_download_done = TRUE;
+	ps_ad->fw_download_done = false;
 
-	default_wimax_protocol_initialize(psAdapter);
+	default_wimax_protocol_initialize(ps_ad);
 	for (i = 0; i < MAX_CNTRL_PKTS; i++) {
-		psAdapter->txctlpacket[i] = kmalloc(MAX_CNTL_PKT_SIZE, GFP_KERNEL);
-		if (!psAdapter->txctlpacket[i]) {
-			BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "No More Cntl pkts got, max got is %d", i);
+		ps_ad->txctlpacket[i] = kmalloc(MAX_CNTL_PKT_SIZE, GFP_KERNEL);
+		if (!ps_ad->txctlpacket[i]) {
+			BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "No More Cntl pkts got, max got is %d", i);
 			return -ENOMEM;
 		}
 	}
 
-	if (AllocAdapterDsxBuffer(psAdapter)) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Failed to allocate DSX buffers");
+	if (AllocAdapterDsxBuffer(ps_ad)) {
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Failed to allocate DSX buffers");
 		return -EINVAL;
 	}
 
 	/* Initialize PHS interface */
-	if (phs_init(&psAdapter->stBCMPhsContext, psAdapter) != 0) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "%s:%s:%d:Error PHS Init Failed=====>\n", __FILE__, __func__, __LINE__);
+	if (phs_init(&ps_ad->stBCMPhsContext, ps_ad) != 0) {
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "%s:%s:%d:Error PHS Init Failed=====>\n", __FILE__, __func__, __LINE__);
 		return -ENOMEM;
 	}
 
-	Status = BcmAllocFlashCSStructure(psAdapter);
+	Status = BcmAllocFlashCSStructure(ps_ad);
 	if (Status) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Memory Allocation for Flash structure failed");
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Memory Allocation for Flash structure failed");
 		return Status;
 	}
 
-	Status = vendorextnInit(psAdapter);
+	Status = vendorextnInit(ps_ad);
 
 	if (STATUS_SUCCESS != Status) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Vendor Init Failed");
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Vendor Init Failed");
 		return Status;
 	}
 
-	BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Adapter initialised");
+	BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Adapter initialised");
 
 	return STATUS_SUCCESS;
 }
@@ -135,23 +135,23 @@ void AdapterFree(struct bcm_mini_adapter *Adapter)
 	free_netdev(Adapter->dev);
 }
 
-static int create_worker_threads(struct bcm_mini_adapter *psAdapter)
+static int create_worker_threads(struct bcm_mini_adapter *ps_ad)
 {
 	/* Rx Control Packets Processing */
-	psAdapter->control_packet_handler = kthread_run((int (*)(void *))
-							control_packet_handler, psAdapter, "%s-rx", DRV_NAME);
-	if (IS_ERR(psAdapter->control_packet_handler)) {
+	ps_ad->control_packet_handler = kthread_run((int (*)(void *))
+							control_packet_handler, ps_ad, "%s-rx", DRV_NAME);
+	if (IS_ERR(ps_ad->control_packet_handler)) {
 		pr_notice(DRV_NAME ": could not create control thread\n");
-		return PTR_ERR(psAdapter->control_packet_handler);
+		return PTR_ERR(ps_ad->control_packet_handler);
 	}
 
 	/* Tx Thread */
-	psAdapter->transmit_packet_thread = kthread_run((int (*)(void *))
-							tx_pkt_handler, psAdapter, "%s-tx", DRV_NAME);
-	if (IS_ERR(psAdapter->transmit_packet_thread)) {
+	ps_ad->transmit_packet_thread = kthread_run((int (*)(void *))
+							tx_pkt_handler, ps_ad, "%s-tx", DRV_NAME);
+	if (IS_ERR(ps_ad->transmit_packet_thread)) {
 		pr_notice(DRV_NAME ": could not creat transmit thread\n");
-		kthread_stop(psAdapter->control_packet_handler);
-		return PTR_ERR(psAdapter->transmit_packet_thread);
+		kthread_stop(ps_ad->control_packet_handler);
+		return PTR_ERR(ps_ad->transmit_packet_thread);
 	}
 	return 0;
 }
@@ -1147,34 +1147,34 @@ void beceem_parse_target_struct(struct bcm_mini_adapter *Adapter)
 		doPowerAutoCorrection(Adapter);
 }
 
-static void doPowerAutoCorrection(struct bcm_mini_adapter *psAdapter)
+static void doPowerAutoCorrection(struct bcm_mini_adapter *ps_ad)
 {
 	unsigned int reporting_mode;
 
-	reporting_mode = ntohl(psAdapter->pstargetparams->m_u32PowerSavingModeOptions) & 0x02;
-	psAdapter->bIsAutoCorrectEnabled = !((char)(psAdapter->ulPowerSaveMode >> 3) & 0x1);
+	reporting_mode = ntohl(ps_ad->pstargetparams->m_u32PowerSavingModeOptions) & 0x02;
+	ps_ad->bIsAutoCorrectEnabled = !((char)(ps_ad->ulPowerSaveMode >> 3) & 0x1);
 
 	if (reporting_mode) {
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "can't do suspen/resume as reporting mode is enable");
-		psAdapter->bDoSuspend = false;
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "can't do suspen/resume as reporting mode is enable");
+		ps_ad->bDoSuspend = false;
 	}
 
-	if (psAdapter->bIsAutoCorrectEnabled && (psAdapter->chip_id >= T3LPB)) {
+	if (ps_ad->bIsAutoCorrectEnabled && (ps_ad->chip_id >= T3LPB)) {
 		/* If reporting mode is enable, switch PMU to PMC */
 		{
-			psAdapter->ulPowerSaveMode = DEVICE_POWERSAVE_MODE_AS_PMU_CLOCK_GATING;
-			psAdapter->bDoSuspend = false;
+			ps_ad->ulPowerSaveMode = DEVICE_POWERSAVE_MODE_AS_PMU_CLOCK_GATING;
+			ps_ad->bDoSuspend = false;
 		}
 
 		/* clearing space bit[15..12] */
-		psAdapter->pstargetparams->HostDrvrConfig6 &= ~(htonl((0xF << 12)));
+		ps_ad->pstargetparams->HostDrvrConfig6 &= ~(htonl((0xF << 12)));
 		/* placing the power save mode option */
-		psAdapter->pstargetparams->HostDrvrConfig6 |= htonl((psAdapter->ulPowerSaveMode << 12));
-	} else if (psAdapter->bIsAutoCorrectEnabled == false) {
+		ps_ad->pstargetparams->HostDrvrConfig6 |= htonl((ps_ad->ulPowerSaveMode << 12));
+	} else if (ps_ad->bIsAutoCorrectEnabled == false) {
 		/* remove the autocorrect disable bit set before dumping. */
-		psAdapter->ulPowerSaveMode &= ~(1 << 3);
-		psAdapter->pstargetparams->HostDrvrConfig6 &= ~(htonl(1 << 15));
-		BCM_DEBUG_PRINT(psAdapter, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Using Forced User Choice: %lx\n", psAdapter->ulPowerSaveMode);
+		ps_ad->ulPowerSaveMode &= ~(1 << 3);
+		ps_ad->pstargetparams->HostDrvrConfig6 &= ~(htonl(1 << 15));
+		BCM_DEBUG_PRINT(ps_ad, DBG_TYPE_INITEXIT, MP_INIT, DBG_LVL_ALL, "Using Forced User Choice: %lx\n", ps_ad->ulPowerSaveMode);
 	}
 }
 

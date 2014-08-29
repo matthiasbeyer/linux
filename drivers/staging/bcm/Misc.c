@@ -1091,7 +1091,7 @@ static int bcm_parse_target_params(struct bcm_mini_adapter *ad)
 
 void beceem_parse_target_struct(struct bcm_mini_adapter *ad)
 {
-	unsigned int uiHostDrvrCfg6 = 0, uiEEPROMFlag = 0;
+	unsigned int host_drvr_cfg6 = 0, uiEEPROMFlag = 0;
 
 	if (ntohl(ad->pstargetparams->m_u32PhyParameter2) & AUTO_SYNC_DISABLE) {
 		pr_info(DRV_NAME ": AutoSyncup is Disabled\n");
@@ -1120,15 +1120,15 @@ void beceem_parse_target_struct(struct bcm_mini_adapter *ad)
 		pr_info(DRV_NAME ": Disabling Auto Firmware Download\n");
 		ad->AutoFirmDld = false;
 	}
-	uiHostDrvrCfg6 = ntohl(ad->pstargetparams->HostDrvrConfig6);
-	ad->bMipsConfig = (uiHostDrvrCfg6>>20)&0x01;
+	host_drvr_cfg6 = ntohl(ad->pstargetparams->HostDrvrConfig6);
+	ad->bMipsConfig = (host_drvr_cfg6>>20)&0x01;
 	pr_info(DRV_NAME ": MIPSConfig   : 0x%X\n", ad->bMipsConfig);
 	/* used for backward compatibility. */
-	ad->bDPLLConfig = (uiHostDrvrCfg6>>19)&0x01;
-	ad->PmuMode = (uiHostDrvrCfg6 >> 24) & 0x03;
+	ad->bDPLLConfig = (host_drvr_cfg6>>19)&0x01;
+	ad->PmuMode = (host_drvr_cfg6 >> 24) & 0x03;
 	pr_info(DRV_NAME ": PMU MODE: %x", ad->PmuMode);
 
-	if ((uiHostDrvrCfg6 >> HOST_BUS_SUSPEND_BIT) & (0x01)) {
+	if ((host_drvr_cfg6 >> HOST_BUS_SUSPEND_BIT) & (0x01)) {
 		ad->bDoSuspend = TRUE;
 		pr_info(DRV_NAME ": Making DoSuspend TRUE as per configFile");
 	}

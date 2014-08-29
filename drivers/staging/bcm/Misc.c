@@ -648,7 +648,7 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 void DumpPackInfo(struct bcm_mini_adapter *ad)
 {
 	unsigned int i = 0;
-	unsigned int uiIndex = 0;
+	unsigned int index = 0;
 	unsigned int uiClsfrIndex = 0;
 	struct bcm_classifier_rule *pstClassifierEntry = NULL;
 
@@ -684,36 +684,36 @@ void DumpPackInfo(struct bcm_mini_adapter *ad)
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bDestIpValid : %X\n", uiClsfrIndex, pstClassifierEntry->bDestIpValid);
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tDumping Classifier Rule Entry For Index: %X bSrcIpValid : %X\n", uiClsfrIndex, pstClassifierEntry->bSrcIpValid);
 
-			for (uiIndex = 0; uiIndex < MAX_PORT_RANGE; uiIndex++) {
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeLo:%X\n", pstClassifierEntry->usSrcPortRangeLo[uiIndex]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeHi:%X\n", pstClassifierEntry->usSrcPortRangeHi[uiIndex]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeLo:%X\n", pstClassifierEntry->usDestPortRangeLo[uiIndex]);
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeHi:%X\n", pstClassifierEntry->usDestPortRangeHi[uiIndex]);
+			for (index = 0; index < MAX_PORT_RANGE; index++) {
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeLo:%X\n", pstClassifierEntry->usSrcPortRangeLo[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusSrcPortRangeHi:%X\n", pstClassifierEntry->usSrcPortRangeHi[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeLo:%X\n", pstClassifierEntry->usDestPortRangeLo[index]);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tusDestPortRangeHi:%X\n", pstClassifierEntry->usDestPortRangeHi[index]);
 			}
 
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPSourceAddressLength : 0x%x\n", pstClassifierEntry->ucIPSourceAddressLength);
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucIPDestinationAddressLength : 0x%x\n", pstClassifierEntry->ucIPDestinationAddressLength);
-			for (uiIndex = 0; uiIndex < pstClassifierEntry->ucIPSourceAddressLength; uiIndex++) {
+			for (index = 0; index < pstClassifierEntry->ucIPSourceAddressLength; index++) {
 				if (ad->PackInfo[i].ucIpVersion == IPV6)	{
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpAddr :\n");
 					DumpIpv6Address(pstClassifierEntry->stSrcIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulSrcIpMask :\n");
 					DumpIpv6Address(pstClassifierEntry->stSrcIpAddress.ulIpv6Mask);
 				} else {
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpAddr:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Addr[uiIndex]);
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpMask:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Mask[uiIndex]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpAddr:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Addr[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulSrcIpMask:%lX\n", pstClassifierEntry->stSrcIpAddress.ulIpv4Mask[index]);
 				}
 			}
 
-			for (uiIndex = 0; uiIndex < pstClassifierEntry->ucIPDestinationAddressLength; uiIndex++) {
+			for (index = 0; index < pstClassifierEntry->ucIPDestinationAddressLength; index++) {
 				if (ad->PackInfo[i].ucIpVersion == IPV6) {
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpAddr :\n");
 					DumpIpv6Address(pstClassifierEntry->stDestIpAddress.ulIpv6Addr);
 					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tIpv6 ulDestIpMask :\n");
 					DumpIpv6Address(pstClassifierEntry->stDestIpAddress.ulIpv6Mask);
 				} else {
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpAddr:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Addr[uiIndex]);
-					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpMask:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Mask[uiIndex]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpAddr:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Addr[index]);
+					BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tulDestIpMask:%lX\n", pstClassifierEntry->stDestIpAddress.ulIpv4Mask[index]);
 				}
 			}
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, DUMP_INFO, DBG_LVL_ALL, "\tucProtocol:0x%X\n", pstClassifierEntry->ucProtocol[0]);
@@ -1180,14 +1180,14 @@ static void doPowerAutoCorrection(struct bcm_mini_adapter *ps_ad)
 
 static void convertEndian(unsigned char rwFlag, unsigned int *puiBuffer, unsigned int uiByteCount)
 {
-	unsigned int uiIndex = 0;
+	unsigned int index = 0;
 
 	if (RWM_WRITE == rwFlag) {
-		for (uiIndex = 0; uiIndex < (uiByteCount/sizeof(unsigned int)); uiIndex++)
-			puiBuffer[uiIndex] = htonl(puiBuffer[uiIndex]);
+		for (index = 0; index < (uiByteCount/sizeof(unsigned int)); index++)
+			puiBuffer[index] = htonl(puiBuffer[index]);
 	} else {
-		for (uiIndex = 0; uiIndex < (uiByteCount/sizeof(unsigned int)); uiIndex++)
-			puiBuffer[uiIndex] = ntohl(puiBuffer[uiIndex]);
+		for (index = 0; index < (uiByteCount/sizeof(unsigned int)); index++)
+			puiBuffer[index] = ntohl(puiBuffer[index]);
 	}
 }
 
@@ -1441,26 +1441,26 @@ void ResetCounters(struct bcm_mini_adapter *ad)
 
 struct bcm_classifier_rule *GetFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT usIpIdentification, ULONG SrcIP)
 {
-	unsigned int uiIndex = 0;
+	unsigned int index = 0;
 
-	for (uiIndex = 0; uiIndex < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; uiIndex++) {
-		if ((ad->astFragmentedPktClassifierTable[uiIndex].bUsed) &&
-			(ad->astFragmentedPktClassifierTable[uiIndex].usIpIdentification == usIpIdentification) &&
-			(ad->astFragmentedPktClassifierTable[uiIndex].ulSrcIpAddress == SrcIP) &&
-			!ad->astFragmentedPktClassifierTable[uiIndex].bOutOfOrderFragment)
+	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
+		if ((ad->astFragmentedPktClassifierTable[index].bUsed) &&
+			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == usIpIdentification) &&
+			(ad->astFragmentedPktClassifierTable[index].ulSrcIpAddress == SrcIP) &&
+			!ad->astFragmentedPktClassifierTable[index].bOutOfOrderFragment)
 
-			return ad->astFragmentedPktClassifierTable[uiIndex].pstMatchedClassifierEntry;
+			return ad->astFragmentedPktClassifierTable[index].pstMatchedClassifierEntry;
 	}
 	return NULL;
 }
 
 void AddFragIPClsEntry(struct bcm_mini_adapter *ad, struct bcm_fragmented_packet_info *psFragPktInfo)
 {
-	unsigned int uiIndex = 0;
+	unsigned int index = 0;
 
-	for (uiIndex = 0; uiIndex < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; uiIndex++) {
-		if (!ad->astFragmentedPktClassifierTable[uiIndex].bUsed) {
-			memcpy(&ad->astFragmentedPktClassifierTable[uiIndex], psFragPktInfo, sizeof(struct bcm_fragmented_packet_info));
+	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
+		if (!ad->astFragmentedPktClassifierTable[index].bUsed) {
+			memcpy(&ad->astFragmentedPktClassifierTable[index], psFragPktInfo, sizeof(struct bcm_fragmented_packet_info));
 			break;
 		}
 	}
@@ -1468,14 +1468,14 @@ void AddFragIPClsEntry(struct bcm_mini_adapter *ad, struct bcm_fragmented_packet
 
 void DelFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT usIpIdentification, ULONG SrcIp)
 {
-	unsigned int uiIndex = 0;
+	unsigned int index = 0;
 
-	for (uiIndex = 0; uiIndex < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; uiIndex++) {
-		if ((ad->astFragmentedPktClassifierTable[uiIndex].bUsed) &&
-			(ad->astFragmentedPktClassifierTable[uiIndex].usIpIdentification == usIpIdentification) &&
-			(ad->astFragmentedPktClassifierTable[uiIndex].ulSrcIpAddress == SrcIp))
+	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
+		if ((ad->astFragmentedPktClassifierTable[index].bUsed) &&
+			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == usIpIdentification) &&
+			(ad->astFragmentedPktClassifierTable[index].ulSrcIpAddress == SrcIp))
 
-			memset(&ad->astFragmentedPktClassifierTable[uiIndex], 0, sizeof(struct bcm_fragmented_packet_info));
+			memset(&ad->astFragmentedPktClassifierTable[index], 0, sizeof(struct bcm_fragmented_packet_info));
 	}
 }
 

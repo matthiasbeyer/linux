@@ -326,21 +326,21 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	unsigned int bytes_remaining	= nbytes;
 	unsigned int i		= 0;
 	unsigned int tmp_offset	= 0;
-	unsigned int uiExtraBytes	= 0;
+	unsigned int extra_bytes	= 0;
 	unsigned int uiFailureRetries	= 0;
 	PUCHAR pcBuff = (PUCHAR)buff;
 
 	if (offset % MAX_RW_SIZE && bytes_remaining) {
 		tmp_offset = offset - (offset % MAX_RW_SIZE);
-		uiExtraBytes = offset - tmp_offset;
+		extra_bytes = offset - tmp_offset;
 		ReadBeceemEEPROMBulk(ad, tmp_offset, (PUINT)&data[0], 4);
-		if (bytes_remaining >= (MAX_RW_SIZE - uiExtraBytes)) {
-			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
-			bytes_remaining -= (MAX_RW_SIZE - uiExtraBytes);
-			i += (MAX_RW_SIZE - uiExtraBytes);
-			offset += (MAX_RW_SIZE - uiExtraBytes);
+		if (bytes_remaining >= (MAX_RW_SIZE - extra_bytes)) {
+			memcpy(buff, (((PUCHAR)&data[0]) + extra_bytes), MAX_RW_SIZE - extra_bytes);
+			bytes_remaining -= (MAX_RW_SIZE - extra_bytes);
+			i += (MAX_RW_SIZE - extra_bytes);
+			offset += (MAX_RW_SIZE - extra_bytes);
 		} else {
-			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), bytes_remaining);
+			memcpy(buff, (((PUCHAR)&data[0]) + extra_bytes), bytes_remaining);
 			i += bytes_remaining;
 			offset += bytes_remaining;
 			bytes_remaining = 0;
@@ -1716,28 +1716,28 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 	unsigned int data[4]		= {0};
 	unsigned int i		= 0;
 	unsigned int tmp_offset	= 0;
-	unsigned int uiExtraBytes	= 0;
+	unsigned int extra_bytes	= 0;
 	/* PUINT puiBuffer	= (PUINT)buff;
 	 * int value;
 	 */
 
 	if (offset % MAX_RW_SIZE && uiBytesToCopy) {
 		tmp_offset = offset - (offset % MAX_RW_SIZE);
-		uiExtraBytes = offset - tmp_offset;
+		extra_bytes = offset - tmp_offset;
 
 		BeceemEEPROMBulkRead(ad, &data[0], tmp_offset, MAX_RW_SIZE);
 
-		if (uiBytesToCopy >= (16 - uiExtraBytes)) {
-			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, MAX_RW_SIZE - uiExtraBytes);
+		if (uiBytesToCopy >= (16 - extra_bytes)) {
+			memcpy((((PUCHAR)&data[0]) + extra_bytes), buff, MAX_RW_SIZE - extra_bytes);
 
 			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, tmp_offset))
 				return STATUS_FAILURE;
 
-			uiBytesToCopy -= (MAX_RW_SIZE - uiExtraBytes);
-			i += (MAX_RW_SIZE - uiExtraBytes);
-			offset += (MAX_RW_SIZE - uiExtraBytes);
+			uiBytesToCopy -= (MAX_RW_SIZE - extra_bytes);
+			i += (MAX_RW_SIZE - extra_bytes);
+			offset += (MAX_RW_SIZE - extra_bytes);
 		} else {
-			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, uiBytesToCopy);
+			memcpy((((PUCHAR)&data[0]) + extra_bytes), buff, uiBytesToCopy);
 
 			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, tmp_offset))
 				return STATUS_FAILURE;

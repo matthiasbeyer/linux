@@ -564,7 +564,7 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 			unsigned int addr,
 			unsigned int nsectors)
 {
-	unsigned int i = 0, iRetries = 0;
+	unsigned int i = 0, retries = 0;
 	unsigned int status = 0;
 	unsigned int value;
 	int bytes;
@@ -575,7 +575,7 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 
 		value = (0xd8000000 | (addr & 0xFFFFFF));
 		wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
-		iRetries = 0;
+		retries = 0;
 
 		do {
 			value = (FLASH_CMD_STATUS_REG_READ << 24);
@@ -590,16 +590,16 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
 				return status;
 			}
-			iRetries++;
+			retries++;
 			/* After every try lets make the CPU free for 10 ms. generally time taken by the
 			 * the sector erase cycle is 500 ms to 40000 msec. hence sleeping 10 ms
 			 * won't hamper performance in any case.
 			 */
 			mdelay(10);
-		} while ((status & 0x1) && (iRetries < 400));
+		} while ((status & 0x1) && (retries < 400));
 
 		if (status & 0x1) {
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "iRetries crossing the limit of 80000\n");
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "retries crossing the limit of 80000\n");
 			return STATUS_FAILURE;
 		}
 
@@ -626,7 +626,7 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
 			PVOID pData)
 {
 	unsigned int status = 0;
-	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
+	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
 	ULONG ulData = *(PUCHAR)pData;
 	int bytes;
@@ -670,11 +670,11 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
 			return status;
 		}
-		iRetries--;
-		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
+		retries--;
+		if (retries && ((retries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((status & 0x1) && (iRetries  > 0));
+	} while ((status & 0x1) && (retries  > 0));
 
 	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
@@ -703,11 +703,11 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 		PVOID pData)
 {
 	/* unsigned int status = 0;
-	 * int  iRetries = 0;
+	 * int  retries = 0;
 	 * unsigned int uiReadBack = 0;
 	 */
 	unsigned int status = 0;
-	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
+	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
 	unsigned int uiErasePattern[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 	int bytes;
@@ -745,15 +745,15 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 			return status;
 		}
 
-		iRetries--;
+		retries--;
 		/* this will ensure that in there will be no changes in the current path.
 		 * currently one rdm/wrm takes 125 us.
 		 * Hence  125 *2 * FLASH_PER_RETRIES_DELAY > 3 ms(worst case delay)
 		 * Hence current implementation cycle will intoduce no delay in current path
 		 */
-		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
+		if (retries && ((retries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
-	} while ((status & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (retries > 0));
 
 	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
@@ -781,7 +781,7 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 				PVOID pData)
 {
 	unsigned int status = 0;
-	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
+	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	ULONG ulData  = *(PUCHAR)pData;
 	unsigned int value;
 	int bytes;
@@ -827,11 +827,11 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 			return status;
 		}
 
-		iRetries--;
-		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
+		retries--;
+		if (retries && ((retries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((status & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (retries > 0));
 
 	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
@@ -859,7 +859,7 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 			PVOID pData)
 {
 	unsigned int status = 0;
-	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
+	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	/* unsigned int uiReadBack = 0; */
 	unsigned int value;
 	unsigned int uiErasePattern[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
@@ -897,16 +897,16 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
 			return status;
 		}
-		iRetries--;
+		retries--;
 		/* this will ensure that in there will be no changes in the current path.
 		 * currently one rdm/wrm takes 125 us.
 		 * Hence  125 *2  * FLASH_PER_RETRIES_DELAY  >3 ms(worst case delay)
 		 * Hence current implementation cycle will intoduce no delay in current path
 		 */
-		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
+		if (retries && ((retries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((status & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (retries > 0));
 
 	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");

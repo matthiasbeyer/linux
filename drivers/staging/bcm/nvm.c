@@ -264,20 +264,20 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 {
 	unsigned int data[8]		= {0};
 	unsigned int byte_offset	= 0;
-	unsigned int uiTempOffset	= 0;
+	unsigned int tmp_offset	= 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, " ====> ");
 
-	uiTempOffset = offset - (offset % MAX_RW_SIZE);
-	byte_offset = offset - uiTempOffset;
+	tmp_offset = offset - (offset % MAX_RW_SIZE);
+	byte_offset = offset - tmp_offset;
 
-	ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&data[0], 4);
+	ReadBeceemEEPROMBulk(ad, tmp_offset, (PUINT)&data[0], 4);
 
 	/* A word can overlap at most over 2 pages. In that case we read the
 	 * next page too.
 	 */
 	if (byte_offset > 12)
-		ReadBeceemEEPROMBulk(ad, uiTempOffset + MAX_RW_SIZE, (PUINT)&data[4], 4);
+		ReadBeceemEEPROMBulk(ad, tmp_offset + MAX_RW_SIZE, (PUINT)&data[4], 4);
 
 	memcpy((PUCHAR)buff, (((PUCHAR)&data[0]) + byte_offset), 4);
 
@@ -325,15 +325,15 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	/* unsigned int uiAddress	= 0; */
 	unsigned int uiBytesRemaining	= nbytes;
 	unsigned int uiIndex		= 0;
-	unsigned int uiTempOffset	= 0;
+	unsigned int tmp_offset	= 0;
 	unsigned int uiExtraBytes	= 0;
 	unsigned int uiFailureRetries	= 0;
 	PUCHAR pcBuff = (PUCHAR)buff;
 
 	if (offset % MAX_RW_SIZE && uiBytesRemaining) {
-		uiTempOffset = offset - (offset % MAX_RW_SIZE);
-		uiExtraBytes = offset - uiTempOffset;
-		ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&data[0], 4);
+		tmp_offset = offset - (offset % MAX_RW_SIZE);
+		uiExtraBytes = offset - tmp_offset;
+		ReadBeceemEEPROMBulk(ad, tmp_offset, (PUINT)&data[0], 4);
 		if (uiBytesRemaining >= (MAX_RW_SIZE - uiExtraBytes)) {
 			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
 			uiBytesRemaining -= (MAX_RW_SIZE - uiExtraBytes);
@@ -1715,22 +1715,22 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 	/* unsigned int uiRdbk		= 0; */
 	unsigned int data[4]		= {0};
 	unsigned int uiIndex		= 0;
-	unsigned int uiTempOffset	= 0;
+	unsigned int tmp_offset	= 0;
 	unsigned int uiExtraBytes	= 0;
 	/* PUINT puiBuffer	= (PUINT)buff;
 	 * int value;
 	 */
 
 	if (offset % MAX_RW_SIZE && uiBytesToCopy) {
-		uiTempOffset = offset - (offset % MAX_RW_SIZE);
-		uiExtraBytes = offset - uiTempOffset;
+		tmp_offset = offset - (offset % MAX_RW_SIZE);
+		uiExtraBytes = offset - tmp_offset;
 
-		BeceemEEPROMBulkRead(ad, &data[0], uiTempOffset, MAX_RW_SIZE);
+		BeceemEEPROMBulkRead(ad, &data[0], tmp_offset, MAX_RW_SIZE);
 
 		if (uiBytesToCopy >= (16 - uiExtraBytes)) {
 			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, MAX_RW_SIZE - uiExtraBytes);
 
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, uiTempOffset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, tmp_offset))
 				return STATUS_FAILURE;
 
 			uiBytesToCopy -= (MAX_RW_SIZE - uiExtraBytes);
@@ -1739,7 +1739,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 		} else {
 			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, uiBytesToCopy);
 
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, uiTempOffset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, tmp_offset))
 				return STATUS_FAILURE;
 
 			uiIndex += uiBytesToCopy;

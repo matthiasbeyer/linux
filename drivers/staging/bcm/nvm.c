@@ -615,7 +615,7 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
  * Arguments:
  *		ad   - ptr to Adapter object instance
  *		offset   - Offset of the flash where data needs to be written to.
- *		pData	- Address of Data to be written.
+ *		data	- Address of Data to be written.
  * Returns:
  *		OSAL_STATUS_CODE
  *
@@ -623,12 +623,12 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 
 static int flashByteWrite(struct bcm_mini_adapter *ad,
 			unsigned int offset,
-			PVOID pData)
+			PVOID data)
 {
 	unsigned int status = 0;
 	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
-	ULONG ulData = *(PUCHAR)pData;
+	ULONG ulData = *(PUCHAR)data;
 	int bytes;
 	/*
 	 * need not write 0xFF because write requires an erase and erase will
@@ -692,7 +692,7 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
  * Arguments:
  *		ad    - ptr to Adapter object instance
  *		offset   - Offset of the flash where data needs to be written to.
- *		pData	- Address of Data to be written.
+ *		data	- Address of Data to be written.
  * Returns:
  *		OSAL_STATUS_CODE
  *
@@ -700,7 +700,7 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
 
 static int flashWrite(struct bcm_mini_adapter *ad,
 		unsigned int offset,
-		PVOID pData)
+		PVOID data)
 {
 	/* unsigned int status = 0;
 	 * int  retries = 0;
@@ -715,7 +715,7 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 	 * need not write 0xFFFFFFFF because write requires an erase and erase will
 	 * make whole sector 0xFFFFFFFF.
 	 */
-	if (!memcmp(pData, uiErasePattern, MAX_RW_SIZE))
+	if (!memcmp(data, uiErasePattern, MAX_RW_SIZE))
 		return 0;
 
 	value = (FLASH_CMD_WRITE_ENABLE << 24);
@@ -725,7 +725,7 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 		return STATUS_FAILURE;
 	}
 
-	if (wrm(ad, offset, (PCHAR)pData, MAX_RW_SIZE) < 0) {
+	if (wrm(ad, offset, (PCHAR)data, MAX_RW_SIZE) < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Data write fails...");
 		return STATUS_FAILURE;
 	}
@@ -771,18 +771,18 @@ static int flashWrite(struct bcm_mini_adapter *ad,
  * Arguments:
  *		ad    - ptr to Adapter object instance
  *		offset    - Offset of the flash where data needs to be written to.
- *		pData	 - Address of the Data to be written.
+ *		data	 - Address of the Data to be written.
  * Returns:
  *		OSAL_STATUS_CODE
  *
  */
 static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 				unsigned int offset,
-				PVOID pData)
+				PVOID data)
 {
 	unsigned int status = 0;
 	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
-	ULONG ulData  = *(PUCHAR)pData;
+	ULONG ulData  = *(PUCHAR)data;
 	unsigned int value;
 	int bytes;
 
@@ -848,7 +848,7 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
  * Arguments:
  *		ad    - ptr to Adapter object instance
  *		offset    - Offset of the flash where data needs to be written to.
- *		pData	 - Address of the Data to be written.
+ *		data	 - Address of the Data to be written.
  * Returns:
  *		OSAL_STATUS_CODE
  *
@@ -856,7 +856,7 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 
 static int flashWriteStatus(struct bcm_mini_adapter *ad,
 			unsigned int offset,
-			PVOID pData)
+			PVOID data)
 {
 	unsigned int status = 0;
 	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
@@ -869,7 +869,7 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 	 * need not write 0xFFFFFFFF because write requires an erase and erase will
 	 * make whole sector 0xFFFFFFFF.
 	 */
-	if (!memcmp(pData, uiErasePattern, MAX_RW_SIZE))
+	if (!memcmp(data, uiErasePattern, MAX_RW_SIZE))
 		return 0;
 
 	value = (FLASH_CMD_WRITE_ENABLE << 24);
@@ -878,7 +878,7 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 		return STATUS_FAILURE;
 	}
 
-	if (wrm(ad, offset, (PCHAR)pData, MAX_RW_SIZE) < 0) {
+	if (wrm(ad, offset, (PCHAR)data, MAX_RW_SIZE) < 0) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Data write fails...");
 		return STATUS_FAILURE;
 	}

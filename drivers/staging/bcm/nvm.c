@@ -287,15 +287,15 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 int ReadMacAddressFromNVM(struct bcm_mini_adapter *ad)
 {
 	int status;
-	unsigned char puMacAddr[6];
+	unsigned char macaddr[6];
 
 	status = BeceemNVMRead(ad,
-			(PUINT)&puMacAddr[0],
+			(PUINT)&macaddr[0],
 			INIT_PARAMS_1_MACADDRESS_ADDRESS,
 			MAC_ADDRESS_SIZE);
 
 	if (status == STATUS_SUCCESS)
-		memcpy(ad->dev->dev_addr, puMacAddr, MAC_ADDRESS_SIZE);
+		memcpy(ad->dev->dev_addr, macaddr, MAC_ADDRESS_SIZE);
 
 	return status;
 }

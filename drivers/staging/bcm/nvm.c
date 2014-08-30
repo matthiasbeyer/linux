@@ -564,12 +564,12 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 			unsigned int addr,
 			unsigned int nsectors)
 {
-	unsigned int iIndex = 0, iRetries = 0;
+	unsigned int i = 0, iRetries = 0;
 	unsigned int status = 0;
 	unsigned int value;
 	int bytes;
 
-	for (iIndex = 0; iIndex < nsectors; iIndex++) {
+	for (i = 0; i < nsectors; i++) {
 		value = 0x06000000;
 		wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 

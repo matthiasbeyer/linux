@@ -553,7 +553,7 @@ static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad)
  * Arguments:
  *		Adapter    - ptr to Adapter object instance
  *		addr	   - sector start address
- *		numOfSectors - number of sectors to  be erased.
+ *		nsectors - number of sectors to  be erased.
  *
  * Returns:
  *		OSAL_STATUS_CODE
@@ -562,14 +562,14 @@ static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad)
 
 static int FlashSectorErase(struct bcm_mini_adapter *ad,
 			unsigned int addr,
-			unsigned int numOfSectors)
+			unsigned int nsectors)
 {
 	unsigned int iIndex = 0, iRetries = 0;
 	unsigned int status = 0;
 	unsigned int value;
 	int bytes;
 
-	for (iIndex = 0; iIndex < numOfSectors; iIndex++) {
+	for (iIndex = 0; iIndex < nsectors; iIndex++) {
 		value = 0x06000000;
 		wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 

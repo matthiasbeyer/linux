@@ -66,7 +66,7 @@ static int BeceemFlashBulkWrite(
 
 static int GetFlashBaseAddr(struct bcm_mini_adapter *ad);
 
-static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_addr, unsigned int *pdwData, unsigned int dwNumData);
+static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_addr, unsigned int *dw_data, unsigned int dwNumData);
 
 /* Procedure:	ReadEEPROMStatusRegister
  *
@@ -133,7 +133,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
  * Arguments:
  *		ad    - ptr to Adapter object instance
  *      dw_addr   - EEPROM Offset to read the data from.
- *      pdwData     - Pointer to double word where data needs to be stored in.  //		dwNumWords  - Number of words.  Valid values are 4 ONLY.
+ *      dw_data     - Pointer to double word where data needs to be stored in.  //		dwNumWords  - Number of words.  Valid values are 4 ONLY.
  *
  * Returns:
  *		OSAL_STATUS_CODE:
@@ -141,7 +141,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 
 static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			DWORD dw_addr,
-			DWORD *pdwData,
+			DWORD *dw_data,
 			DWORD dwNumWords)
 {
 	DWORD dwIndex = 0;
@@ -217,7 +217,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 
 	for (dwIndex = 0; dwIndex < dwNumWords; dwIndex++) {
 		/* We get only a byte at a time - from LSB to MSB. We shift it into an integer. */
-		pvalue = (PUCHAR)(pdwData + dwIndex);
+		pvalue = (PUCHAR)(dw_data + dwIndex);
 
 		value = 0;
 		rdmalt(ad, EEPROM_READ_DATAQ_REG, &value, sizeof(value));

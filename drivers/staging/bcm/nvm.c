@@ -41,10 +41,10 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad,
 static int CorruptISOSig(struct bcm_mini_adapter *ad,
 			 enum bcm_flash2x_section_val flash_2x_sect_val);
 static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad,
-			       PUCHAR pBuff,
+			       PUCHAR buff,
 			       unsigned int uiSectAlignAddr);
 static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
-					  PUINT pBuff,
+					  PUINT buff,
 					  enum bcm_flash2x_section_val flash_2x_sect_val,
 					  unsigned int offset,
 					  unsigned int uiNumBytes);
@@ -1414,7 +1414,7 @@ BeceemFlashBulkWriteStatus_EXIT:
 
 int PropagateCalParamsFromFlashToMemory(struct bcm_mini_adapter *ad)
 {
-	PCHAR pBuff, pPtr;
+	PCHAR buff, pPtr;
 	unsigned int uiEepromSize = 0;
 	unsigned int uiBytesToCopy = 0;
 	/* unsigned int uiIndex = 0; */
@@ -1445,16 +1445,16 @@ int PropagateCalParamsFromFlashToMemory(struct bcm_mini_adapter *ad)
 	if (uiEepromSize > 1024 * 1024)
 		return -1;
 
-	pBuff = kmalloc(uiEepromSize, GFP_KERNEL);
-	if (pBuff == NULL)
+	buff = kmalloc(uiEepromSize, GFP_KERNEL);
+	if (buff == NULL)
 		return -ENOMEM;
 
-	if (0 != BeceemNVMRead(ad, (PUINT)pBuff, uiCalStartAddr, uiEepromSize)) {
-		kfree(pBuff);
+	if (0 != BeceemNVMRead(ad, (PUINT)buff, uiCalStartAddr, uiEepromSize)) {
+		kfree(buff);
 		return -1;
 	}
 
-	pPtr = pBuff;
+	pPtr = buff;
 
 	uiBytesToCopy = MIN(BUFFER_4K, uiEepromSize);
 
@@ -1471,7 +1471,7 @@ int PropagateCalParamsFromFlashToMemory(struct bcm_mini_adapter *ad)
 		uiBytesToCopy = MIN(BUFFER_4K, uiEepromSize);
 	}
 
-	kfree(pBuff);
+	kfree(buff);
 	return Status;
 }
 
@@ -4024,7 +4024,7 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
 {
 	unsigned int BuffSize = 0;
 	unsigned int BytesToBeCopied = 0;
-	PUCHAR pBuff = NULL;
+	PUCHAR buff = NULL;
 	int Status = STATUS_SUCCESS;
 
 	if (SrcSection == DstSection) {
@@ -4069,8 +4069,8 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
 	else
 		BuffSize = numOfBytes;
 
-	pBuff = kzalloc(BuffSize, GFP_KERNEL);
-	if (!pBuff) {
+	buff = kzalloc(BuffSize, GFP_KERNEL);
+	if (!buff) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Memory allocation failed.. ");
 		return -ENOMEM;
 	}
@@ -4084,12 +4084,12 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
 	ad->bHeaderChangeAllowed = TRUE;
 
 	do {
-		Status = BcmFlash2xBulkRead(ad, (PUINT)pBuff, SrcSection , offset, BytesToBeCopied);
+		Status = BcmFlash2xBulkRead(ad, (PUINT)buff, SrcSection , offset, BytesToBeCopied);
 		if (Status) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Read failed at offset :%d for NOB :%d", SrcSection, BytesToBeCopied);
 			break;
 		}
-		Status = BcmFlash2xBulkWrite(ad, (PUINT)pBuff, DstSection, offset, BytesToBeCopied, false);
+		Status = BcmFlash2xBulkWrite(ad, (PUINT)buff, DstSection, offset, BytesToBeCopied, false);
 		if (Status) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Write failed at offset :%d for NOB :%d", DstSection, BytesToBeCopied);
 			break;
@@ -4104,7 +4104,7 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
 		}
 	} while (numOfBytes > 0);
 
-	kfree(pBuff);
+	kfree(buff);
 	ad->bHeaderChangeAllowed = false;
 
 	return Status;
@@ -4113,7 +4113,7 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
 /*
  * SaveHeaderIfPresent :- This API is use to Protect the Header in case of Header Sector write
  * @Adapater :- Bcm Driver Private Data Structure
- * @pBuff :- Data buffer that has to be written in sector having the header map.
+ * @buff :- Data buffer that has to be written in sector having the header map.
  * @offset :- Flash offset that has to be written.
  *
  * Return value :-
@@ -4121,7 +4121,7 @@ int BcmCopySection(struct bcm_mini_adapter *ad,
  *	Faillure :- Return negative error code
  */
 
-static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR pBuff, unsigned int offset)
+static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR buff, unsigned int offset)
 {
 	unsigned int offsetToProtect = 0, HeaderSizeToProtect = 0;
 	bool bHasHeader = false;
@@ -4158,12 +4158,12 @@ static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR pBuff, unsign
 		BeceemFlashBulkRead(ad, (PUINT)pTempBuff, (uiSectAlignAddr + offsetToProtect), HeaderSizeToProtect);
 		BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, pTempBuff, HeaderSizeToProtect);
 		/* Replace Buffer content with Header */
-		memcpy(pBuff + offsetToProtect, pTempBuff, HeaderSizeToProtect);
+		memcpy(buff + offsetToProtect, pTempBuff, HeaderSizeToProtect);
 
 		kfree(pTempBuff);
 	}
 	if (bHasHeader && ad->bSigCorrupted) {
-		sig = *((PUINT)(pBuff + offsetToProtect + FIELD_OFFSET_IN_HEADER(struct bcm_dsd_header *, DSDImageMagicNumber)));
+		sig = *((PUINT)(buff + offsetToProtect + FIELD_OFFSET_IN_HEADER(struct bcm_dsd_header *, DSDImageMagicNumber)));
 		sig = ntohl(sig);
 		if ((sig & 0xFF000000) != CORRUPTED_PATTERN) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Desired pattern is not at sig offset. Hence won't restore");
@@ -4171,7 +4171,7 @@ static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR pBuff, unsign
 			return STATUS_SUCCESS;
 		}
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, " Corrupted sig is :%X", sig);
-		*((PUINT)(pBuff + offsetToProtect + FIELD_OFFSET_IN_HEADER(struct bcm_dsd_header *, DSDImageMagicNumber))) = htonl(DSD_IMAGE_MAGIC_NUMBER);
+		*((PUINT)(buff + offsetToProtect + FIELD_OFFSET_IN_HEADER(struct bcm_dsd_header *, DSDImageMagicNumber))) = htonl(DSD_IMAGE_MAGIC_NUMBER);
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Restoring the signature in Header Write only");
 		ad->bSigCorrupted = false;
 	}
@@ -4408,7 +4408,7 @@ static enum bcm_flash2x_section_val getHighestPriISO(struct bcm_mini_adapter *ad
 }
 
 static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
-				PUINT pBuff,
+				PUINT buff,
 				enum bcm_flash2x_section_val flash_2x_sect_val,
 				unsigned int offset,
 				unsigned int uiNumBytes)
@@ -4421,7 +4421,7 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 	unsigned int uiStartOffset = 0;
 	/* Adding section start address */
 	int Status = STATUS_SUCCESS;
-	PUCHAR pcBuff = (PUCHAR)pBuff;
+	PUCHAR pcBuff = (PUCHAR)buff;
 
 	if (uiNumBytes % ad->ulFlashWriteSize) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Writing without Sector Erase for non-FlashWriteSize number of bytes 0x%x\n", uiNumBytes);
@@ -4545,7 +4545,7 @@ static int IsSectionWritable(struct bcm_mini_adapter *ad, enum bcm_flash2x_secti
 
 static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
-	PUCHAR pBuff = NULL;
+	PUCHAR buff = NULL;
 	unsigned int sig = 0;
 	unsigned int offset = 0;
 	unsigned int BlockStatus = 0;
@@ -4559,8 +4559,8 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 		}
 	}
 
-	pBuff = kzalloc(MAX_RW_SIZE, GFP_KERNEL);
-	if (!pBuff) {
+	buff = kzalloc(MAX_RW_SIZE, GFP_KERNEL);
+	if (!buff) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Can't allocate memorey");
 		return -ENOMEM;
 	}
@@ -4568,13 +4568,13 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 	offset = ad->psFlash2xCSInfo->OffsetFromDSDStartForDSDHeader + sizeof(struct bcm_dsd_header);
 	offset -= MAX_RW_SIZE;
 
-	BcmFlash2xBulkRead(ad, (PUINT)pBuff, flash_2x_sect_val, offset, MAX_RW_SIZE);
+	BcmFlash2xBulkRead(ad, (PUINT)buff, flash_2x_sect_val, offset, MAX_RW_SIZE);
 
-	sig = *((PUINT)(pBuff + 12));
+	sig = *((PUINT)(buff + 12));
 	sig = ntohl(sig);
-	BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, pBuff, MAX_RW_SIZE);
+	BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, buff, MAX_RW_SIZE);
 	/* Now corrupting the sig by corrupting 4th last Byte. */
-	*(pBuff + 12) = 0;
+	*(buff + 12) = 0;
 
 	if (sig == DSD_IMAGE_MAGIC_NUMBER) {
 		ad->bSigCorrupted = TRUE;
@@ -4582,24 +4582,24 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 			uiSectAlignAddr = offset & ~(ad->uiSectorSize - 1);
 			BlockStatus = BcmFlashUnProtectBlock(ad, uiSectAlignAddr, ad->uiSectorSize);
 
-			WriteToFlashWithoutSectorErase(ad, (PUINT)(pBuff + 12), flash_2x_sect_val,
+			WriteToFlashWithoutSectorErase(ad, (PUINT)(buff + 12), flash_2x_sect_val,
 						(offset + 12), BYTE_WRITE_SUPPORT);
 			if (BlockStatus) {
 				BcmRestoreBlockProtectStatus(ad, BlockStatus);
 				BlockStatus = 0;
 			}
 		} else {
-			WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, flash_2x_sect_val,
+			WriteToFlashWithoutSectorErase(ad, (PUINT)buff, flash_2x_sect_val,
 						offset, MAX_RW_SIZE);
 		}
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "BCM Signature is not present in header");
-		kfree(pBuff);
+		kfree(buff);
 
 		return STATUS_FAILURE;
 	}
 
-	kfree(pBuff);
+	kfree(buff);
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Corrupted the signature");
 
 	return STATUS_SUCCESS;
@@ -4607,7 +4607,7 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 
 static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
-	PUCHAR pBuff = NULL;
+	PUCHAR buff = NULL;
 	unsigned int sig = 0;
 	unsigned int offset = 0;
 
@@ -4618,37 +4618,37 @@ static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 		return SECTOR_IS_NOT_WRITABLE;
 	}
 
-	pBuff = kzalloc(MAX_RW_SIZE, GFP_KERNEL);
-	if (!pBuff) {
+	buff = kzalloc(MAX_RW_SIZE, GFP_KERNEL);
+	if (!buff) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Can't allocate memorey");
 		return -ENOMEM;
 	}
 
 	offset = 0;
 
-	BcmFlash2xBulkRead(ad, (PUINT)pBuff, flash_2x_sect_val, offset, MAX_RW_SIZE);
+	BcmFlash2xBulkRead(ad, (PUINT)buff, flash_2x_sect_val, offset, MAX_RW_SIZE);
 
-	sig = *((PUINT)pBuff);
+	sig = *((PUINT)buff);
 	sig = ntohl(sig);
 
 	/* corrupt signature */
-	*pBuff = 0;
+	*buff = 0;
 
 	if (sig == ISO_IMAGE_MAGIC_NUMBER) {
 		ad->bSigCorrupted = TRUE;
-		WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, flash_2x_sect_val,
+		WriteToFlashWithoutSectorErase(ad, (PUINT)buff, flash_2x_sect_val,
 					offset, ad->ulFlashWriteSize);
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "BCM Signature is not present in header");
-		kfree(pBuff);
+		kfree(buff);
 
 		return STATUS_FAILURE;
 	}
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Corrupted the signature");
-	BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, pBuff, MAX_RW_SIZE);
+	BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, buff, MAX_RW_SIZE);
 
-	kfree(pBuff);
+	kfree(buff);
 	return STATUS_SUCCESS;
 }
 

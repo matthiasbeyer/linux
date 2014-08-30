@@ -923,13 +923,13 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *		ad    - ptr to Adapter object instance
- *		ulWriteStatus   -Original status
+ *		write_status   -Original status
  * Returns:
  *		<VOID>
  *
  */
 
-static VOID BcmRestoreBlockProtectStatus(struct bcm_mini_adapter *ad, ULONG ulWriteStatus)
+static VOID BcmRestoreBlockProtectStatus(struct bcm_mini_adapter *ad, ULONG write_status)
 {
 	unsigned int value;
 
@@ -937,7 +937,7 @@ static VOID BcmRestoreBlockProtectStatus(struct bcm_mini_adapter *ad, ULONG ulWr
 	wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 
 	udelay(20);
-	value = (FLASH_CMD_STATUS_REG_WRITE << 24) | (ulWriteStatus << 16);
+	value = (FLASH_CMD_STATUS_REG_WRITE << 24) | (write_status << 16);
 	wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 	udelay(20);
 }
@@ -958,7 +958,7 @@ static VOID BcmRestoreBlockProtectStatus(struct bcm_mini_adapter *ad, ULONG ulWr
 static ULONG BcmFlashUnProtectBlock(struct bcm_mini_adapter *ad, unsigned int offset, unsigned int uiLength)
 {
 	ULONG ulStatus		= 0;
-	ULONG ulWriteStatus	= 0;
+	ULONG write_status	= 0;
 	unsigned int value;
 
 	offset = offset&0x000FFFFF;
@@ -977,7 +977,7 @@ static ULONG BcmFlashUnProtectBlock(struct bcm_mini_adapter *ad, unsigned int of
 		 */
 		rdmalt(ad, FLASH_SPI_READQ_REG, (PUINT)&ulStatus, sizeof(ulStatus));
 		ulStatus >>= 24;
-		ulWriteStatus = ulStatus;
+		write_status = ulStatus;
 		/*
 		 * Bits [5-2] give current block level protection status.
 		 * Bit5: BP3 - DONT CARE
@@ -991,41 +991,41 @@ static ULONG BcmFlashUnProtectBlock(struct bcm_mini_adapter *ad, unsigned int of
 				 * Offset comes in lower half of 1MB. Protect the upper half.
 				 * Clear BP1 and BP0 and set BP2.
 				 */
-				ulWriteStatus |= (0x4<<2);
-				ulWriteStatus &= ~(0x3<<2);
+				write_status |= (0x4<<2);
+				write_status &= ~(0x3<<2);
 			} else if ((offset + uiLength) <= 0xC0000) {
 				/*
 				 * Offset comes below Upper 1/4. Upper 1/4 can be protected.
 				 *  Clear BP2 and set BP1 and BP0.
 				 */
-				ulWriteStatus |= (0x3<<2);
-				ulWriteStatus &= ~(0x1<<4);
+				write_status |= (0x3<<2);
+				write_status &= ~(0x1<<4);
 			} else if ((offset + uiLength) <= 0xE0000) {
 				/*
 				 * Offset comes below Upper 1/8. Upper 1/8 can be protected.
 				 * Clear BP2 and BP0  and set BP1
 				 */
-				ulWriteStatus |= (0x1<<3);
-				ulWriteStatus &= ~(0x5<<2);
+				write_status |= (0x1<<3);
+				write_status &= ~(0x5<<2);
 			} else if ((offset + uiLength) <= 0xF0000) {
 				/*
 				 * Offset comes below Upper 1/16. Only upper 1/16 can be protected.
 				 * Set BP0 and Clear BP2,BP1.
 				 */
-				ulWriteStatus |= (0x1<<2);
-				ulWriteStatus &= ~(0x3<<3);
+				write_status |= (0x1<<2);
+				write_status &= ~(0x3<<3);
 			} else {
 				/*
 				 * Unblock all.
 				 * Clear BP2,BP1 and BP0.
 				 */
-				ulWriteStatus &= ~(0x7<<2);
+				write_status &= ~(0x7<<2);
 			}
 
 			value = (FLASH_CMD_WRITE_ENABLE << 24);
 			wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 			udelay(20);
-			value = (FLASH_CMD_STATUS_REG_WRITE << 24) | (ulWriteStatus << 16);
+			value = (FLASH_CMD_STATUS_REG_WRITE << 24) | (write_status << 16);
 			wrmalt(ad, FLASH_SPI_CMDQ_REG, &value, sizeof(value));
 			udelay(20);
 		}

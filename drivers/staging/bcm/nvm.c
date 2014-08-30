@@ -144,7 +144,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			DWORD *dw_data,
 			DWORD dw_nwords)
 {
-	DWORD dwIndex = 0;
+	DWORD dw_idx = 0;
 	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
 	unsigned int status  = 0;
 	unsigned int value = 0;
@@ -215,9 +215,9 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			udelay(1000);
 	}
 
-	for (dwIndex = 0; dwIndex < dw_nwords; dwIndex++) {
+	for (dw_idx = 0; dw_idx < dw_nwords; dw_idx++) {
 		/* We get only a byte at a time - from LSB to MSB. We shift it into an integer. */
-		pvalue = (PUCHAR)(dw_data + dwIndex);
+		pvalue = (PUCHAR)(dw_data + dw_idx);
 
 		value = 0;
 		rdmalt(ad, EEPROM_READ_DATAQ_REG, &value, sizeof(value));

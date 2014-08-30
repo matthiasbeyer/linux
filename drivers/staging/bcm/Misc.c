@@ -588,7 +588,7 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 
 		/* Wait for the LED to TURN OFF before sending ACK response */
 		if (ad->LEDInfo.led_thread_running & BCM_LED_THREAD_RUNNING_ACTIVELY) {
-			int iRetVal = 0;
+			int ret = 0;
 
 			/* Wake the LED Thread with IDLEMODE_ENTER State */
 			ad->DriverState = LOWPOWER_MODE_ENTER;
@@ -596,10 +596,10 @@ void SendIdleModeResponse(struct bcm_mini_adapter *ad)
 			wake_up(&ad->LEDInfo.notify_led_event);
 
 			/* Wait for 1 SEC for LED to OFF */
-			iRetVal = wait_event_timeout(ad->LEDInfo.idleModeSyncEvent, ad->LEDInfo.bIdle_led_off, msecs_to_jiffies(1000));
+			ret = wait_event_timeout(ad->LEDInfo.idleModeSyncEvent, ad->LEDInfo.bIdle_led_off, msecs_to_jiffies(1000));
 
 			/* If Timed Out to Sync IDLE MODE Enter, do IDLE mode Exit and Send NACK to device */
-			if (iRetVal <= 0) {
+			if (ret <= 0) {
 				idle_response.szData[1] = TARGET_CAN_NOT_GO_TO_IDLE_MODE; /* NACK- device access is going on. */
 				ad->DriverState = NORMAL_OPERATION;
 				wake_up(&ad->LEDInfo.notify_led_event);
@@ -1199,11 +1199,11 @@ int rdm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
 
 int wrm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
 {
-	int iRetVal;
+	int ret;
 
-	iRetVal = ad->interface_wrm(ad->pvInterfaceAdapter,
+	ret = ad->interface_wrm(ad->pvInterfaceAdapter,
 					addr, buff, size);
-	return iRetVal;
+	return ret;
 }
 
 int wrmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
@@ -1244,7 +1244,7 @@ exit:
 
 int wrmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
-	int iRetVal = STATUS_SUCCESS;
+	int ret = STATUS_SUCCESS;
 
 	down(&ad->rdmwrmsync);
 
@@ -1252,14 +1252,14 @@ int wrmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int 
 		(ad->bShutStatus == TRUE) ||
 		(ad->bPreparingForLowPowerMode == TRUE)) {
 
-		iRetVal = -EACCES;
+		ret = -EACCES;
 		goto exit;
 	}
 
-	iRetVal = wrmalt(ad, addr, buff, size);
+	ret = wrmalt(ad, addr, buff, size);
 exit:
 	up(&ad->rdmwrmsync);
-	return iRetVal;
+	return ret;
 }
 
 int rdmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
@@ -1351,17 +1351,17 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 
 		/* Wait for the LED to TURN OFF before sending ACK response */
 		if (ad->LEDInfo.led_thread_running & BCM_LED_THREAD_RUNNING_ACTIVELY) {
-			int iRetVal = 0;
+			int ret = 0;
 
 			/* Wake the LED Thread with LOWPOWER_MODE_ENTER State */
 			ad->DriverState = LOWPOWER_MODE_ENTER;
 			wake_up(&ad->LEDInfo.notify_led_event);
 
 			/* Wait for 1 SEC for LED to OFF */
-			iRetVal = wait_event_timeout(ad->LEDInfo.idleModeSyncEvent, ad->LEDInfo.bIdle_led_off, msecs_to_jiffies(1000));
+			ret = wait_event_timeout(ad->LEDInfo.idleModeSyncEvent, ad->LEDInfo.bIdle_led_off, msecs_to_jiffies(1000));
 
 			/* If Timed Out to Sync IDLE MODE Enter, do IDLE mode Exit and Send NACK to device */
-			if (iRetVal <= 0) {
+			if (ret <= 0) {
 				stShutdownResponse.szData[1] = SHUTDOWN_NACK_FROM_DRIVER; /* NACK- device access is going on. */
 				ad->DriverState = NO_NETWORK_ENTRY;
 				wake_up(&ad->LEDInfo.notify_led_event);

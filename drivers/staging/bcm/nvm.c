@@ -79,7 +79,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_add
  */
 static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 {
-	UCHAR uiData = 0;
+	UCHAR data = 0;
 	DWORD dwRetries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
 	unsigned int uiStatus = 0;
 	unsigned int value = 0;
@@ -106,7 +106,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 
 			value = 0;
 			rdmalt(ad, EEPROM_READ_DATAQ_REG, &value, sizeof(value));
-			uiData = (UCHAR)value;
+			data = (UCHAR)value;
 
 			break;
 		}
@@ -116,13 +116,13 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 			rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 			rdmalt(ad, EEPROM_SPI_Q_STATUS_REG, &value1, sizeof(value1));
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "0x3004 = %x 0x3008 = %x, retries = %d failed.\n", value, value1, MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
-			return uiData;
+			return data;
 		}
 		if (!(dwRetries%RETRIES_PER_DELAY))
 			udelay(1000);
 		uiStatus = 0;
 	}
-	return uiData;
+	return data;
 } /* ReadEEPROMStatusRegister */
 
 /*
@@ -262,7 +262,7 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 		DWORD offset,
 		DWORD *buff)
 {
-	unsigned int uiData[8]		= {0};
+	unsigned int data[8]		= {0};
 	unsigned int uiByteOffset	= 0;
 	unsigned int uiTempOffset	= 0;
 
@@ -271,15 +271,15 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 	uiTempOffset = offset - (offset % MAX_RW_SIZE);
 	uiByteOffset = offset - uiTempOffset;
 
-	ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&uiData[0], 4);
+	ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&data[0], 4);
 
 	/* A word can overlap at most over 2 pages. In that case we read the
 	 * next page too.
 	 */
 	if (uiByteOffset > 12)
-		ReadBeceemEEPROMBulk(ad, uiTempOffset + MAX_RW_SIZE, (PUINT)&uiData[4], 4);
+		ReadBeceemEEPROMBulk(ad, uiTempOffset + MAX_RW_SIZE, (PUINT)&data[4], 4);
 
-	memcpy((PUCHAR)buff, (((PUCHAR)&uiData[0]) + uiByteOffset), 4);
+	memcpy((PUCHAR)buff, (((PUCHAR)&data[0]) + uiByteOffset), 4);
 
 	return STATUS_SUCCESS;
 } /* ReadBeceemEEPROM() */
@@ -321,7 +321,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			unsigned int offset,
 			unsigned int nbytes)
 {
-	unsigned int uiData[4]		= {0};
+	unsigned int data[4]		= {0};
 	/* unsigned int uiAddress	= 0; */
 	unsigned int uiBytesRemaining	= nbytes;
 	unsigned int uiIndex		= 0;
@@ -333,14 +333,14 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	if (offset % MAX_RW_SIZE && uiBytesRemaining) {
 		uiTempOffset = offset - (offset % MAX_RW_SIZE);
 		uiExtraBytes = offset - uiTempOffset;
-		ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&uiData[0], 4);
+		ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&data[0], 4);
 		if (uiBytesRemaining >= (MAX_RW_SIZE - uiExtraBytes)) {
-			memcpy(buff, (((PUCHAR)&uiData[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
+			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
 			uiBytesRemaining -= (MAX_RW_SIZE - uiExtraBytes);
 			uiIndex += (MAX_RW_SIZE - uiExtraBytes);
 			offset += (MAX_RW_SIZE - uiExtraBytes);
 		} else {
-			memcpy(buff, (((PUCHAR)&uiData[0]) + uiExtraBytes), uiBytesRemaining);
+			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), uiBytesRemaining);
 			uiIndex += uiBytesRemaining;
 			offset += uiBytesRemaining;
 			uiBytesRemaining = 0;
@@ -356,8 +356,8 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			 * read function to make the access faster.
 			 * We read 4 Dwords of data
 			 */
-			if (ReadBeceemEEPROMBulk(ad, offset, &uiData[0], 4) == 0) {
-				memcpy(pcBuff + uiIndex, &uiData[0], MAX_RW_SIZE);
+			if (ReadBeceemEEPROMBulk(ad, offset, &data[0], 4) == 0) {
+				memcpy(pcBuff + uiIndex, &data[0], MAX_RW_SIZE);
 				offset += MAX_RW_SIZE;
 				uiBytesRemaining -= MAX_RW_SIZE;
 				uiIndex += MAX_RW_SIZE;
@@ -366,8 +366,8 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 				mdelay(3); /* sleep for a while before retry... */
 			}
 		} else if (uiBytesRemaining >= 4) {
-			if (ReadBeceemEEPROM(ad, offset, &uiData[0]) == 0) {
-				memcpy(pcBuff + uiIndex, &uiData[0], 4);
+			if (ReadBeceemEEPROM(ad, offset, &data[0]) == 0) {
+				memcpy(pcBuff + uiIndex, &data[0], 4);
 				offset += 4;
 				uiBytesRemaining -= 4;
 				uiIndex += 4;
@@ -380,8 +380,8 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			PUCHAR pCharBuff = (PUCHAR)buff;
 
 			pCharBuff += uiIndex;
-			if (ReadBeceemEEPROM(ad, offset, &uiData[0]) == 0) {
-				memcpy(pCharBuff, &uiData[0], uiBytesRemaining); /* copy only bytes requested. */
+			if (ReadBeceemEEPROM(ad, offset, &data[0]) == 0) {
+				memcpy(pCharBuff, &data[0], uiBytesRemaining); /* copy only bytes requested. */
 				uiBytesRemaining = 0;
 			} else {
 				uiFailureRetries++;
@@ -510,7 +510,7 @@ static unsigned int BcmGetFlashSize(struct bcm_mini_adapter *ad)
 
 static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad)
 {
-	unsigned int uiData = 0;
+	unsigned int data = 0;
 	unsigned int uiIndex = 0;
 
 	/*
@@ -521,23 +521,23 @@ static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad)
 	 * result in wrap around. So when we get the End of the EEPROM we will
 	 * get 'BECM' string which is indeed at offset 0.
 	 */
-	BeceemEEPROMBulkRead(ad, &uiData, 0x0, 4);
-	if (uiData == BECM) {
+	BeceemEEPROMBulkRead(ad, &data, 0x0, 4);
+	if (data == BECM) {
 		for (uiIndex = 2; uiIndex <= 256; uiIndex *= 2)	{
-			BeceemEEPROMBulkRead(ad, &uiData, uiIndex * 1024, 4);
-			if (uiData == BECM)
+			BeceemEEPROMBulkRead(ad, &data, uiIndex * 1024, 4);
+			if (data == BECM)
 				return uiIndex * 1024;
 		}
 	} else {
 		/*
 		 * EEPROM may not be present or not programmed
 		 */
-		uiData = 0xBABEFACE;
-		if (BeceemEEPROMBulkWrite(ad, (PUCHAR)&uiData, 0, 4, TRUE) == 0) {
-			uiData = 0;
+		data = 0xBABEFACE;
+		if (BeceemEEPROMBulkWrite(ad, (PUCHAR)&data, 0, 4, TRUE) == 0) {
+			data = 0;
 			for (uiIndex = 2; uiIndex <= 256; uiIndex *= 2) {
-				BeceemEEPROMBulkRead(ad, &uiData, uiIndex * 1024, 4);
-				if (uiData == 0xBABEFACE)
+				BeceemEEPROMBulkRead(ad, &data, uiIndex * 1024, 4);
+				if (data == 0xBABEFACE)
 					return uiIndex * 1024;
 			}
 		}
@@ -1497,7 +1497,7 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 {
 	unsigned int uiRdbk	= 0;
 	unsigned int uiIndex	= 0;
-	unsigned int uiData	= 0;
+	unsigned int data	= 0;
 	unsigned int auiData[4]	= {0};
 
 	while (nbytes) {
@@ -1521,13 +1521,13 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 			nbytes -= MAX_RW_SIZE;
 			uiIndex += 4;
 		} else if (nbytes >= 4) {
-			BeceemEEPROMBulkRead(ad, &uiData, offset, 4);
-			if (uiData != buff[uiIndex]) {
+			BeceemEEPROMBulkRead(ad, &data, offset, 4);
+			if (data != buff[uiIndex]) {
 				/* re-write */
 				BeceemEEPROMBulkWrite(ad, (PUCHAR)(buff + uiIndex), offset, 4, false);
 				mdelay(3);
-				BeceemEEPROMBulkRead(ad, &uiData, offset, 4);
-				if (uiData != buff[uiIndex])
+				BeceemEEPROMBulkRead(ad, &data, offset, 4);
+				if (data != buff[uiIndex])
 					return -1;
 			}
 			offset += 4;
@@ -1535,11 +1535,11 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 			uiIndex++;
 		} else {
 			/* Handle the reads less than 4 bytes... */
-			uiData = 0;
-			memcpy(&uiData, ((PUCHAR)buff) + (uiIndex * sizeof(unsigned int)), nbytes);
+			data = 0;
+			memcpy(&data, ((PUCHAR)buff) + (uiIndex * sizeof(unsigned int)), nbytes);
 			BeceemEEPROMBulkRead(ad, &uiRdbk, offset, 4);
 
-			if (memcmp(&uiData, &uiRdbk, nbytes))
+			if (memcmp(&data, &uiRdbk, nbytes))
 				return -1;
 
 			nbytes = 0;
@@ -1568,14 +1568,14 @@ static VOID BcmSwapWord(unsigned int *ptr1)
  *
  * Arguments:
  *		ad		- ptr to Adapter object instance
- *		uiData		- Data to be written.
+ *		data		- Data to be written.
  *		offset	- Offset of the EEPROM where data needs to be written to.
  * Returns:
  *		OSAL_STATUS_CODE
  *
  */
 
-static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int uiData[], unsigned int offset)
+static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int data[], unsigned int offset)
 {
 	unsigned int uiRetries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
 	unsigned int uiStatus = 0;
@@ -1604,19 +1604,19 @@ static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int uiDat
 	 * checked for the queue to be empty we can write in a burst.
 	 */
 
-	value = uiData[0];
+	value = data[0];
 	BcmSwapWord(&value);
 	wrm(ad, EEPROM_WRITE_DATAQ_REG, (PUCHAR)&value, 4);
 
-	value = uiData[1];
+	value = data[1];
 	BcmSwapWord(&value);
 	wrm(ad, EEPROM_WRITE_DATAQ_REG, (PUCHAR)&value, 4);
 
-	value = uiData[2];
+	value = data[2];
 	BcmSwapWord(&value);
 	wrm(ad, EEPROM_WRITE_DATAQ_REG, (PUCHAR)&value, 4);
 
-	value = uiData[3];
+	value = data[3];
 	BcmSwapWord(&value);
 	wrm(ad, EEPROM_WRITE_DATAQ_REG, (PUCHAR)&value, 4);
 
@@ -1713,7 +1713,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 {
 	unsigned int uiBytesToCopy	= nbytes;
 	/* unsigned int uiRdbk		= 0; */
-	unsigned int uiData[4]		= {0};
+	unsigned int data[4]		= {0};
 	unsigned int uiIndex		= 0;
 	unsigned int uiTempOffset	= 0;
 	unsigned int uiExtraBytes	= 0;
@@ -1725,21 +1725,21 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 		uiTempOffset = offset - (offset % MAX_RW_SIZE);
 		uiExtraBytes = offset - uiTempOffset;
 
-		BeceemEEPROMBulkRead(ad, &uiData[0], uiTempOffset, MAX_RW_SIZE);
+		BeceemEEPROMBulkRead(ad, &data[0], uiTempOffset, MAX_RW_SIZE);
 
 		if (uiBytesToCopy >= (16 - uiExtraBytes)) {
-			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), buff, MAX_RW_SIZE - uiExtraBytes);
+			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, MAX_RW_SIZE - uiExtraBytes);
 
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, uiTempOffset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, uiTempOffset))
 				return STATUS_FAILURE;
 
 			uiBytesToCopy -= (MAX_RW_SIZE - uiExtraBytes);
 			uiIndex += (MAX_RW_SIZE - uiExtraBytes);
 			offset += (MAX_RW_SIZE - uiExtraBytes);
 		} else {
-			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), buff, uiBytesToCopy);
+			memcpy((((PUCHAR)&data[0]) + uiExtraBytes), buff, uiBytesToCopy);
 
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, uiTempOffset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, uiTempOffset))
 				return STATUS_FAILURE;
 
 			uiIndex += uiBytesToCopy;
@@ -1763,10 +1763,10 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 			/*
 			 * To program non 16byte aligned data, read 16byte and then update.
 			 */
-			BeceemEEPROMBulkRead(ad, &uiData[0], offset, 16);
-			memcpy(&uiData[0], buff + uiIndex, uiBytesToCopy);
+			BeceemEEPROMBulkRead(ad, &data[0], offset, 16);
+			memcpy(&data[0], buff + uiIndex, uiBytesToCopy);
 
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, offset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, data, offset))
 				return STATUS_FAILURE;
 
 			uiBytesToCopy = 0;
@@ -2618,10 +2618,10 @@ static int BcmGetFlashCSInfo(struct bcm_mini_adapter *ad)
 
 static enum bcm_nvm_type BcmGetNvmType(struct bcm_mini_adapter *ad)
 {
-	unsigned int uiData = 0;
+	unsigned int data = 0;
 
-	BeceemEEPROMBulkRead(ad, &uiData, 0x0, 4);
-	if (uiData == BECM)
+	BeceemEEPROMBulkRead(ad, &data, 0x0, 4);
+	if (data == BECM)
 		return NVM_EEPROM;
 
 	/*
@@ -2629,8 +2629,8 @@ static enum bcm_nvm_type BcmGetNvmType(struct bcm_mini_adapter *ad)
 	 */
 	BcmGetFlashCSInfo(ad);
 
-	BeceemFlashBulkRead(ad, &uiData, 0x0 + ad->ulFlashCalStart, 4);
-	if (uiData == BECM)
+	BeceemFlashBulkRead(ad, &data, 0x0 + ad->ulFlashCalStart, 4);
+	if (data == BECM)
 		return NVM_FLASH;
 
 	/*

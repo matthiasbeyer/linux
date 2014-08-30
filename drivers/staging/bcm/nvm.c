@@ -9,7 +9,7 @@ static int BcmGetActiveISO(struct bcm_mini_adapter *ad);
 static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad);
 static int BcmGetFlashCSInfo(struct bcm_mini_adapter *ad);
 static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad,
-					  unsigned int FlashSectorSizeSig,
+					  unsigned int flash_sector_size_sig,
 					  unsigned int FlashSectorSize);
 
 static VOID BcmValidateNvmType(struct bcm_mini_adapter *ad);
@@ -2022,7 +2022,7 @@ Restore:
  *
  */
 
-static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned int FlashSectorSizeSig, unsigned int FlashSectorSize)
+static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned int flash_sector_size_sig, unsigned int FlashSectorSize)
 {
 	unsigned int uiSectorSize = 0;
 	unsigned int uiSectorSig = 0;
@@ -2032,7 +2032,7 @@ static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned 
 			ad->uiSectorSizeInCFG >= MIN_SECTOR_SIZE)) {
 		ad->uiSectorSize = ad->uiSectorSizeInCFG;
 	} else {
-		uiSectorSig = FlashSectorSizeSig;
+		uiSectorSig = flash_sector_size_sig;
 
 		if (uiSectorSig == FLASH_SECTOR_SIZE_SIG) {
 			uiSectorSize = FlashSectorSize;

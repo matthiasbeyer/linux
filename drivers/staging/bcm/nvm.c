@@ -80,7 +80,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_add
 static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 {
 	UCHAR data = 0;
-	DWORD dwRetries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
+	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
 	unsigned int uiStatus = 0;
 	unsigned int value = 0;
 	unsigned int value1 = 0;
@@ -89,7 +89,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 	value = EEPROM_READ_STATUS_REGISTER;
 	wrmalt(ad, EEPROM_CMDQ_SPI_REG, &value, sizeof(value));
 
-	while (dwRetries != 0) {
+	while (dw_retries != 0) {
 		value = 0;
 		uiStatus = 0;
 		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
@@ -111,14 +111,14 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 			break;
 		}
 
-		dwRetries--;
-		if (dwRetries == 0) {
+		dw_retries--;
+		if (dw_retries == 0) {
 			rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 			rdmalt(ad, EEPROM_SPI_Q_STATUS_REG, &value1, sizeof(value1));
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "0x3004 = %x 0x3008 = %x, retries = %d failed.\n", value, value1, MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
 			return data;
 		}
-		if (!(dwRetries%RETRIES_PER_DELAY))
+		if (!(dw_retries%RETRIES_PER_DELAY))
 			udelay(1000);
 		uiStatus = 0;
 	}
@@ -145,7 +145,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			DWORD dwNumWords)
 {
 	DWORD dwIndex = 0;
-	DWORD dwRetries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
+	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
 	unsigned int uiStatus  = 0;
 	unsigned int value = 0;
 	unsigned int value1 = 0;
@@ -164,7 +164,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 	value = dw_addr | ((dwNumWords == 4) ? EEPROM_16_BYTE_PAGE_READ : EEPROM_4_BYTE_PAGE_READ);
 	wrmalt(ad, EEPROM_CMDQ_SPI_REG, &value, sizeof(value));
 
-	while (dwRetries != 0) {
+	while (dw_retries != 0) {
 		uiStatus = 0;
 		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
 		if (ad->device_removed == TRUE) {
@@ -200,8 +200,8 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 
 		uiStatus = 0;
 
-		dwRetries--;
-		if (dwRetries == 0) {
+		dw_retries--;
+		if (dw_retries == 0) {
 			value = 0;
 			value1 = 0;
 			rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
@@ -211,7 +211,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			return STATUS_FAILURE;
 		}
 
-		if (!(dwRetries%RETRIES_PER_DELAY))
+		if (!(dw_retries%RETRIES_PER_DELAY))
 			udelay(1000);
 	}
 

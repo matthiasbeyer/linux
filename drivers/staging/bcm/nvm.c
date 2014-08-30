@@ -66,7 +66,7 @@ static int BeceemFlashBulkWrite(
 
 static int GetFlashBaseAddr(struct bcm_mini_adapter *ad);
 
-static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dwAddress, unsigned int *pdwData, unsigned int dwNumData);
+static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_addr, unsigned int *pdwData, unsigned int dwNumData);
 
 /* Procedure:	ReadEEPROMStatusRegister
  *
@@ -132,7 +132,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
  *
  * Arguments:
  *		ad    - ptr to Adapter object instance
- *      dwAddress   - EEPROM Offset to read the data from.
+ *      dw_addr   - EEPROM Offset to read the data from.
  *      pdwData     - Pointer to double word where data needs to be stored in.  //		dwNumWords  - Number of words.  Valid values are 4 ONLY.
  *
  * Returns:
@@ -140,7 +140,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
  */
 
 static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
-			DWORD dwAddress,
+			DWORD dw_addr,
 			DWORD *pdwData,
 			DWORD dwNumWords)
 {
@@ -161,7 +161,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 	value = (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL);
 	wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 
-	value = dwAddress | ((dwNumWords == 4) ? EEPROM_16_BYTE_PAGE_READ : EEPROM_4_BYTE_PAGE_READ);
+	value = dw_addr | ((dwNumWords == 4) ? EEPROM_16_BYTE_PAGE_READ : EEPROM_4_BYTE_PAGE_READ);
 	wrmalt(ad, EEPROM_CMDQ_SPI_REG, &value, sizeof(value));
 
 	while (dwRetries != 0) {

@@ -417,7 +417,7 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 	unsigned int i = 0;
 	unsigned int bytes_to_read = nbytes;
 	int status = 0;
-	unsigned int uiPartOffset = 0;
+	unsigned int part_offset = 0;
 	int bytes;
 
 	if (ad->device_removed) {
@@ -437,12 +437,12 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 
 	if (offset % MAX_RW_SIZE) {
 		BcmDoChipSelect(ad, offset);
-		uiPartOffset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		part_offset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
 		bytes_to_read = MAX_RW_SIZE - (offset % MAX_RW_SIZE);
 		bytes_to_read = MIN(nbytes, bytes_to_read);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, bytes_to_read);
+		bytes = rdm(ad, part_offset, (PCHAR)buff + i, bytes_to_read);
 		if (bytes < 0) {
 			status = bytes;
 			ad->SelectedChip = RESET_CHIP_SELECT;
@@ -456,11 +456,11 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 
 	while (nbytes) {
 		BcmDoChipSelect(ad, offset);
-		uiPartOffset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		part_offset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
 		bytes_to_read = MIN(nbytes, MAX_RW_SIZE);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, bytes_to_read);
+		bytes = rdm(ad, part_offset, (PCHAR)buff + i, bytes_to_read);
 		if (bytes < 0) {
 			status = bytes;
 			break;
@@ -1107,7 +1107,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 	int status			= STATUS_SUCCESS;
 	unsigned int uiTemp			= 0;
 	unsigned int index			= 0;
-	unsigned int uiPartOffset		= 0;
+	unsigned int part_offset		= 0;
 
 	#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
 		status = bcmflash_raw_write((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)buff, nbytes);
@@ -1161,7 +1161,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 		/* do_gettimeofday(&tv1);
 		 * BCM_DEBUG_PRINT(ad,DBG_TYPE_PRINTK, 0, 0, "\nTime In start of write :%ld ms\n",(tv1.tv_sec *1000 + tv1.tv_usec /1000));
 		 */
-		uiPartOffset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		part_offset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
 		BcmDoChipSelect(ad, sect_align_addr);
 
@@ -1189,7 +1189,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 		if (IsFlash2x(ad))
 			SaveHeaderIfPresent(ad, (PUCHAR)pTempBuff, uiOffsetFromSectStart);
 
-		FlashSectorErase(ad, uiPartOffset, 1);
+		FlashSectorErase(ad, part_offset, 1);
 		/* do_gettimeofday(&te);
 		 * BCM_DEBUG_PRINT(ad,DBG_TYPE_PRINTK, 0, 0, "Total time taken by Erase :%ld ms\n", (te.tv_sec *1000 + te.tv_usec/1000) - (tr.tv_sec *1000 + tr.tv_usec/1000));
 		 */
@@ -1199,7 +1199,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 				goto BeceemFlashBulkWrite_EXIT;
 			}
 
-			if (STATUS_SUCCESS != (*ad->fpFlashWrite)(ad, uiPartOffset + i, (&pTempBuff[i]))) {
+			if (STATUS_SUCCESS != (*ad->fpFlashWrite)(ad, part_offset + i, (&pTempBuff[i]))) {
 				status = -1;
 				goto BeceemFlashBulkWrite_EXIT;
 			}
@@ -1213,7 +1213,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 								ucReadBk,
 								pTempBuff,
 								uiOffsetFromSectStart,
-								uiPartOffset)) {
+								part_offset)) {
 			status = STATUS_FAILURE;
 			goto BeceemFlashBulkWrite_EXIT;
 		}
@@ -1283,7 +1283,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 	unsigned int status			= STATUS_SUCCESS;
 	unsigned int uiTemp			= 0;
 	unsigned int index			= 0;
-	unsigned int uiPartOffset		= 0;
+	unsigned int part_offset		= 0;
 
 	uiOffsetFromSectStart = offset & ~(ad->uiSectorSize - 1);
 
@@ -1328,7 +1328,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 
 	ad->SelectedChip = RESET_CHIP_SELECT;
 	while (uiNumSectTobeRead) {
-		uiPartOffset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		part_offset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
 		BcmDoChipSelect(ad, sect_align_addr);
 		if (0 != BeceemFlashBulkRead(ad,
@@ -1352,7 +1352,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 		if (IsFlash2x(ad))
 			SaveHeaderIfPresent(ad, (PUCHAR)pTempBuff, uiOffsetFromSectStart);
 
-		FlashSectorErase(ad, uiPartOffset, 1);
+		FlashSectorErase(ad, part_offset, 1);
 
 		for (i = 0; i < ad->uiSectorSize; i += ad->ulFlashWriteSize) {
 			if (ad->device_removed) {
@@ -1360,7 +1360,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 				goto BeceemFlashBulkWriteStatus_EXIT;
 			}
 
-			if (STATUS_SUCCESS != (*ad->fpFlashWriteWithStatusCheck)(ad, uiPartOffset+i, &pTempBuff[i])) {
+			if (STATUS_SUCCESS != (*ad->fpFlashWriteWithStatusCheck)(ad, part_offset+i, &pTempBuff[i])) {
 				status = -1;
 				goto BeceemFlashBulkWriteStatus_EXIT;
 			}
@@ -4416,7 +4416,7 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 	#if !defined(BCM_SHM_INTERFACE) || defined(FLASH_DIRECT_ACCESS)
 		unsigned int uiTemp = 0, value = 0;
 		unsigned int i = 0;
-		unsigned int uiPartOffset = 0;
+		unsigned int part_offset = 0;
 	#endif
 	unsigned int uiStartOffset = 0;
 	/* Adding section start address */
@@ -4444,19 +4444,19 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 
 		ad->SelectedChip = RESET_CHIP_SELECT;
 		BcmDoChipSelect(ad, offset);
-		uiPartOffset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		part_offset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
 		for (i = 0; i < nbytes; i += ad->ulFlashWriteSize) {
 			if (ad->ulFlashWriteSize == BYTE_WRITE_SUPPORT)
-				status = flashByteWrite(ad, uiPartOffset, buffer);
+				status = flashByteWrite(ad, part_offset, buffer);
 			else
-				status = flashWrite(ad, uiPartOffset, buffer);
+				status = flashWrite(ad, part_offset, buffer);
 
 			if (status != STATUS_SUCCESS)
 				break;
 
 			buffer = buffer + ad->ulFlashWriteSize;
-			uiPartOffset = uiPartOffset +  ad->ulFlashWriteSize;
+			part_offset = part_offset +  ad->ulFlashWriteSize;
 		}
 		wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 		ad->SelectedChip = RESET_CHIP_SELECT;

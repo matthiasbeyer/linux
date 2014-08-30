@@ -1178,15 +1178,15 @@ static void doPowerAutoCorrection(struct bcm_mini_adapter *ps_ad)
 	}
 }
 
-static void convertEndian(unsigned char rw_flag, unsigned int *buffer, unsigned int uiByteCount)
+static void convertEndian(unsigned char rw_flag, unsigned int *buffer, unsigned int byte_count)
 {
 	unsigned int index = 0;
 
 	if (RWM_WRITE == rw_flag) {
-		for (index = 0; index < (uiByteCount/sizeof(unsigned int)); index++)
+		for (index = 0; index < (byte_count/sizeof(unsigned int)); index++)
 			buffer[index] = htonl(buffer[index]);
 	} else {
-		for (index = 0; index < (uiByteCount/sizeof(unsigned int)); index++)
+		for (index = 0; index < (byte_count/sizeof(unsigned int)); index++)
 			buffer[index] = ntohl(buffer[index]);
 	}
 }

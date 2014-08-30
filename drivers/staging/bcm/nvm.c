@@ -133,7 +133,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
  * Arguments:
  *		ad    - ptr to Adapter object instance
  *      dw_addr   - EEPROM Offset to read the data from.
- *      dw_data     - Pointer to double word where data needs to be stored in.  //		dwNumWords  - Number of words.  Valid values are 4 ONLY.
+ *      dw_data     - Pointer to double word where data needs to be stored in.  //		dw_nwords  - Number of words.  Valid values are 4 ONLY.
  *
  * Returns:
  *		OSAL_STATUS_CODE:
@@ -142,7 +142,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			DWORD dw_addr,
 			DWORD *dw_data,
-			DWORD dwNumWords)
+			DWORD dw_nwords)
 {
 	DWORD dwIndex = 0;
 	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
@@ -161,7 +161,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 	value = (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL);
 	wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 
-	value = dw_addr | ((dwNumWords == 4) ? EEPROM_16_BYTE_PAGE_READ : EEPROM_4_BYTE_PAGE_READ);
+	value = dw_addr | ((dw_nwords == 4) ? EEPROM_16_BYTE_PAGE_READ : EEPROM_4_BYTE_PAGE_READ);
 	wrmalt(ad, EEPROM_CMDQ_SPI_REG, &value, sizeof(value));
 
 	while (dw_retries != 0) {
@@ -176,14 +176,14 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 		 * is full before we read.  In the other cases we are ok if the
 		 * queue has data available
 		 */
-		if (dwNumWords == 4) {
+		if (dw_nwords == 4) {
 			if ((status & EEPROM_READ_DATA_FULL) != 0) {
 				/* Clear the Avail/Full bits - which ever is set. */
 				value = (status & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL));
 				wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 				break;
 			}
-		} else if (dwNumWords == 1) {
+		} else if (dw_nwords == 1) {
 			if ((status & EEPROM_READ_DATA_AVAIL) != 0) {
 				/* We just got Avail and we have to read 32bits so we
 				 * need this sleep for Cardbus kind of devices.
@@ -206,8 +206,8 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			value1 = 0;
 			rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 			rdmalt(ad, EEPROM_SPI_Q_STATUS_REG, &value1, sizeof(value1));
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "dwNumWords %d 0x3004 = %x 0x3008 = %x  retries = %d failed.\n",
-					dwNumWords, value,  value1,  MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "dw_nwords %d 0x3004 = %x 0x3008 = %x  retries = %d failed.\n",
+					dw_nwords, value,  value1,  MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
 			return STATUS_FAILURE;
 		}
 
@@ -215,7 +215,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 			udelay(1000);
 	}
 
-	for (dwIndex = 0; dwIndex < dwNumWords; dwIndex++) {
+	for (dwIndex = 0; dwIndex < dw_nwords; dwIndex++) {
 		/* We get only a byte at a time - from LSB to MSB. We shift it into an integer. */
 		pvalue = (PUCHAR)(dw_data + dwIndex);
 

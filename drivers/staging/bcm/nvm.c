@@ -10,7 +10,7 @@ static unsigned int BcmGetEEPROMSize(struct bcm_mini_adapter *ad);
 static int BcmGetFlashCSInfo(struct bcm_mini_adapter *ad);
 static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad,
 					  unsigned int flash_sector_size_sig,
-					  unsigned int FlashSectorSize);
+					  unsigned int flash_sector_size);
 
 static VOID BcmValidateNvmType(struct bcm_mini_adapter *ad);
 static int BcmGetNvmSize(struct bcm_mini_adapter *ad);
@@ -2022,7 +2022,7 @@ Restore:
  *
  */
 
-static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned int flash_sector_size_sig, unsigned int FlashSectorSize)
+static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned int flash_sector_size_sig, unsigned int flash_sector_size)
 {
 	unsigned int uiSectorSize = 0;
 	unsigned int uiSectorSig = 0;
@@ -2035,7 +2035,7 @@ static unsigned int BcmGetFlashSectorSize(struct bcm_mini_adapter *ad, unsigned 
 		uiSectorSig = flash_sector_size_sig;
 
 		if (uiSectorSig == FLASH_SECTOR_SIZE_SIG) {
-			uiSectorSize = FlashSectorSize;
+			uiSectorSize = flash_sector_size;
 			/*
 			 * If the sector size stored in the FLASH makes sense then use it.
 			 */

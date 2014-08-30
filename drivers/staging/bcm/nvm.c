@@ -42,7 +42,7 @@ static int CorruptISOSig(struct bcm_mini_adapter *ad,
 			 enum bcm_flash2x_section_val flash_2x_sect_val);
 static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad,
 			       PUCHAR buff,
-			       unsigned int uiSectAlignAddr);
+			       unsigned int sect_align_addr);
 static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 					  PUINT buff,
 					  enum bcm_flash2x_section_val flash_2x_sect_val,
@@ -1098,7 +1098,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 	PUCHAR pcBuffer			= (PUCHAR)pBuffer;
 	unsigned int uiIndex			= 0;
 	unsigned int uiOffsetFromSectStart	= 0;
-	unsigned int uiSectAlignAddr		= 0;
+	unsigned int sect_align_addr		= 0;
 	unsigned int uiCurrSectOffsetAddr	= 0;
 	unsigned int uiSectBoundary		= 0;
 	unsigned int uiNumSectTobeRead		= 0;
@@ -1120,9 +1120,9 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 	 * offset = offset + GetFlashBaseAddr(ad);
 	 */
 
-	uiSectAlignAddr	= offset & ~(ad->uiSectorSize - 1);
+	sect_align_addr	= offset & ~(ad->uiSectorSize - 1);
 	uiCurrSectOffsetAddr = offset & (ad->uiSectorSize - 1);
-	uiSectBoundary = uiSectAlignAddr + ad->uiSectorSize;
+	uiSectBoundary = sect_align_addr + ad->uiSectorSize;
 
 	pTempBuff = kmalloc(ad->uiSectorSize, GFP_KERNEL);
 	if (!pTempBuff)
@@ -1161,9 +1161,9 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 		/* do_gettimeofday(&tv1);
 		 * BCM_DEBUG_PRINT(ad,DBG_TYPE_PRINTK, 0, 0, "\nTime In start of write :%ld ms\n",(tv1.tv_sec *1000 + tv1.tv_usec /1000));
 		 */
-		uiPartOffset = (uiSectAlignAddr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		uiPartOffset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
-		BcmDoChipSelect(ad, uiSectAlignAddr);
+		BcmDoChipSelect(ad, sect_align_addr);
 
 		if (0 != BeceemFlashBulkRead(ad,
 						(PUINT)pTempBuff,
@@ -1176,12 +1176,12 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 		/* do_gettimeofday(&tr);
 		 * BCM_DEBUG_PRINT(ad,DBG_TYPE_PRINTK, 0, 0, "Total time taken by Read :%ld ms\n", (tr.tv_sec *1000 + tr.tv_usec/1000) - (tv1.tv_sec *1000 + tv1.tv_usec/1000));
 		 */
-		ulStatus = BcmFlashUnProtectBlock(ad, uiSectAlignAddr, ad->uiSectorSize);
+		ulStatus = BcmFlashUnProtectBlock(ad, sect_align_addr, ad->uiSectorSize);
 
 		if (uiNumSectTobeRead > 1) {
-			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr));
-			pcBuffer += ((uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr)));
-			uiNumBytes -= (uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr));
+			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr));
+			pcBuffer += ((uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr)));
+			uiNumBytes -= (uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr));
 		} else {
 			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiNumBytes);
 		}
@@ -1227,7 +1227,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 		}
 
 		uiCurrSectOffsetAddr = 0;
-		uiSectAlignAddr = uiSectBoundary;
+		sect_align_addr = uiSectBoundary;
 		uiSectBoundary += ad->uiSectorSize;
 		uiOffsetFromSectStart += ad->uiSectorSize;
 		uiNumSectTobeRead--;
@@ -1274,7 +1274,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 	PUCHAR pcBuffer			= (PUCHAR)pBuffer;
 	unsigned int uiIndex			= 0;
 	unsigned int uiOffsetFromSectStart	= 0;
-	unsigned int uiSectAlignAddr		= 0;
+	unsigned int sect_align_addr		= 0;
 	unsigned int uiCurrSectOffsetAddr	= 0;
 	unsigned int uiSectBoundary		= 0;
 	unsigned int uiNumSectTobeRead		= 0;
@@ -1291,9 +1291,9 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 	 * Adding flash Base address
 	 * offset = offset + GetFlashBaseAddr(ad);
 	 */
-	uiSectAlignAddr = offset & ~(ad->uiSectorSize - 1);
+	sect_align_addr = offset & ~(ad->uiSectorSize - 1);
 	uiCurrSectOffsetAddr = offset & (ad->uiSectorSize - 1);
-	uiSectBoundary = uiSectAlignAddr + ad->uiSectorSize;
+	uiSectBoundary = sect_align_addr + ad->uiSectorSize;
 
 	pTempBuff = kmalloc(ad->uiSectorSize, GFP_KERNEL);
 	if (!pTempBuff)
@@ -1328,9 +1328,9 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 
 	ad->SelectedChip = RESET_CHIP_SELECT;
 	while (uiNumSectTobeRead) {
-		uiPartOffset = (uiSectAlignAddr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
+		uiPartOffset = (sect_align_addr & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
-		BcmDoChipSelect(ad, uiSectAlignAddr);
+		BcmDoChipSelect(ad, sect_align_addr);
 		if (0 != BeceemFlashBulkRead(ad,
 						(PUINT)pTempBuff,
 						uiOffsetFromSectStart,
@@ -1342,9 +1342,9 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 		ulStatus = BcmFlashUnProtectBlock(ad, uiOffsetFromSectStart, ad->uiSectorSize);
 
 		if (uiNumSectTobeRead > 1) {
-			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr));
-			pcBuffer += ((uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr)));
-			uiNumBytes -= (uiSectBoundary - (uiSectAlignAddr + uiCurrSectOffsetAddr));
+			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr));
+			pcBuffer += ((uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr)));
+			uiNumBytes -= (uiSectBoundary - (sect_align_addr + uiCurrSectOffsetAddr));
 		} else {
 			memcpy(&pTempBuff[uiCurrSectOffsetAddr], pcBuffer, uiNumBytes);
 		}
@@ -1383,7 +1383,7 @@ static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
 		}
 
 		uiCurrSectOffsetAddr = 0;
-		uiSectAlignAddr = uiSectBoundary;
+		sect_align_addr = uiSectBoundary;
 		uiSectBoundary += ad->uiSectorSize;
 		uiOffsetFromSectStart += ad->uiSectorSize;
 		uiNumSectTobeRead--;
@@ -4126,23 +4126,23 @@ static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR buff, unsigne
 	unsigned int offsetToProtect = 0, HeaderSizeToProtect = 0;
 	bool bHasHeader = false;
 	PUCHAR pTempBuff = NULL;
-	unsigned int uiSectAlignAddr = 0;
+	unsigned int sect_align_addr = 0;
 	unsigned int sig = 0;
 
 	/* making the offset sector aligned */
-	uiSectAlignAddr = offset & ~(ad->uiSectorSize - 1);
+	sect_align_addr = offset & ~(ad->uiSectorSize - 1);
 
-	if ((uiSectAlignAddr == BcmGetSectionValEndOffset(ad, DSD2) - ad->uiSectorSize) ||
-		(uiSectAlignAddr == BcmGetSectionValEndOffset(ad, DSD1) - ad->uiSectorSize) ||
-		(uiSectAlignAddr == BcmGetSectionValEndOffset(ad, DSD0) - ad->uiSectorSize)) {
+	if ((sect_align_addr == BcmGetSectionValEndOffset(ad, DSD2) - ad->uiSectorSize) ||
+		(sect_align_addr == BcmGetSectionValEndOffset(ad, DSD1) - ad->uiSectorSize) ||
+		(sect_align_addr == BcmGetSectionValEndOffset(ad, DSD0) - ad->uiSectorSize)) {
 		/* offset from the sector boundary having the header map */
 		offsetToProtect = ad->psFlash2xCSInfo->OffsetFromDSDStartForDSDHeader % ad->uiSectorSize;
 		HeaderSizeToProtect = sizeof(struct bcm_dsd_header);
 		bHasHeader = TRUE;
 	}
 
-	if (uiSectAlignAddr == BcmGetSectionValStartOffset(ad, ISO_IMAGE1) ||
-		uiSectAlignAddr == BcmGetSectionValStartOffset(ad, ISO_IMAGE2)) {
+	if (sect_align_addr == BcmGetSectionValStartOffset(ad, ISO_IMAGE1) ||
+		sect_align_addr == BcmGetSectionValStartOffset(ad, ISO_IMAGE2)) {
 		offsetToProtect = 0;
 		HeaderSizeToProtect = sizeof(struct bcm_iso_header);
 		bHasHeader = TRUE;
@@ -4155,7 +4155,7 @@ static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad, PUCHAR buff, unsigne
 			return -ENOMEM;
 		}
 		/* Read header */
-		BeceemFlashBulkRead(ad, (PUINT)pTempBuff, (uiSectAlignAddr + offsetToProtect), HeaderSizeToProtect);
+		BeceemFlashBulkRead(ad, (PUINT)pTempBuff, (sect_align_addr + offsetToProtect), HeaderSizeToProtect);
 		BCM_DEBUG_PRINT_BUFFER(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, pTempBuff, HeaderSizeToProtect);
 		/* Replace Buffer content with Header */
 		memcpy(buff + offsetToProtect, pTempBuff, HeaderSizeToProtect);
@@ -4549,7 +4549,7 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 	unsigned int sig = 0;
 	unsigned int offset = 0;
 	unsigned int BlockStatus = 0;
-	unsigned int uiSectAlignAddr = 0;
+	unsigned int sect_align_addr = 0;
 
 	ad->bSigCorrupted = false;
 	if (ad->bAllDSDWriteAllow == false) {
@@ -4579,8 +4579,8 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 	if (sig == DSD_IMAGE_MAGIC_NUMBER) {
 		ad->bSigCorrupted = TRUE;
 		if (ad->ulFlashWriteSize == BYTE_WRITE_SUPPORT) {
-			uiSectAlignAddr = offset & ~(ad->uiSectorSize - 1);
-			BlockStatus = BcmFlashUnProtectBlock(ad, uiSectAlignAddr, ad->uiSectorSize);
+			sect_align_addr = offset & ~(ad->uiSectorSize - 1);
+			BlockStatus = BcmFlashUnProtectBlock(ad, sect_align_addr, ad->uiSectorSize);
 
 			WriteToFlashWithoutSectorErase(ad, (PUINT)(buff + 12), flash_2x_sect_val,
 						(offset + 12), BYTE_WRITE_SUPPORT);

@@ -323,35 +323,35 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 {
 	unsigned int data[4]		= {0};
 	/* unsigned int uiAddress	= 0; */
-	unsigned int uiBytesRemaining	= nbytes;
+	unsigned int bytes_remaining	= nbytes;
 	unsigned int uiIndex		= 0;
 	unsigned int tmp_offset	= 0;
 	unsigned int uiExtraBytes	= 0;
 	unsigned int uiFailureRetries	= 0;
 	PUCHAR pcBuff = (PUCHAR)buff;
 
-	if (offset % MAX_RW_SIZE && uiBytesRemaining) {
+	if (offset % MAX_RW_SIZE && bytes_remaining) {
 		tmp_offset = offset - (offset % MAX_RW_SIZE);
 		uiExtraBytes = offset - tmp_offset;
 		ReadBeceemEEPROMBulk(ad, tmp_offset, (PUINT)&data[0], 4);
-		if (uiBytesRemaining >= (MAX_RW_SIZE - uiExtraBytes)) {
+		if (bytes_remaining >= (MAX_RW_SIZE - uiExtraBytes)) {
 			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
-			uiBytesRemaining -= (MAX_RW_SIZE - uiExtraBytes);
+			bytes_remaining -= (MAX_RW_SIZE - uiExtraBytes);
 			uiIndex += (MAX_RW_SIZE - uiExtraBytes);
 			offset += (MAX_RW_SIZE - uiExtraBytes);
 		} else {
-			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), uiBytesRemaining);
-			uiIndex += uiBytesRemaining;
-			offset += uiBytesRemaining;
-			uiBytesRemaining = 0;
+			memcpy(buff, (((PUCHAR)&data[0]) + uiExtraBytes), bytes_remaining);
+			uiIndex += bytes_remaining;
+			offset += bytes_remaining;
+			bytes_remaining = 0;
 		}
 	}
 
-	while (uiBytesRemaining && uiFailureRetries != 128) {
+	while (bytes_remaining && uiFailureRetries != 128) {
 		if (ad->device_removed)
 			return -1;
 
-		if (uiBytesRemaining >= MAX_RW_SIZE) {
+		if (bytes_remaining >= MAX_RW_SIZE) {
 			/* For the requests more than or equal to 16 bytes, use bulk
 			 * read function to make the access faster.
 			 * We read 4 Dwords of data
@@ -359,17 +359,17 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			if (ReadBeceemEEPROMBulk(ad, offset, &data[0], 4) == 0) {
 				memcpy(pcBuff + uiIndex, &data[0], MAX_RW_SIZE);
 				offset += MAX_RW_SIZE;
-				uiBytesRemaining -= MAX_RW_SIZE;
+				bytes_remaining -= MAX_RW_SIZE;
 				uiIndex += MAX_RW_SIZE;
 			} else {
 				uiFailureRetries++;
 				mdelay(3); /* sleep for a while before retry... */
 			}
-		} else if (uiBytesRemaining >= 4) {
+		} else if (bytes_remaining >= 4) {
 			if (ReadBeceemEEPROM(ad, offset, &data[0]) == 0) {
 				memcpy(pcBuff + uiIndex, &data[0], 4);
 				offset += 4;
-				uiBytesRemaining -= 4;
+				bytes_remaining -= 4;
 				uiIndex += 4;
 			} else {
 				uiFailureRetries++;
@@ -381,8 +381,8 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 
 			pCharBuff += uiIndex;
 			if (ReadBeceemEEPROM(ad, offset, &data[0]) == 0) {
-				memcpy(pCharBuff, &data[0], uiBytesRemaining); /* copy only bytes requested. */
-				uiBytesRemaining = 0;
+				memcpy(pCharBuff, &data[0], bytes_remaining); /* copy only bytes requested. */
+				bytes_remaining = 0;
 			} else {
 				uiFailureRetries++;
 				mdelay(3); /* sleep for a while before retry... */

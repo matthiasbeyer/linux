@@ -81,7 +81,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 {
 	UCHAR data = 0;
 	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	unsigned int value = 0;
 	unsigned int value1 = 0;
 
@@ -91,17 +91,17 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 
 	while (dw_retries != 0) {
 		value = 0;
-		uiStatus = 0;
-		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
+		status = 0;
+		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &status, sizeof(status));
 		if (ad->device_removed == TRUE) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Modem has got removed hence exiting....");
 			break;
 		}
 
 		/* Wait for Avail bit to be set. */
-		if ((uiStatus & EEPROM_READ_DATA_AVAIL) != 0) {
+		if ((status & EEPROM_READ_DATA_AVAIL) != 0) {
 			/* Clear the Avail/Full bits - which ever is set. */
-			value = uiStatus & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL);
+			value = status & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL);
 			wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 
 			value = 0;
@@ -120,7 +120,7 @@ static UCHAR ReadEEPROMStatusRegister(struct bcm_mini_adapter *ad)
 		}
 		if (!(dw_retries%RETRIES_PER_DELAY))
 			udelay(1000);
-		uiStatus = 0;
+		status = 0;
 	}
 	return data;
 } /* ReadEEPROMStatusRegister */
@@ -146,7 +146,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 {
 	DWORD dwIndex = 0;
 	DWORD dw_retries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
-	unsigned int uiStatus  = 0;
+	unsigned int status  = 0;
 	unsigned int value = 0;
 	unsigned int value1 = 0;
 	UCHAR *pvalue;
@@ -165,8 +165,8 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 	wrmalt(ad, EEPROM_CMDQ_SPI_REG, &value, sizeof(value));
 
 	while (dw_retries != 0) {
-		uiStatus = 0;
-		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
+		status = 0;
+		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &status, sizeof(status));
 		if (ad->device_removed == TRUE) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Modem has got Removed.hence exiting from loop...");
 			return -ENODEV;
@@ -177,14 +177,14 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 		 * queue has data available
 		 */
 		if (dwNumWords == 4) {
-			if ((uiStatus & EEPROM_READ_DATA_FULL) != 0) {
+			if ((status & EEPROM_READ_DATA_FULL) != 0) {
 				/* Clear the Avail/Full bits - which ever is set. */
-				value = (uiStatus & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL));
+				value = (status & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL));
 				wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 				break;
 			}
 		} else if (dwNumWords == 1) {
-			if ((uiStatus & EEPROM_READ_DATA_AVAIL) != 0) {
+			if ((status & EEPROM_READ_DATA_AVAIL) != 0) {
 				/* We just got Avail and we have to read 32bits so we
 				 * need this sleep for Cardbus kind of devices.
 				 */
@@ -192,13 +192,13 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 					udelay(800);
 
 				/* Clear the Avail/Full bits - which ever is set. */
-				value = (uiStatus & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL));
+				value = (status & (EEPROM_READ_DATA_AVAIL | EEPROM_READ_DATA_FULL));
 				wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 				break;
 			}
 		}
 
-		uiStatus = 0;
+		status = 0;
 
 		dw_retries--;
 		if (dw_retries == 0) {
@@ -565,7 +565,7 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 			unsigned int numOfSectors)
 {
 	unsigned int iIndex = 0, iRetries = 0;
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	unsigned int value;
 	int bytes;
 
@@ -584,11 +584,11 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 				return STATUS_FAILURE;
 			}
 
-			bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &uiStatus, sizeof(uiStatus));
+			bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &status, sizeof(status));
 			if (bytes < 0) {
-				uiStatus = bytes;
+				status = bytes;
 				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
-				return uiStatus;
+				return status;
 			}
 			iRetries++;
 			/* After every try lets make the CPU free for 10 ms. generally time taken by the
@@ -596,9 +596,9 @@ static int FlashSectorErase(struct bcm_mini_adapter *ad,
 			 * won't hamper performance in any case.
 			 */
 			mdelay(10);
-		} while ((uiStatus & 0x1) && (iRetries < 400));
+		} while ((status & 0x1) && (iRetries < 400));
 
-		if (uiStatus & 0x1) {
+		if (status & 0x1) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "iRetries crossing the limit of 80000\n");
 			return STATUS_FAILURE;
 		}
@@ -625,7 +625,7 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
 			unsigned int offset,
 			PVOID pData)
 {
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
 	ULONG ulData = *(PUCHAR)pData;
@@ -664,19 +664,19 @@ static int flashByteWrite(struct bcm_mini_adapter *ad,
 			return STATUS_FAILURE;
 		}
 		/* __udelay(1); */
-		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &uiStatus, sizeof(uiStatus));
+		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &status, sizeof(status));
 		if (bytes < 0) {
-			uiStatus = bytes;
+			status = bytes;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
-			return uiStatus;
+			return status;
 		}
 		iRetries--;
 		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((uiStatus & 0x1) && (iRetries  > 0));
+	} while ((status & 0x1) && (iRetries  > 0));
 
-	if (uiStatus & 0x1) {
+	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
 		return STATUS_FAILURE;
 	}
@@ -702,11 +702,11 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 		unsigned int offset,
 		PVOID pData)
 {
-	/* unsigned int uiStatus = 0;
+	/* unsigned int status = 0;
 	 * int  iRetries = 0;
 	 * unsigned int uiReadBack = 0;
 	 */
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
 	unsigned int uiErasePattern[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
@@ -738,11 +738,11 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 			return STATUS_FAILURE;
 		}
 		/* __udelay(1); */
-		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &uiStatus, sizeof(uiStatus));
+		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &status, sizeof(status));
 		if (bytes < 0) {
-			uiStatus = bytes;
+			status = bytes;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
-			return uiStatus;
+			return status;
 		}
 
 		iRetries--;
@@ -753,9 +753,9 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 		 */
 		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
-	} while ((uiStatus & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (iRetries > 0));
 
-	if (uiStatus & 0x1) {
+	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
 		return STATUS_FAILURE;
 	}
@@ -780,7 +780,7 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 				unsigned int offset,
 				PVOID pData)
 {
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	ULONG ulData  = *(PUCHAR)pData;
 	unsigned int value;
@@ -820,20 +820,20 @@ static int flashByteWriteStatus(struct bcm_mini_adapter *ad,
 			return STATUS_FAILURE;
 		}
 		/* __udelay(1); */
-		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &uiStatus, sizeof(uiStatus));
+		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &status, sizeof(status));
 		if (bytes < 0) {
-			uiStatus = bytes;
+			status = bytes;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
-			return uiStatus;
+			return status;
 		}
 
 		iRetries--;
 		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((uiStatus & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (iRetries > 0));
 
-	if (uiStatus & 0x1) {
+	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
 		return STATUS_FAILURE;
 	}
@@ -858,7 +858,7 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 			unsigned int offset,
 			PVOID pData)
 {
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	int  iRetries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	/* unsigned int uiReadBack = 0; */
 	unsigned int value;
@@ -891,11 +891,11 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 			return STATUS_FAILURE;
 		}
 		/* __udelay(1); */
-		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &uiStatus, sizeof(uiStatus));
+		bytes = rdmalt(ad, FLASH_SPI_READQ_REG, &status, sizeof(status));
 		if (bytes < 0) {
-			uiStatus = bytes;
+			status = bytes;
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Reading status of FLASH_SPI_READQ_REG fails");
-			return uiStatus;
+			return status;
 		}
 		iRetries--;
 		/* this will ensure that in there will be no changes in the current path.
@@ -906,9 +906,9 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 		if (iRetries && ((iRetries % FLASH_PER_RETRIES_DELAY) == 0))
 			udelay(1000);
 
-	} while ((uiStatus & 0x1) && (iRetries > 0));
+	} while ((status & 0x1) && (iRetries > 0));
 
-	if (uiStatus & 0x1) {
+	if (status & 0x1) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Write fails even after checking status for 200 times.");
 		return STATUS_FAILURE;
 	}
@@ -1578,7 +1578,7 @@ static VOID BcmSwapWord(unsigned int *ptr1)
 static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int data[], unsigned int offset)
 {
 	unsigned int uiRetries = MAX_EEPROM_RETRIES * RETRIES_PER_DELAY;
-	unsigned int uiStatus = 0;
+	unsigned int status = 0;
 	UCHAR uiEpromStatus = 0;
 	unsigned int value = 0;
 
@@ -1632,20 +1632,20 @@ static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int data[
 	 * What we are checking if the previous write has completed, and this
 	 * may take time. We should wait till the Empty bit is set.
 	 */
-	uiStatus = 0;
-	rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
-	while ((uiStatus & EEPROM_WRITE_QUEUE_EMPTY) == 0) {
+	status = 0;
+	rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &status, sizeof(status));
+	while ((status & EEPROM_WRITE_QUEUE_EMPTY) == 0) {
 		uiRetries--;
 		if (uiRetries == 0) {
-			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "0x0f003004 = %x, %d retries failed.\n", uiStatus, MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
+			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "0x0f003004 = %x, %d retries failed.\n", status, MAX_EEPROM_RETRIES * RETRIES_PER_DELAY);
 			return STATUS_FAILURE;
 		}
 
 		if (!(uiRetries%RETRIES_PER_DELAY))
 			udelay(1000);
 
-		uiStatus = 0;
-		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &uiStatus, sizeof(uiStatus));
+		status = 0;
+		rdmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &status, sizeof(status));
 		if (ad->device_removed == TRUE) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Modem got removed hence exiting from loop....");
 			return -ENODEV;
@@ -1654,7 +1654,7 @@ static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int data[
 
 	if (uiRetries != 0) {
 		/* Clear the ones that are set - either, Empty/Full/Avail bits */
-		value = (uiStatus & (EEPROM_WRITE_QUEUE_EMPTY | EEPROM_WRITE_QUEUE_AVAIL | EEPROM_WRITE_QUEUE_FULL));
+		value = (status & (EEPROM_WRITE_QUEUE_EMPTY | EEPROM_WRITE_QUEUE_AVAIL | EEPROM_WRITE_QUEUE_FULL));
 		wrmalt(ad, EEPROM_SPI_Q_STATUS1_REG, &value, sizeof(value));
 	}
 

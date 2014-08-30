@@ -1191,38 +1191,38 @@ static void convertEndian(unsigned char rw_flag, unsigned int *buffer, unsigned 
 	}
 }
 
-int rdm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR pucBuff, size_t sSize)
+int rdm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
 {
 	return ad->interface_rdm(ad->pvInterfaceAdapter,
-				addr, pucBuff, sSize);
+				addr, buff, sSize);
 }
 
-int wrm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR pucBuff, size_t sSize)
+int wrm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
 {
 	int iRetVal;
 
 	iRetVal = ad->interface_wrm(ad->pvInterfaceAdapter,
-					addr, pucBuff, sSize);
+					addr, buff, sSize);
 	return iRetVal;
 }
 
-int wrmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *pucBuff, size_t size)
+int wrmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
-	convertEndian(RWM_WRITE, pucBuff, size);
-	return wrm(ad, addr, (PUCHAR)pucBuff, size);
+	convertEndian(RWM_WRITE, buff, size);
+	return wrm(ad, addr, (PUCHAR)buff, size);
 }
 
-int rdmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *pucBuff, size_t size)
+int rdmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
 	int uiRetVal = 0;
 
-	uiRetVal = rdm(ad, addr, (PUCHAR)pucBuff, size);
-	convertEndian(RWM_READ, (unsigned int *)pucBuff, size);
+	uiRetVal = rdm(ad, addr, (PUCHAR)buff, size);
+	convertEndian(RWM_READ, (unsigned int *)buff, size);
 
 	return uiRetVal;
 }
 
-int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR pucBuff, size_t sSize)
+int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
 {
 	int status = STATUS_SUCCESS;
 
@@ -1236,13 +1236,13 @@ int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR pucBuff, s
 		goto exit;
 	}
 
-	status = wrm(ad, addr, pucBuff, sSize);
+	status = wrm(ad, addr, buff, sSize);
 exit:
 	up(&ad->rdmwrmsync);
 	return status;
 }
 
-int wrmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *pucBuff, size_t size)
+int wrmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
 	int iRetVal = STATUS_SUCCESS;
 
@@ -1256,13 +1256,13 @@ int wrmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int 
 		goto exit;
 	}
 
-	iRetVal = wrmalt(ad, addr, pucBuff, size);
+	iRetVal = wrmalt(ad, addr, buff, size);
 exit:
 	up(&ad->rdmwrmsync);
 	return iRetVal;
 }
 
-int rdmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *pucBuff, size_t size)
+int rdmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
 	int uiRetVal = STATUS_SUCCESS;
 
@@ -1275,7 +1275,7 @@ int rdmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int 
 		goto exit;
 	}
 
-	uiRetVal = rdmalt(ad, addr, pucBuff, size);
+	uiRetVal = rdmalt(ad, addr, buff, size);
 exit:
 	up(&ad->rdmwrmsync);
 	return uiRetVal;

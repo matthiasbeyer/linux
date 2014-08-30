@@ -1439,13 +1439,13 @@ void ResetCounters(struct bcm_mini_adapter *ad)
 	ad->bShutStatus = false;
 }
 
-struct bcm_classifier_rule *GetFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT usIpIdentification, ULONG SrcIP)
+struct bcm_classifier_rule *GetFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT ip_ident, ULONG SrcIP)
 {
 	unsigned int index = 0;
 
 	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
 		if ((ad->astFragmentedPktClassifierTable[index].bUsed) &&
-			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == usIpIdentification) &&
+			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == ip_ident) &&
 			(ad->astFragmentedPktClassifierTable[index].ulSrcIpAddress == SrcIP) &&
 			!ad->astFragmentedPktClassifierTable[index].bOutOfOrderFragment)
 
@@ -1466,13 +1466,13 @@ void AddFragIPClsEntry(struct bcm_mini_adapter *ad, struct bcm_fragmented_packet
 	}
 }
 
-void DelFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT usIpIdentification, ULONG SrcIp)
+void DelFragIPClsEntry(struct bcm_mini_adapter *ad, USHORT ip_ident, ULONG SrcIp)
 {
 	unsigned int index = 0;
 
 	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
 		if ((ad->astFragmentedPktClassifierTable[index].bUsed) &&
-			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == usIpIdentification) &&
+			(ad->astFragmentedPktClassifierTable[index].usIpIdentification == ip_ident) &&
 			(ad->astFragmentedPktClassifierTable[index].ulSrcIpAddress == SrcIp))
 
 			memset(&ad->astFragmentedPktClassifierTable[index], 0, sizeof(struct bcm_fragmented_packet_info));

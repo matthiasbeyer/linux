@@ -327,7 +327,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	unsigned int i		= 0;
 	unsigned int tmp_offset	= 0;
 	unsigned int extra_bytes	= 0;
-	unsigned int uiFailureRetries	= 0;
+	unsigned int failure_retries	= 0;
 	PUCHAR pcBuff = (PUCHAR)buff;
 
 	if (offset % MAX_RW_SIZE && bytes_remaining) {
@@ -347,7 +347,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 		}
 	}
 
-	while (bytes_remaining && uiFailureRetries != 128) {
+	while (bytes_remaining && failure_retries != 128) {
 		if (ad->device_removed)
 			return -1;
 
@@ -362,7 +362,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 				bytes_remaining -= MAX_RW_SIZE;
 				i += MAX_RW_SIZE;
 			} else {
-				uiFailureRetries++;
+				failure_retries++;
 				mdelay(3); /* sleep for a while before retry... */
 			}
 		} else if (bytes_remaining >= 4) {
@@ -372,7 +372,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 				bytes_remaining -= 4;
 				i += 4;
 			} else {
-				uiFailureRetries++;
+				failure_retries++;
 				mdelay(3); /* sleep for a while before retry... */
 			}
 		} else {
@@ -384,7 +384,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 				memcpy(pCharBuff, &data[0], bytes_remaining); /* copy only bytes requested. */
 				bytes_remaining = 0;
 			} else {
-				uiFailureRetries++;
+				failure_retries++;
 				mdelay(3); /* sleep for a while before retry... */
 			}
 		}

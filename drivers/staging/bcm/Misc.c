@@ -1505,7 +1505,7 @@ void update_per_cid_rx(struct bcm_mini_adapter *ad)
 
 void update_per_sf_desc_cnts(struct bcm_mini_adapter *ad)
 {
-	int iIndex = 0;
+	int i = 0;
 	u32 uibuff[MAX_TARGET_DSX_BUFFERS];
 	int bytes;
 
@@ -1518,12 +1518,12 @@ void update_per_sf_desc_cnts(struct bcm_mini_adapter *ad)
 		return;
 	}
 
-	for (iIndex = 0; iIndex < HiPriority; iIndex++) {
-		if (ad->PackInfo[iIndex].bValid && ad->PackInfo[iIndex].ucDirection) {
-			if (ad->PackInfo[iIndex].usVCID_Value < MAX_TARGET_DSX_BUFFERS)
-				atomic_set(&ad->PackInfo[iIndex].uiPerSFTxResourceCount, uibuff[ad->PackInfo[iIndex].usVCID_Value]);
+	for (i = 0; i < HiPriority; i++) {
+		if (ad->PackInfo[i].bValid && ad->PackInfo[i].ucDirection) {
+			if (ad->PackInfo[i].usVCID_Value < MAX_TARGET_DSX_BUFFERS)
+				atomic_set(&ad->PackInfo[i].uiPerSFTxResourceCount, uibuff[ad->PackInfo[i].usVCID_Value]);
 			else
-				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Invalid VCID : %x\n", ad->PackInfo[iIndex].usVCID_Value);
+				BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Invalid VCID : %x\n", ad->PackInfo[i].usVCID_Value);
 		}
 	}
 	atomic_set(&ad->uiMBupdate, false);

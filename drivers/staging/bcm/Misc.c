@@ -1191,18 +1191,18 @@ static void convertEndian(unsigned char rw_flag, unsigned int *buffer, unsigned 
 	}
 }
 
-int rdm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
+int rdm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
 {
 	return ad->interface_rdm(ad->pvInterfaceAdapter,
-				addr, buff, sSize);
+				addr, buff, size);
 }
 
-int wrm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
+int wrm(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
 {
 	int iRetVal;
 
 	iRetVal = ad->interface_wrm(ad->pvInterfaceAdapter,
-					addr, buff, sSize);
+					addr, buff, size);
 	return iRetVal;
 }
 
@@ -1222,7 +1222,7 @@ int rdmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, s
 	return uiRetVal;
 }
 
-int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t sSize)
+int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
 {
 	int status = STATUS_SUCCESS;
 
@@ -1236,7 +1236,7 @@ int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size
 		goto exit;
 	}
 
-	status = wrm(ad, addr, buff, sSize);
+	status = wrm(ad, addr, buff, size);
 exit:
 	up(&ad->rdmwrmsync);
 	return status;

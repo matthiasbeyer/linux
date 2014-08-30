@@ -1214,12 +1214,12 @@ int wrmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, s
 
 int rdmalt(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
-	int uiRetVal = 0;
+	int ret = 0;
 
-	uiRetVal = rdm(ad, addr, (PUCHAR)buff, size);
+	ret = rdm(ad, addr, (PUCHAR)buff, size);
 	convertEndian(RWM_READ, (unsigned int *)buff, size);
 
-	return uiRetVal;
+	return ret;
 }
 
 int wrmWithLock(struct bcm_mini_adapter *ad, unsigned int addr, PCHAR buff, size_t size)
@@ -1264,21 +1264,21 @@ exit:
 
 int rdmaltWithLock(struct bcm_mini_adapter *ad, unsigned int addr, unsigned int *buff, size_t size)
 {
-	int uiRetVal = STATUS_SUCCESS;
+	int ret = STATUS_SUCCESS;
 
 	down(&ad->rdmwrmsync);
 	if ((ad->IdleMode == TRUE) ||
 		(ad->bShutStatus == TRUE) ||
 		(ad->bPreparingForLowPowerMode == TRUE)) {
 
-		uiRetVal = -EACCES;
+		ret = -EACCES;
 		goto exit;
 	}
 
-	uiRetVal = rdmalt(ad, addr, buff, size);
+	ret = rdmalt(ad, addr, buff, size);
 exit:
 	up(&ad->rdmwrmsync);
-	return uiRetVal;
+	return ret;
 }
 
 static void HandleShutDownModeWakeup(struct bcm_mini_adapter *ad)

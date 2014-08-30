@@ -66,7 +66,7 @@ static int BeceemFlashBulkWrite(
 
 static int GetFlashBaseAddr(struct bcm_mini_adapter *ad);
 
-static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_addr, unsigned int *dw_data, unsigned int dwNumData);
+static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad, unsigned int dw_addr, unsigned int *dw_data, unsigned int dw_ndata);
 
 /* Procedure:	ReadEEPROMStatusRegister
  *

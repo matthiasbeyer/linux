@@ -709,13 +709,13 @@ static int flashWrite(struct bcm_mini_adapter *ad,
 	unsigned int status = 0;
 	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	unsigned int value;
-	unsigned int uiErasePattern[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+	unsigned int erase_pat[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 	int bytes;
 	/*
 	 * need not write 0xFFFFFFFF because write requires an erase and erase will
 	 * make whole sector 0xFFFFFFFF.
 	 */
-	if (!memcmp(data, uiErasePattern, MAX_RW_SIZE))
+	if (!memcmp(data, erase_pat, MAX_RW_SIZE))
 		return 0;
 
 	value = (FLASH_CMD_WRITE_ENABLE << 24);
@@ -862,14 +862,14 @@ static int flashWriteStatus(struct bcm_mini_adapter *ad,
 	int  retries = MAX_FLASH_RETRIES * FLASH_PER_RETRIES_DELAY; /* 3 */
 	/* unsigned int uiReadBack = 0; */
 	unsigned int value;
-	unsigned int uiErasePattern[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+	unsigned int erase_pat[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 	int bytes;
 
 	/*
 	 * need not write 0xFFFFFFFF because write requires an erase and erase will
 	 * make whole sector 0xFFFFFFFF.
 	 */
-	if (!memcmp(data, uiErasePattern, MAX_RW_SIZE))
+	if (!memcmp(data, erase_pat, MAX_RW_SIZE))
 		return 0;
 
 	value = (FLASH_CMD_WRITE_ENABLE << 24);

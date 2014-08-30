@@ -18,7 +18,7 @@ static unsigned int BcmGetFlashSize(struct bcm_mini_adapter *ad);
 static enum bcm_nvm_type BcmGetNvmType(struct bcm_mini_adapter *ad);
 
 static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad,
-				     enum bcm_flash2x_section_val eFlash2xSectionVal);
+				     enum bcm_flash2x_section_val flash_2x_sect_val);
 
 static B_UINT8 IsOffsetWritable(struct bcm_mini_adapter *ad,
 				unsigned int uiOffset);
@@ -37,15 +37,15 @@ static int ReadISOSignature(struct bcm_mini_adapter *ad,
 			    enum bcm_flash2x_section_val iso);
 
 static int CorruptDSDSig(struct bcm_mini_adapter *ad,
-			 enum bcm_flash2x_section_val eFlash2xSectionVal);
+			 enum bcm_flash2x_section_val flash_2x_sect_val);
 static int CorruptISOSig(struct bcm_mini_adapter *ad,
-			 enum bcm_flash2x_section_val eFlash2xSectionVal);
+			 enum bcm_flash2x_section_val flash_2x_sect_val);
 static int SaveHeaderIfPresent(struct bcm_mini_adapter *ad,
 			       PUCHAR pBuff,
 			       unsigned int uiSectAlignAddr);
 static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 					  PUINT pBuff,
-					  enum bcm_flash2x_section_val eFlash2xSectionVal,
+					  enum bcm_flash2x_section_val flash_2x_sect_val,
 					  unsigned int uiOffset,
 					  unsigned int uiNumBytes);
 static enum bcm_flash2x_section_val getHighestPriDSD(struct bcm_mini_adapter *ad);
@@ -2746,15 +2746,15 @@ int BcmGetSectionValStartOffset(struct bcm_mini_adapter *ad, enum bcm_flash2x_se
  * On Failure -returns STATUS_FAILURE
  */
 
-static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val eFlash2xSectionVal)
+static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
 	int SectEndOffset = 0;
 
 	SectEndOffset = INVALID_OFFSET;
-	if (IsSectionExistInVendorInfo(ad, eFlash2xSectionVal))
-		return ad->psFlash2xVendorInfo->VendorSection[eFlash2xSectionVal].OffsetFromZeroForSectionEnd;
+	if (IsSectionExistInVendorInfo(ad, flash_2x_sect_val))
+		return ad->psFlash2xVendorInfo->VendorSection[flash_2x_sect_val].OffsetFromZeroForSectionEnd;
 
-	switch (eFlash2xSectionVal) {
+	switch (flash_2x_sect_val) {
 	case ISO_IMAGE1:
 		if ((ad->psFlash2xCSInfo->OffsetISOImage1Part1End != UNINIT_PTR_IN_CS) &&
 			(IsNonCDLessDevice(ad) == false))
@@ -2835,7 +2835,7 @@ static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad, enum bcm_flash
 
 int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
 		PUINT pBuffer,
-		enum bcm_flash2x_section_val eFlash2xSectionVal,
+		enum bcm_flash2x_section_val flash_2x_sect_val,
 		unsigned int uiOffsetWithinSectionVal,
 		unsigned int uiNumBytes)
 {
@@ -2854,18 +2854,18 @@ int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
 	}
 
 	/* NO_SECTION_VAL means absolute offset is given. */
-	if (eFlash2xSectionVal == NO_SECTION_VAL)
+	if (flash_2x_sect_val == NO_SECTION_VAL)
 		SectionStartOffset = 0;
 	else
-		SectionStartOffset = BcmGetSectionValStartOffset(ad, eFlash2xSectionVal);
+		SectionStartOffset = BcmGetSectionValStartOffset(ad, flash_2x_sect_val);
 
 	if (SectionStartOffset == STATUS_FAILURE) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "This Section<%d> does not exist in Flash 2.x Map ", eFlash2xSectionVal);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "This Section<%d> does not exist in Flash 2.x Map ", flash_2x_sect_val);
 		return -EINVAL;
 	}
 
-	if (IsSectionExistInVendorInfo(ad, eFlash2xSectionVal))
-		return vendorextnReadSection(ad, (PUCHAR)pBuffer, eFlash2xSectionVal, uiOffsetWithinSectionVal, uiNumBytes);
+	if (IsSectionExistInVendorInfo(ad, flash_2x_sect_val))
+		return vendorextnReadSection(ad, (PUCHAR)pBuffer, flash_2x_sect_val, uiOffsetWithinSectionVal, uiNumBytes);
 
 	/* calculating  the absolute offset from FLASH; */
 	uiAbsoluteOffset = uiOffsetWithinSectionVal + SectionStartOffset;
@@ -3331,7 +3331,7 @@ int BcmGetFlash2xSectionalBitMap(struct bcm_mini_adapter *ad, struct bcm_flash2x
  * section of same type.
  *
  * @Adapater :- Bcm Driver Private Data Structure
- * @eFlash2xSectionVal :- Flash section val whose priority has to be made highest.
+ * @flash_2x_sect_val :- Flash section val whose priority has to be made highest.
  *
  * Return Value:- Make the priorit highest else return erorr code
  *
@@ -3793,25 +3793,25 @@ out:
  * BcmFlash2xCorruptSig : this API is used to corrupt the written sig in Bcm Header present in flash section.
  * It will corrupt the sig, if Section is writable, by making first bytes as zero.
  * @Adapater :- Bcm Driver Private Data Structure
- * @eFlash2xSectionVal :- Flash section val which has header
+ * @flash_2x_sect_val :- Flash section val which has header
  *
  * Return Value :-
  *	Success :- If Section is present and writable, corrupt the sig and return STATUS_SUCCESS
  *	Failure :-Return negative error code
  */
 
-int BcmFlash2xCorruptSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val eFlash2xSectionVal)
+int BcmFlash2xCorruptSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
 	int Status = STATUS_SUCCESS;
 
-	BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section Value :%x\n", eFlash2xSectionVal);
+	BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section Value :%x\n", flash_2x_sect_val);
 
-	if ((eFlash2xSectionVal == DSD0) || (eFlash2xSectionVal == DSD1) || (eFlash2xSectionVal == DSD2)) {
-		Status = CorruptDSDSig(ad, eFlash2xSectionVal);
-	} else if (eFlash2xSectionVal == ISO_IMAGE1 || eFlash2xSectionVal == ISO_IMAGE2) {
-		Status = CorruptISOSig(ad, eFlash2xSectionVal);
+	if ((flash_2x_sect_val == DSD0) || (flash_2x_sect_val == DSD1) || (flash_2x_sect_val == DSD2)) {
+		Status = CorruptDSDSig(ad, flash_2x_sect_val);
+	} else if (flash_2x_sect_val == ISO_IMAGE1 || flash_2x_sect_val == ISO_IMAGE2) {
+		Status = CorruptISOSig(ad, flash_2x_sect_val);
 	} else {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Given Section <%d>does not have Header", eFlash2xSectionVal);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, "Given Section <%d>does not have Header", flash_2x_sect_val);
 		return STATUS_SUCCESS;
 	}
 	return Status;
@@ -4409,7 +4409,7 @@ static enum bcm_flash2x_section_val getHighestPriISO(struct bcm_mini_adapter *ad
 
 static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 				PUINT pBuff,
-				enum bcm_flash2x_section_val eFlash2xSectionVal,
+				enum bcm_flash2x_section_val flash_2x_sect_val,
 				unsigned int uiOffset,
 				unsigned int uiNumBytes)
 {
@@ -4428,10 +4428,10 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 		return STATUS_FAILURE;
 	}
 
-	uiStartOffset = BcmGetSectionValStartOffset(ad, eFlash2xSectionVal);
+	uiStartOffset = BcmGetSectionValStartOffset(ad, flash_2x_sect_val);
 
-	if (IsSectionExistInVendorInfo(ad, eFlash2xSectionVal))
-		return vendorextnWriteSectionWithoutErase(ad, pcBuff, eFlash2xSectionVal, uiOffset, uiNumBytes);
+	if (IsSectionExistInVendorInfo(ad, flash_2x_sect_val))
+		return vendorextnWriteSectionWithoutErase(ad, pcBuff, flash_2x_sect_val, uiOffset, uiNumBytes);
 
 	uiOffset = uiOffset + uiStartOffset;
 
@@ -4543,7 +4543,7 @@ static int IsSectionWritable(struct bcm_mini_adapter *ad, enum bcm_flash2x_secti
 	return Status;
 }
 
-static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val eFlash2xSectionVal)
+static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
 	PUCHAR pBuff = NULL;
 	unsigned int sig = 0;
@@ -4553,7 +4553,7 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 
 	ad->bSigCorrupted = false;
 	if (ad->bAllDSDWriteAllow == false) {
-		if (IsSectionWritable(ad, eFlash2xSectionVal) != TRUE) {
+		if (IsSectionWritable(ad, flash_2x_sect_val) != TRUE) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section is not Writable...Hence can't Corrupt signature");
 			return SECTOR_IS_NOT_WRITABLE;
 		}
@@ -4568,7 +4568,7 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 	uiOffset = ad->psFlash2xCSInfo->OffsetFromDSDStartForDSDHeader + sizeof(struct bcm_dsd_header);
 	uiOffset -= MAX_RW_SIZE;
 
-	BcmFlash2xBulkRead(ad, (PUINT)pBuff, eFlash2xSectionVal, uiOffset, MAX_RW_SIZE);
+	BcmFlash2xBulkRead(ad, (PUINT)pBuff, flash_2x_sect_val, uiOffset, MAX_RW_SIZE);
 
 	sig = *((PUINT)(pBuff + 12));
 	sig = ntohl(sig);
@@ -4582,14 +4582,14 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 			uiSectAlignAddr = uiOffset & ~(ad->uiSectorSize - 1);
 			BlockStatus = BcmFlashUnProtectBlock(ad, uiSectAlignAddr, ad->uiSectorSize);
 
-			WriteToFlashWithoutSectorErase(ad, (PUINT)(pBuff + 12), eFlash2xSectionVal,
+			WriteToFlashWithoutSectorErase(ad, (PUINT)(pBuff + 12), flash_2x_sect_val,
 						(uiOffset + 12), BYTE_WRITE_SUPPORT);
 			if (BlockStatus) {
 				BcmRestoreBlockProtectStatus(ad, BlockStatus);
 				BlockStatus = 0;
 			}
 		} else {
-			WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, eFlash2xSectionVal,
+			WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, flash_2x_sect_val,
 						uiOffset, MAX_RW_SIZE);
 		}
 	} else {
@@ -4605,7 +4605,7 @@ static int CorruptDSDSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 	return STATUS_SUCCESS;
 }
 
-static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val eFlash2xSectionVal)
+static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val flash_2x_sect_val)
 {
 	PUCHAR pBuff = NULL;
 	unsigned int sig = 0;
@@ -4613,7 +4613,7 @@ static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 
 	ad->bSigCorrupted = false;
 
-	if (IsSectionWritable(ad, eFlash2xSectionVal) != TRUE) {
+	if (IsSectionWritable(ad, flash_2x_sect_val) != TRUE) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section is not Writable...Hence can't Corrupt signature");
 		return SECTOR_IS_NOT_WRITABLE;
 	}
@@ -4626,7 +4626,7 @@ static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 
 	uiOffset = 0;
 
-	BcmFlash2xBulkRead(ad, (PUINT)pBuff, eFlash2xSectionVal, uiOffset, MAX_RW_SIZE);
+	BcmFlash2xBulkRead(ad, (PUINT)pBuff, flash_2x_sect_val, uiOffset, MAX_RW_SIZE);
 
 	sig = *((PUINT)pBuff);
 	sig = ntohl(sig);
@@ -4636,7 +4636,7 @@ static int CorruptISOSig(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_v
 
 	if (sig == ISO_IMAGE_MAGIC_NUMBER) {
 		ad->bSigCorrupted = TRUE;
-		WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, eFlash2xSectionVal,
+		WriteToFlashWithoutSectorErase(ad, (PUINT)pBuff, flash_2x_sect_val,
 					uiOffset, ad->ulFlashWriteSize);
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "BCM Signature is not present in header");

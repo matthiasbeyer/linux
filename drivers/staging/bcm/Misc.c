@@ -1091,7 +1091,7 @@ static int bcm_parse_target_params(struct bcm_mini_adapter *ad)
 
 void beceem_parse_target_struct(struct bcm_mini_adapter *ad)
 {
-	unsigned int host_drvr_cfg6 = 0, uiEEPROMFlag = 0;
+	unsigned int host_drvr_cfg6 = 0, eeprom_flag = 0;
 
 	if (ntohl(ad->pstargetparams->m_u32PhyParameter2) & AUTO_SYNC_DISABLE) {
 		pr_info(DRV_NAME ": AutoSyncup is Disabled\n");
@@ -1133,10 +1133,10 @@ void beceem_parse_target_struct(struct bcm_mini_adapter *ad)
 		pr_info(DRV_NAME ": Making DoSuspend TRUE as per configFile");
 	}
 
-	uiEEPROMFlag = ntohl(ad->pstargetparams->m_u32EEPROMFlag);
-	pr_info(DRV_NAME ": uiEEPROMFlag  : 0x%X\n", uiEEPROMFlag);
-	ad->eNVMType = (enum bcm_nvm_type)((uiEEPROMFlag>>4)&0x3);
-	ad->bStatusWrite = (uiEEPROMFlag>>6)&0x1;
+	eeprom_flag = ntohl(ad->pstargetparams->m_u32EEPROMFlag);
+	pr_info(DRV_NAME ": eeprom_flag  : 0x%X\n", eeprom_flag);
+	ad->eNVMType = (enum bcm_nvm_type)((eeprom_flag>>4)&0x3);
+	ad->bStatusWrite = (eeprom_flag>>6)&0x1;
 	ad->uiSectorSizeInCFG = 1024*(0xFFFF & ntohl(ad->pstargetparams->HostDrvrConfig4));
 	ad->bSectorSizeOverride = (bool) ((ntohl(ad->pstargetparams->HostDrvrConfig4))>>16)&0x1;
 

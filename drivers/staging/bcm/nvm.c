@@ -263,23 +263,23 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 		DWORD *buff)
 {
 	unsigned int data[8]		= {0};
-	unsigned int uiByteOffset	= 0;
+	unsigned int byte_offset	= 0;
 	unsigned int uiTempOffset	= 0;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, NVM_RW, DBG_LVL_ALL, " ====> ");
 
 	uiTempOffset = offset - (offset % MAX_RW_SIZE);
-	uiByteOffset = offset - uiTempOffset;
+	byte_offset = offset - uiTempOffset;
 
 	ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&data[0], 4);
 
 	/* A word can overlap at most over 2 pages. In that case we read the
 	 * next page too.
 	 */
-	if (uiByteOffset > 12)
+	if (byte_offset > 12)
 		ReadBeceemEEPROMBulk(ad, uiTempOffset + MAX_RW_SIZE, (PUINT)&data[4], 4);
 
-	memcpy((PUCHAR)buff, (((PUCHAR)&data[0]) + uiByteOffset), 4);
+	memcpy((PUCHAR)buff, (((PUCHAR)&data[0]) + byte_offset), 4);
 
 	return STATUS_SUCCESS;
 } /* ReadBeceemEEPROM() */

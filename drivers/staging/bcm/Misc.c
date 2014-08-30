@@ -1313,15 +1313,15 @@ static void HandleShutDownModeWakeup(struct bcm_mini_adapter *ad)
 
 static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 {
-	struct bcm_link_request stShutdownResponse;
+	struct bcm_link_request shutdown_response;
 	unsigned int nvm_access = 0, low_pwr_abort_msg = 0;
 	unsigned int status = 0;
 
-	memset(&stShutdownResponse, 0, sizeof(struct bcm_link_request));
-	stShutdownResponse.Leader.Status  = LINK_UP_CONTROL_REQ;
-	stShutdownResponse.Leader.PLength = 8; /* 8 bytes; */
-	stShutdownResponse.szData[0] = LINK_UP_ACK;
-	stShutdownResponse.szData[1] = LINK_SHUTDOWN_REQ_FROM_FIRMWARE;
+	memset(&shutdown_response, 0, sizeof(struct bcm_link_request));
+	shutdown_response.Leader.Status  = LINK_UP_CONTROL_REQ;
+	shutdown_response.Leader.PLength = 8; /* 8 bytes; */
+	shutdown_response.szData[0] = LINK_UP_ACK;
+	shutdown_response.szData[1] = LINK_SHUTDOWN_REQ_FROM_FIRMWARE;
 
 	/*********************************
 	 * down_trylock -
@@ -1343,11 +1343,11 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 			up(&ad->LowPowerModeSync);
 
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "Device Access is going on NACK the Shut Down MODE\n");
-		stShutdownResponse.szData[2] = SHUTDOWN_NACK_FROM_DRIVER; /* NACK- device access is going on. */
+		shutdown_response.szData[2] = SHUTDOWN_NACK_FROM_DRIVER; /* NACK- device access is going on. */
 		ad->bPreparingForLowPowerMode = false;
 	} else {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "Sending SHUTDOWN MODE ACK\n");
-		stShutdownResponse.szData[2] = SHUTDOWN_ACK_FROM_DRIVER; /* ShutDown ACK */
+		shutdown_response.szData[2] = SHUTDOWN_ACK_FROM_DRIVER; /* ShutDown ACK */
 
 		/* Wait for the LED to TURN OFF before sending ACK response */
 		if (ad->LEDInfo.led_thread_running & BCM_LED_THREAD_RUNNING_ACTIVELY) {
@@ -1362,13 +1362,13 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 
 			/* If Timed Out to Sync IDLE MODE Enter, do IDLE mode Exit and Send NACK to device */
 			if (ret <= 0) {
-				stShutdownResponse.szData[1] = SHUTDOWN_NACK_FROM_DRIVER; /* NACK- device access is going on. */
+				shutdown_response.szData[1] = SHUTDOWN_NACK_FROM_DRIVER; /* NACK- device access is going on. */
 				ad->DriverState = NO_NETWORK_ENTRY;
 				wake_up(&ad->LEDInfo.notify_led_event);
 			}
 		}
 
-		if (stShutdownResponse.szData[2] == SHUTDOWN_ACK_FROM_DRIVER) {
+		if (shutdown_response.szData[2] == SHUTDOWN_ACK_FROM_DRIVER) {
 			BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "ACKING SHUTDOWN MODE !!!!!!!!!");
 			down(&ad->rdmwrmsync);
 			ad->bPreparingForLowPowerMode = TRUE;
@@ -1387,7 +1387,7 @@ static void SendShutModeResponse(struct bcm_mini_adapter *ad)
 			up(&ad->LowPowerModeSync);
 	}
 
-	status = CopyBufferToControlPacket(ad, &stShutdownResponse);
+	status = CopyBufferToControlPacket(ad, &shutdown_response);
 	if (status != STATUS_SUCCESS) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_OTHERS, MP_SHUTDOWN, DBG_LVL_ALL, "fail to send the Idle mode Request\n");
 		ad->bPreparingForLowPowerMode = false;

@@ -53,13 +53,13 @@ static enum bcm_flash2x_section_val getHighestPriISO(struct bcm_mini_adapter *ad
 
 static int BeceemFlashBulkRead(
 	struct bcm_mini_adapter *ad,
-	PUINT pBuffer,
+	PUINT buff,
 	unsigned int offset,
 	unsigned int nbytes);
 
 static int BeceemFlashBulkWrite(
 	struct bcm_mini_adapter *ad,
-	PUINT pBuffer,
+	PUINT buff,
 	unsigned int offset,
 	unsigned int nbytes,
 	bool bVerify);
@@ -252,7 +252,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
  * Arguments:
  *		ad     - ptr to Adapter object instance
  *      offset	- EEPROM Offset to read the data from.
- *      pBuffer		- Pointer to word where data needs to be stored in.
+ *      buff		- Pointer to word where data needs to be stored in.
  *
  * Returns:
  *		OSAL_STATUS_CODE:
@@ -260,7 +260,7 @@ static int ReadBeceemEEPROMBulk(struct bcm_mini_adapter *ad,
 
 int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 		DWORD offset,
-		DWORD *pBuffer)
+		DWORD *buff)
 {
 	unsigned int uiData[8]		= {0};
 	unsigned int uiByteOffset	= 0;
@@ -279,7 +279,7 @@ int ReadBeceemEEPROM(struct bcm_mini_adapter *ad,
 	if (uiByteOffset > 12)
 		ReadBeceemEEPROMBulk(ad, uiTempOffset + MAX_RW_SIZE, (PUINT)&uiData[4], 4);
 
-	memcpy((PUCHAR)pBuffer, (((PUCHAR)&uiData[0]) + uiByteOffset), 4);
+	memcpy((PUCHAR)buff, (((PUCHAR)&uiData[0]) + uiByteOffset), 4);
 
 	return STATUS_SUCCESS;
 } /* ReadBeceemEEPROM() */
@@ -307,7 +307,7 @@ int ReadMacAddressFromNVM(struct bcm_mini_adapter *ad)
  *
  * Arguments:
  *		ad    - ptr to Adapter object instance
- *		pBuffer    - Buffer to store the data read from EEPROM
+ *		buff    - Buffer to store the data read from EEPROM
  *		offset   - Offset of EEPROM from where data should be read
  *		nbytes - Number of bytes to be read from the EEPROM.
  *
@@ -317,7 +317,7 @@ int ReadMacAddressFromNVM(struct bcm_mini_adapter *ad)
  */
 
 int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
-			PUINT pBuffer,
+			PUINT buff,
 			unsigned int offset,
 			unsigned int nbytes)
 {
@@ -328,19 +328,19 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	unsigned int uiTempOffset	= 0;
 	unsigned int uiExtraBytes	= 0;
 	unsigned int uiFailureRetries	= 0;
-	PUCHAR pcBuff = (PUCHAR)pBuffer;
+	PUCHAR pcBuff = (PUCHAR)buff;
 
 	if (offset % MAX_RW_SIZE && uiBytesRemaining) {
 		uiTempOffset = offset - (offset % MAX_RW_SIZE);
 		uiExtraBytes = offset - uiTempOffset;
 		ReadBeceemEEPROMBulk(ad, uiTempOffset, (PUINT)&uiData[0], 4);
 		if (uiBytesRemaining >= (MAX_RW_SIZE - uiExtraBytes)) {
-			memcpy(pBuffer, (((PUCHAR)&uiData[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
+			memcpy(buff, (((PUCHAR)&uiData[0]) + uiExtraBytes), MAX_RW_SIZE - uiExtraBytes);
 			uiBytesRemaining -= (MAX_RW_SIZE - uiExtraBytes);
 			uiIndex += (MAX_RW_SIZE - uiExtraBytes);
 			offset += (MAX_RW_SIZE - uiExtraBytes);
 		} else {
-			memcpy(pBuffer, (((PUCHAR)&uiData[0]) + uiExtraBytes), uiBytesRemaining);
+			memcpy(buff, (((PUCHAR)&uiData[0]) + uiExtraBytes), uiBytesRemaining);
 			uiIndex += uiBytesRemaining;
 			offset += uiBytesRemaining;
 			uiBytesRemaining = 0;
@@ -377,7 +377,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			}
 		} else {
 			/* Handle the reads less than 4 bytes... */
-			PUCHAR pCharBuff = (PUCHAR)pBuffer;
+			PUCHAR pCharBuff = (PUCHAR)buff;
 
 			pCharBuff += uiIndex;
 			if (ReadBeceemEEPROM(ad, offset, &uiData[0]) == 0) {
@@ -400,7 +400,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *		ad    - ptr to Adapter object instance
- *		pBuffer    - Buffer to store the data read from FLASH
+ *		buff    - Buffer to store the data read from FLASH
  *		offset   - Offset of FLASH from where data should be read
  *		nbytes - Number of bytes to be read from the FLASH.
  *
@@ -410,7 +410,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
  */
 
 static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
-			PUINT pBuffer,
+			PUINT buff,
 			unsigned int offset,
 			unsigned int nbytes)
 {
@@ -429,7 +429,7 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 	 * offset = offset + GetFlashBaseAddr(ad);
 	 */
 	#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
-		Status = bcmflash_raw_read((offset/FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)pBuffer, nbytes);
+		Status = bcmflash_raw_read((offset/FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)buff, nbytes);
 		return Status;
 	#endif
 
@@ -442,7 +442,7 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 		uiBytesToRead = MAX_RW_SIZE - (offset % MAX_RW_SIZE);
 		uiBytesToRead = MIN(nbytes, uiBytesToRead);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)pBuffer + uiIndex, uiBytesToRead);
+		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + uiIndex, uiBytesToRead);
 		if (bytes < 0) {
 			Status = bytes;
 			ad->SelectedChip = RESET_CHIP_SELECT;
@@ -460,7 +460,7 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 
 		uiBytesToRead = MIN(nbytes, MAX_RW_SIZE);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)pBuffer + uiIndex, uiBytesToRead);
+		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + uiIndex, uiBytesToRead);
 		if (bytes < 0) {
 			Status = bytes;
 			break;
@@ -1079,7 +1079,7 @@ static int bulk_read_complete_sector(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *		ad    - ptr to Adapter object instance
- * pBuffer - Data to be written.
+ * buff - Data to be written.
  *		offset   - Offset of the flash where data needs to be written to.
  *		nbytes - Number of bytes to be written.
  *		bVerify    - read verify flag.
@@ -1089,13 +1089,13 @@ static int bulk_read_complete_sector(struct bcm_mini_adapter *ad,
  */
 
 static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
-				PUINT pBuffer,
+				PUINT buff,
 				unsigned int offset,
 				unsigned int nbytes,
 				bool bVerify)
 {
 	PCHAR pTempBuff			= NULL;
-	PUCHAR pcBuffer			= (PUCHAR)pBuffer;
+	PUCHAR pcBuffer			= (PUCHAR)buff;
 	unsigned int uiIndex			= 0;
 	unsigned int uiOffsetFromSectStart	= 0;
 	unsigned int sect_align_addr		= 0;
@@ -1110,7 +1110,7 @@ static int BeceemFlashBulkWrite(struct bcm_mini_adapter *ad,
 	unsigned int uiPartOffset		= 0;
 
 	#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
-		Status = bcmflash_raw_write((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)pBuffer, nbytes);
+		Status = bcmflash_raw_write((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)buff, nbytes);
 		return Status;
 	#endif
 
@@ -1255,7 +1255,7 @@ BeceemFlashBulkWrite_EXIT:
  *
  * Arguments:
  *		ad		- ptr to Adapter object instance
- *		pBuffer		- Data to be written.
+ *		buff		- Data to be written.
  *		offset	- Offset of the flash where data needs to be written to.
  *		nbytes	- Number of bytes to be written.
  *		bVerify		- read verify flag.
@@ -1265,13 +1265,13 @@ BeceemFlashBulkWrite_EXIT:
  */
 
 static int BeceemFlashBulkWriteStatus(struct bcm_mini_adapter *ad,
-				PUINT pBuffer,
+				PUINT buff,
 				unsigned int offset,
 				unsigned int nbytes,
 				bool bVerify)
 {
 	PCHAR pTempBuff			= NULL;
-	PUCHAR pcBuffer			= (PUCHAR)pBuffer;
+	PUCHAR pcBuffer			= (PUCHAR)buff;
 	unsigned int uiIndex			= 0;
 	unsigned int uiOffsetFromSectStart	= 0;
 	unsigned int sect_align_addr		= 0;
@@ -1482,7 +1482,7 @@ int PropagateCalParamsFromFlashToMemory(struct bcm_mini_adapter *ad)
  *
  * Arguments:
  *		ad		- ptr to Adapter object instance
- *		pBuffer		- Data to be written.
+ *		buff		- Data to be written.
  *		offset	- Offset of the flash where data needs to be written to.
  *		nbytes	- Number of bytes to be written.
  * Returns:
@@ -1491,7 +1491,7 @@ int PropagateCalParamsFromFlashToMemory(struct bcm_mini_adapter *ad)
  */
 
 static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
-					PUINT pBuffer,
+					PUINT buff,
 					unsigned int offset,
 					unsigned int nbytes)
 {
@@ -1508,13 +1508,13 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 			/* for the requests more than or equal to MAX_RW_SIZE bytes, use bulk read function to make the access faster. */
 			BeceemEEPROMBulkRead(ad, &auiData[0], offset, MAX_RW_SIZE);
 
-			if (memcmp(&pBuffer[uiIndex], &auiData[0], MAX_RW_SIZE)) {
+			if (memcmp(&buff[uiIndex], &auiData[0], MAX_RW_SIZE)) {
 				/* re-write */
-				BeceemEEPROMBulkWrite(ad, (PUCHAR)(pBuffer + uiIndex), offset, MAX_RW_SIZE, false);
+				BeceemEEPROMBulkWrite(ad, (PUCHAR)(buff + uiIndex), offset, MAX_RW_SIZE, false);
 				mdelay(3);
 				BeceemEEPROMBulkRead(ad, &auiData[0], offset, MAX_RW_SIZE);
 
-				if (memcmp(&pBuffer[uiIndex], &auiData[0], MAX_RW_SIZE))
+				if (memcmp(&buff[uiIndex], &auiData[0], MAX_RW_SIZE))
 					return -1;
 			}
 			offset += MAX_RW_SIZE;
@@ -1522,12 +1522,12 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 			uiIndex += 4;
 		} else if (nbytes >= 4) {
 			BeceemEEPROMBulkRead(ad, &uiData, offset, 4);
-			if (uiData != pBuffer[uiIndex]) {
+			if (uiData != buff[uiIndex]) {
 				/* re-write */
-				BeceemEEPROMBulkWrite(ad, (PUCHAR)(pBuffer + uiIndex), offset, 4, false);
+				BeceemEEPROMBulkWrite(ad, (PUCHAR)(buff + uiIndex), offset, 4, false);
 				mdelay(3);
 				BeceemEEPROMBulkRead(ad, &uiData, offset, 4);
-				if (uiData != pBuffer[uiIndex])
+				if (uiData != buff[uiIndex])
 					return -1;
 			}
 			offset += 4;
@@ -1536,7 +1536,7 @@ static int BeceemEEPROMReadBackandVerify(struct bcm_mini_adapter *ad,
 		} else {
 			/* Handle the reads less than 4 bytes... */
 			uiData = 0;
-			memcpy(&uiData, ((PUCHAR)pBuffer) + (uiIndex * sizeof(unsigned int)), nbytes);
+			memcpy(&uiData, ((PUCHAR)buff) + (uiIndex * sizeof(unsigned int)), nbytes);
 			BeceemEEPROMBulkRead(ad, &uiRdbk, offset, 4);
 
 			if (memcmp(&uiData, &uiRdbk, nbytes))
@@ -1696,7 +1696,7 @@ static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int uiDat
  *
  * Arguments:
  *		ad		- ptr to Adapter object instance
- *		pBuffer		- Data to be written.
+ *		buff		- Data to be written.
  *		offset	- Offset of the EEPROM where data needs to be written to.
  *		nbytes	- Number of bytes to be written.
  *		bVerify		- read verify flag.
@@ -1706,7 +1706,7 @@ static int BeceemEEPROMWritePage(struct bcm_mini_adapter *ad, unsigned int uiDat
  */
 
 int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
-			PUCHAR pBuffer,
+			PUCHAR buff,
 			unsigned int offset,
 			unsigned int nbytes,
 			bool bVerify)
@@ -1717,7 +1717,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 	unsigned int uiIndex		= 0;
 	unsigned int uiTempOffset	= 0;
 	unsigned int uiExtraBytes	= 0;
-	/* PUINT puiBuffer	= (PUINT)pBuffer;
+	/* PUINT puiBuffer	= (PUINT)buff;
 	 * int value;
 	 */
 
@@ -1728,7 +1728,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 		BeceemEEPROMBulkRead(ad, &uiData[0], uiTempOffset, MAX_RW_SIZE);
 
 		if (uiBytesToCopy >= (16 - uiExtraBytes)) {
-			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), pBuffer, MAX_RW_SIZE - uiExtraBytes);
+			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), buff, MAX_RW_SIZE - uiExtraBytes);
 
 			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, uiTempOffset))
 				return STATUS_FAILURE;
@@ -1737,7 +1737,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 			uiIndex += (MAX_RW_SIZE - uiExtraBytes);
 			offset += (MAX_RW_SIZE - uiExtraBytes);
 		} else {
-			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), pBuffer, uiBytesToCopy);
+			memcpy((((PUCHAR)&uiData[0]) + uiExtraBytes), buff, uiBytesToCopy);
 
 			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, uiTempOffset))
 				return STATUS_FAILURE;
@@ -1753,7 +1753,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 			return -1;
 
 		if (uiBytesToCopy >= MAX_RW_SIZE) {
-			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, (PUINT) &pBuffer[uiIndex], offset))
+			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, (PUINT) &buff[uiIndex], offset))
 				return STATUS_FAILURE;
 
 			uiIndex += MAX_RW_SIZE;
@@ -1764,7 +1764,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
 			 * To program non 16byte aligned data, read 16byte and then update.
 			 */
 			BeceemEEPROMBulkRead(ad, &uiData[0], offset, 16);
-			memcpy(&uiData[0], pBuffer + uiIndex, uiBytesToCopy);
+			memcpy(&uiData[0], buff + uiIndex, uiBytesToCopy);
 
 			if (STATUS_FAILURE == BeceemEEPROMWritePage(ad, uiData, offset))
 				return STATUS_FAILURE;
@@ -1783,7 +1783,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *		ad      - ptr to Adapter object instance
- *		pBuffer       - Buffer to store the data read from NVM
+ *		buff       - Buffer to store the data read from NVM
  *		offset       - Offset of NVM from where data should be read
  *		nbytes - Number of bytes to be read from the NVM.
  *
@@ -1793,7 +1793,7 @@ int BeceemEEPROMBulkWrite(struct bcm_mini_adapter *ad,
  */
 
 int BeceemNVMRead(struct bcm_mini_adapter *ad,
-		PUINT pBuffer,
+		PUINT buff,
 		unsigned int offset,
 		unsigned int nbytes)
 {
@@ -1806,26 +1806,26 @@ int BeceemNVMRead(struct bcm_mini_adapter *ad,
 	if (ad->eNVMType == NVM_FLASH) {
 		if (ad->bFlashRawRead == false) {
 			if (IsSectionExistInVendorInfo(ad, ad->eActiveDSD))
-				return vendorextnReadSection(ad, (PUCHAR)pBuffer, ad->eActiveDSD, offset, nbytes);
+				return vendorextnReadSection(ad, (PUCHAR)buff, ad->eActiveDSD, offset, nbytes);
 
 			offset = offset + ad->ulFlashCalStart;
 		}
 
 		#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
-			Status = bcmflash_raw_read((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)pBuffer, nbytes);
+			Status = bcmflash_raw_read((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), (unsigned char *)buff, nbytes);
 		#else
 			rdmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 			value = 0;
 			wrmalt(ad, 0x0f000C80, &value, sizeof(value));
 			Status = BeceemFlashBulkRead(ad,
-						pBuffer,
+						buff,
 						offset,
 						nbytes);
 			wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 		#endif
 	} else if (ad->eNVMType == NVM_EEPROM) {
 		Status = BeceemEEPROMBulkRead(ad,
-					pBuffer,
+					buff,
 					offset,
 					nbytes);
 	} else {
@@ -1842,7 +1842,7 @@ int BeceemNVMRead(struct bcm_mini_adapter *ad,
  *
  * Arguments:
  *		ad      - ptr to Adapter object instance
- *		pBuffer       - Buffer contains the data to be written.
+ *		buff       - Buffer contains the data to be written.
  *		offset       - Offset of NVM where data to be written to.
  *		nbytes - Number of bytes to be written..
  *
@@ -1852,7 +1852,7 @@ int BeceemNVMRead(struct bcm_mini_adapter *ad,
  */
 
 int BeceemNVMWrite(struct bcm_mini_adapter *ad,
-		PUINT pBuffer,
+		PUINT buff,
 		unsigned int offset,
 		unsigned int nbytes,
 		bool bVerify)
@@ -1870,12 +1870,12 @@ int BeceemNVMWrite(struct bcm_mini_adapter *ad,
 
 	if (ad->eNVMType == NVM_FLASH) {
 		if (IsSectionExistInVendorInfo(ad, ad->eActiveDSD))
-			Status = vendorextnWriteSection(ad, (PUCHAR)pBuffer, ad->eActiveDSD, offset, nbytes, bVerify);
+			Status = vendorextnWriteSection(ad, (PUCHAR)buff, ad->eActiveDSD, offset, nbytes, bVerify);
 		else {
 			uiFlashOffset = offset + ad->ulFlashCalStart;
 
 			#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
-				Status = bcmflash_raw_write((uiFlashOffset / FLASH_PART_SIZE), (uiFlashOffset % FLASH_PART_SIZE), (unsigned char *)pBuffer, nbytes);
+				Status = bcmflash_raw_write((uiFlashOffset / FLASH_PART_SIZE), (uiFlashOffset % FLASH_PART_SIZE), (unsigned char *)buff, nbytes);
 			#else
 				rdmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 				value = 0;
@@ -1883,14 +1883,14 @@ int BeceemNVMWrite(struct bcm_mini_adapter *ad,
 
 				if (ad->bStatusWrite == TRUE)
 					Status = BeceemFlashBulkWriteStatus(ad,
-									pBuffer,
+									buff,
 									uiFlashOffset,
 									nbytes ,
 									bVerify);
 				else
 
 					Status = BeceemFlashBulkWrite(ad,
-								pBuffer,
+								buff,
 								uiFlashOffset,
 								nbytes,
 								bVerify);
@@ -1901,11 +1901,11 @@ int BeceemNVMWrite(struct bcm_mini_adapter *ad,
 			uiMemoryLoc += (offset - EEPROM_CALPARAM_START);
 			while (nbytes) {
 				if (nbytes > BUFFER_4K) {
-					wrm(ad, (uiMemoryLoc+uiIndex), (PCHAR)(pBuffer + (uiIndex / 4)), BUFFER_4K);
+					wrm(ad, (uiMemoryLoc+uiIndex), (PCHAR)(buff + (uiIndex / 4)), BUFFER_4K);
 					nbytes -= BUFFER_4K;
 					uiIndex += BUFFER_4K;
 				} else {
-					wrm(ad, uiMemoryLoc+uiIndex, (PCHAR)(pBuffer + (uiIndex / 4)), nbytes);
+					wrm(ad, uiMemoryLoc+uiIndex, (PCHAR)(buff + (uiIndex / 4)), nbytes);
 					nbytes = 0;
 					break;
 				}
@@ -1913,7 +1913,7 @@ int BeceemNVMWrite(struct bcm_mini_adapter *ad,
 		} else {
 			if ((offset + nbytes) > EEPROM_CALPARAM_START) {
 				ULONG ulBytesTobeSkipped = 0;
-				PUCHAR pcBuffer = (PUCHAR)pBuffer; /* char pointer to take care of odd byte cases. */
+				PUCHAR pcBuffer = (PUCHAR)buff; /* char pointer to take care of odd byte cases. */
 
 				nbytes -= (EEPROM_CALPARAM_START - offset);
 				ulBytesTobeSkipped += (EEPROM_CALPARAM_START - offset);
@@ -1935,12 +1935,12 @@ int BeceemNVMWrite(struct bcm_mini_adapter *ad,
 		wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 	} else if (ad->eNVMType == NVM_EEPROM) {
 		Status = BeceemEEPROMBulkWrite(ad,
-					(PUCHAR)pBuffer,
+					(PUCHAR)buff,
 					offset,
 					nbytes,
 					bVerify);
 		if (bVerify)
-			Status = BeceemEEPROMReadBackandVerify(ad, (PUINT)pBuffer, offset, nbytes);
+			Status = BeceemEEPROMReadBackandVerify(ad, (PUINT)buff, offset, nbytes);
 	} else {
 		Status = -1;
 	}
@@ -2824,7 +2824,7 @@ static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad, enum bcm_flash
 /*
  * BcmFlash2xBulkRead:- Read API for Flash Map 2.x .
  * @ad :Driver Private Data Structure
- * @pBuffer : Buffer where data has to be put after reading
+ * @buff : Buffer where data has to be put after reading
  * @eFlashSectionVal :Flash Section Val defined in enum bcm_flash2x_section_val
  * @uiOffsetWithinSectionVal :- Offset with in provided section
  * @nbytes : Number of Bytes for Read
@@ -2834,7 +2834,7 @@ static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad, enum bcm_flash
  */
 
 int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
-		PUINT pBuffer,
+		PUINT buff,
 		enum bcm_flash2x_section_val flash_2x_sect_val,
 		unsigned int uiOffsetWithinSectionVal,
 		unsigned int nbytes)
@@ -2865,14 +2865,14 @@ int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
 	}
 
 	if (IsSectionExistInVendorInfo(ad, flash_2x_sect_val))
-		return vendorextnReadSection(ad, (PUCHAR)pBuffer, flash_2x_sect_val, uiOffsetWithinSectionVal, nbytes);
+		return vendorextnReadSection(ad, (PUCHAR)buff, flash_2x_sect_val, uiOffsetWithinSectionVal, nbytes);
 
 	/* calculating  the absolute offset from FLASH; */
 	uiAbsoluteOffset = uiOffsetWithinSectionVal + SectionStartOffset;
 	rdmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 	value = 0;
 	wrmalt(ad, 0x0f000C80, &value, sizeof(value));
-	Status = BeceemFlashBulkRead(ad, pBuffer, uiAbsoluteOffset, nbytes);
+	Status = BeceemFlashBulkRead(ad, buff, uiAbsoluteOffset, nbytes);
 	wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 	if (Status) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Flash Read Failed with Status :%d", Status);
@@ -2885,7 +2885,7 @@ int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
 /*
  * BcmFlash2xBulkWrite :-API for Writing on the Flash Map 2.x.
  * @ad :Driver Private Data Structure
- * @pBuffer : Buffer From where data has to taken for writing
+ * @buff : Buffer From where data has to taken for writing
  * @eFlashSectionVal :Flash Section Val defined in enum bcm_flash2x_section_val
  * @uiOffsetWithinSectionVal :- Offset with in provided section
  * @nbytes : Number of Bytes for Write
@@ -2896,7 +2896,7 @@ int BcmFlash2xBulkRead(struct bcm_mini_adapter *ad,
  */
 
 int BcmFlash2xBulkWrite(struct bcm_mini_adapter *ad,
-			PUINT pBuffer,
+			PUINT buff,
 			enum bcm_flash2x_section_val eFlash2xSectVal,
 			unsigned int offset,
 			unsigned int nbytes,
@@ -2928,7 +2928,7 @@ int BcmFlash2xBulkWrite(struct bcm_mini_adapter *ad,
 	}
 
 	if (IsSectionExistInVendorInfo(ad, eFlash2xSectVal))
-		return vendorextnWriteSection(ad, (PUCHAR)pBuffer, eFlash2xSectVal, offset, nbytes, bVerify);
+		return vendorextnWriteSection(ad, (PUCHAR)buff, eFlash2xSectVal, offset, nbytes, bVerify);
 
 	/* calculating  the absolute offset from FLASH; */
 	offset = offset + FlashSectValStartOffset;
@@ -2937,7 +2937,7 @@ int BcmFlash2xBulkWrite(struct bcm_mini_adapter *ad,
 	value = 0;
 	wrmalt(ad, 0x0f000C80, &value, sizeof(value));
 
-	Status = BeceemFlashBulkWrite(ad, pBuffer, offset, nbytes, bVerify);
+	Status = BeceemFlashBulkWrite(ad, buff, offset, nbytes, bVerify);
 
 	wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 	if (Status) {

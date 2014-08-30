@@ -1531,23 +1531,23 @@ void update_per_sf_desc_cnts(struct bcm_mini_adapter *ad)
 
 void flush_queue(struct bcm_mini_adapter *ad, unsigned int q_idx)
 {
-	struct sk_buff *PacketToDrop = NULL;
+	struct sk_buff *pkt_to_drop = NULL;
 	struct net_device_stats *netstats = &ad->dev->stats;
 
 	spin_lock_bh(&ad->PackInfo[q_idx].SFQueueLock);
 
 	while (ad->PackInfo[q_idx].FirstTxQueue && atomic_read(&ad->TotalPacketCount)) {
-		PacketToDrop = ad->PackInfo[q_idx].FirstTxQueue;
-		if (PacketToDrop && PacketToDrop->len) {
+		pkt_to_drop = ad->PackInfo[q_idx].FirstTxQueue;
+		if (pkt_to_drop && pkt_to_drop->len) {
 			netstats->tx_dropped++;
 			DEQUEUEPACKET(ad->PackInfo[q_idx].FirstTxQueue, ad->PackInfo[q_idx].LastTxQueue);
 			ad->PackInfo[q_idx].uiCurrentPacketsOnHost--;
-			ad->PackInfo[q_idx].uiCurrentBytesOnHost -= PacketToDrop->len;
+			ad->PackInfo[q_idx].uiCurrentBytesOnHost -= pkt_to_drop->len;
 
 			/* Adding dropped statistics */
-			ad->PackInfo[q_idx].uiDroppedCountBytes += PacketToDrop->len;
+			ad->PackInfo[q_idx].uiDroppedCountBytes += pkt_to_drop->len;
 			ad->PackInfo[q_idx].uiDroppedCountPackets++;
-			dev_kfree_skb(PacketToDrop);
+			dev_kfree_skb(pkt_to_drop);
 			atomic_dec(&ad->TotalPacketCount);
 		}
 	}

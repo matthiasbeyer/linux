@@ -1454,13 +1454,13 @@ struct bcm_classifier_rule *GetFragIPClsEntry(struct bcm_mini_adapter *ad, USHOR
 	return NULL;
 }
 
-void AddFragIPClsEntry(struct bcm_mini_adapter *ad, struct bcm_fragmented_packet_info *psFragPktInfo)
+void AddFragIPClsEntry(struct bcm_mini_adapter *ad, struct bcm_fragmented_packet_info *frag_pkt_info)
 {
 	unsigned int index = 0;
 
 	for (index = 0; index < MAX_FRAGMENTEDIP_CLASSIFICATION_ENTRIES; index++) {
 		if (!ad->astFragmentedPktClassifierTable[index].bUsed) {
-			memcpy(&ad->astFragmentedPktClassifierTable[index], psFragPktInfo, sizeof(struct bcm_fragmented_packet_info));
+			memcpy(&ad->astFragmentedPktClassifierTable[index], frag_pkt_info, sizeof(struct bcm_fragmented_packet_info));
 			break;
 		}
 	}

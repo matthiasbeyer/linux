@@ -415,7 +415,7 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 			unsigned int nbytes)
 {
 	unsigned int i = 0;
-	unsigned int uiBytesToRead = nbytes;
+	unsigned int bytes_to_read = nbytes;
 	int status = 0;
 	unsigned int uiPartOffset = 0;
 	int bytes;
@@ -439,36 +439,36 @@ static int BeceemFlashBulkRead(struct bcm_mini_adapter *ad,
 		BcmDoChipSelect(ad, offset);
 		uiPartOffset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
-		uiBytesToRead = MAX_RW_SIZE - (offset % MAX_RW_SIZE);
-		uiBytesToRead = MIN(nbytes, uiBytesToRead);
+		bytes_to_read = MAX_RW_SIZE - (offset % MAX_RW_SIZE);
+		bytes_to_read = MIN(nbytes, bytes_to_read);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, uiBytesToRead);
+		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, bytes_to_read);
 		if (bytes < 0) {
 			status = bytes;
 			ad->SelectedChip = RESET_CHIP_SELECT;
 			return status;
 		}
 
-		i += uiBytesToRead;
-		offset += uiBytesToRead;
-		nbytes -= uiBytesToRead;
+		i += bytes_to_read;
+		offset += bytes_to_read;
+		nbytes -= bytes_to_read;
 	}
 
 	while (nbytes) {
 		BcmDoChipSelect(ad, offset);
 		uiPartOffset = (offset & (FLASH_PART_SIZE - 1)) + GetFlashBaseAddr(ad);
 
-		uiBytesToRead = MIN(nbytes, MAX_RW_SIZE);
+		bytes_to_read = MIN(nbytes, MAX_RW_SIZE);
 
-		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, uiBytesToRead);
+		bytes = rdm(ad, uiPartOffset, (PCHAR)buff + i, bytes_to_read);
 		if (bytes < 0) {
 			status = bytes;
 			break;
 		}
 
-		i += uiBytesToRead;
-		offset += uiBytesToRead;
-		nbytes -= uiBytesToRead;
+		i += bytes_to_read;
+		offset += bytes_to_read;
+		nbytes -= bytes_to_read;
 	}
 	ad->SelectedChip = RESET_CHIP_SELECT;
 	return status;

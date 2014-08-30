@@ -1529,29 +1529,29 @@ void update_per_sf_desc_cnts(struct bcm_mini_adapter *ad)
 	atomic_set(&ad->uiMBupdate, false);
 }
 
-void flush_queue(struct bcm_mini_adapter *ad, unsigned int iQIndex)
+void flush_queue(struct bcm_mini_adapter *ad, unsigned int q_idx)
 {
 	struct sk_buff *PacketToDrop = NULL;
 	struct net_device_stats *netstats = &ad->dev->stats;
 
-	spin_lock_bh(&ad->PackInfo[iQIndex].SFQueueLock);
+	spin_lock_bh(&ad->PackInfo[q_idx].SFQueueLock);
 
-	while (ad->PackInfo[iQIndex].FirstTxQueue && atomic_read(&ad->TotalPacketCount)) {
-		PacketToDrop = ad->PackInfo[iQIndex].FirstTxQueue;
+	while (ad->PackInfo[q_idx].FirstTxQueue && atomic_read(&ad->TotalPacketCount)) {
+		PacketToDrop = ad->PackInfo[q_idx].FirstTxQueue;
 		if (PacketToDrop && PacketToDrop->len) {
 			netstats->tx_dropped++;
-			DEQUEUEPACKET(ad->PackInfo[iQIndex].FirstTxQueue, ad->PackInfo[iQIndex].LastTxQueue);
-			ad->PackInfo[iQIndex].uiCurrentPacketsOnHost--;
-			ad->PackInfo[iQIndex].uiCurrentBytesOnHost -= PacketToDrop->len;
+			DEQUEUEPACKET(ad->PackInfo[q_idx].FirstTxQueue, ad->PackInfo[q_idx].LastTxQueue);
+			ad->PackInfo[q_idx].uiCurrentPacketsOnHost--;
+			ad->PackInfo[q_idx].uiCurrentBytesOnHost -= PacketToDrop->len;
 
 			/* Adding dropped statistics */
-			ad->PackInfo[iQIndex].uiDroppedCountBytes += PacketToDrop->len;
-			ad->PackInfo[iQIndex].uiDroppedCountPackets++;
+			ad->PackInfo[q_idx].uiDroppedCountBytes += PacketToDrop->len;
+			ad->PackInfo[q_idx].uiDroppedCountPackets++;
 			dev_kfree_skb(PacketToDrop);
 			atomic_dec(&ad->TotalPacketCount);
 		}
 	}
-	spin_unlock_bh(&ad->PackInfo[iQIndex].SFQueueLock);
+	spin_unlock_bh(&ad->PackInfo[q_idx].SFQueueLock);
 }
 
 static void beceem_protocol_reset(struct bcm_mini_adapter *ad)

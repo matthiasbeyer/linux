@@ -328,7 +328,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 	unsigned int tmp_offset	= 0;
 	unsigned int extra_bytes	= 0;
 	unsigned int failure_retries	= 0;
-	PUCHAR pcBuff = (PUCHAR)buff;
+	PUCHAR buffer = (PUCHAR)buff;
 
 	if (offset % MAX_RW_SIZE && bytes_remaining) {
 		tmp_offset = offset - (offset % MAX_RW_SIZE);
@@ -357,7 +357,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			 * We read 4 Dwords of data
 			 */
 			if (ReadBeceemEEPROMBulk(ad, offset, &data[0], 4) == 0) {
-				memcpy(pcBuff + i, &data[0], MAX_RW_SIZE);
+				memcpy(buffer + i, &data[0], MAX_RW_SIZE);
 				offset += MAX_RW_SIZE;
 				bytes_remaining -= MAX_RW_SIZE;
 				i += MAX_RW_SIZE;
@@ -367,7 +367,7 @@ int BeceemEEPROMBulkRead(struct bcm_mini_adapter *ad,
 			}
 		} else if (bytes_remaining >= 4) {
 			if (ReadBeceemEEPROM(ad, offset, &data[0]) == 0) {
-				memcpy(pcBuff + i, &data[0], 4);
+				memcpy(buffer + i, &data[0], 4);
 				offset += 4;
 				bytes_remaining -= 4;
 				i += 4;
@@ -4421,7 +4421,7 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 	unsigned int uiStartOffset = 0;
 	/* Adding section start address */
 	int status = STATUS_SUCCESS;
-	PUCHAR pcBuff = (PUCHAR)buff;
+	PUCHAR buffer = (PUCHAR)buff;
 
 	if (nbytes % ad->ulFlashWriteSize) {
 		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Writing without Sector Erase for non-FlashWriteSize number of bytes 0x%x\n", nbytes);
@@ -4431,12 +4431,12 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 	uiStartOffset = BcmGetSectionValStartOffset(ad, flash_2x_sect_val);
 
 	if (IsSectionExistInVendorInfo(ad, flash_2x_sect_val))
-		return vendorextnWriteSectionWithoutErase(ad, pcBuff, flash_2x_sect_val, offset, nbytes);
+		return vendorextnWriteSectionWithoutErase(ad, buffer, flash_2x_sect_val, offset, nbytes);
 
 	offset = offset + uiStartOffset;
 
 	#if defined(BCM_SHM_INTERFACE) && !defined(FLASH_DIRECT_ACCESS)
-		status = bcmflash_raw_writenoerase((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), pcBuff, nbytes);
+		status = bcmflash_raw_writenoerase((offset / FLASH_PART_SIZE), (offset % FLASH_PART_SIZE), buffer, nbytes);
 	#else
 		rdmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));
 		value = 0;
@@ -4448,14 +4448,14 @@ static int WriteToFlashWithoutSectorErase(struct bcm_mini_adapter *ad,
 
 		for (i = 0; i < nbytes; i += ad->ulFlashWriteSize) {
 			if (ad->ulFlashWriteSize == BYTE_WRITE_SUPPORT)
-				status = flashByteWrite(ad, uiPartOffset, pcBuff);
+				status = flashByteWrite(ad, uiPartOffset, buffer);
 			else
-				status = flashWrite(ad, uiPartOffset, pcBuff);
+				status = flashWrite(ad, uiPartOffset, buffer);
 
 			if (status != STATUS_SUCCESS)
 				break;
 
-			pcBuff = pcBuff + ad->ulFlashWriteSize;
+			buffer = buffer + ad->ulFlashWriteSize;
 			uiPartOffset = uiPartOffset +  ad->ulFlashWriteSize;
 		}
 		wrmalt(ad, 0x0f000C80, &uiTemp, sizeof(uiTemp));

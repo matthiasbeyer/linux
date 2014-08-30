@@ -23,7 +23,7 @@ static int BcmGetSectionValEndOffset(struct bcm_mini_adapter *ad,
 static B_UINT8 IsOffsetWritable(struct bcm_mini_adapter *ad,
 				unsigned int offset);
 static int IsSectionWritable(struct bcm_mini_adapter *ad,
-			     enum bcm_flash2x_section_val Section);
+			     enum bcm_flash2x_section_val section);
 static int IsSectionExistInVendorInfo(struct bcm_mini_adapter *ad,
 				      enum bcm_flash2x_section_val section);
 
@@ -4520,24 +4520,24 @@ bool IsSectionExistInFlash(struct bcm_mini_adapter *ad, enum bcm_flash2x_section
 	return SectionPresent;
 }
 
-static int IsSectionWritable(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val Section)
+static int IsSectionWritable(struct bcm_mini_adapter *ad, enum bcm_flash2x_section_val section)
 {
 	int offset = STATUS_FAILURE;
 	int Status = false;
 
-	if (IsSectionExistInFlash(ad, Section) == false) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section <%d> does not exist", Section);
+	if (IsSectionExistInFlash(ad, section) == false) {
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section <%d> does not exist", section);
 		return false;
 	}
 
-	offset = BcmGetSectionValStartOffset(ad, Section);
+	offset = BcmGetSectionValStartOffset(ad, section);
 	if (offset == INVALID_OFFSET) {
-		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section<%d> does not exist", Section);
+		BCM_DEBUG_PRINT(ad, DBG_TYPE_PRINTK, 0, 0, "Section<%d> does not exist", section);
 		return false;
 	}
 
-	if (IsSectionExistInVendorInfo(ad, Section))
-		return !(ad->psFlash2xVendorInfo->VendorSection[Section].AccessFlags & FLASH2X_SECTION_RO);
+	if (IsSectionExistInVendorInfo(ad, section))
+		return !(ad->psFlash2xVendorInfo->VendorSection[section].AccessFlags & FLASH2X_SECTION_RO);
 
 	Status = IsOffsetWritable(ad, offset);
 	return Status;

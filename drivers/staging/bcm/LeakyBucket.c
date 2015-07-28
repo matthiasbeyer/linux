@@ -19,7 +19,7 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 {
 	ULONG curr_time;
 	INT i = 0;
-	struct timeval tv;
+	ktime_t tv;
 	struct bcm_packet_info *curr_pi;
 
 	BCM_DEBUG_PRINT(ad, DBG_TYPE_TX, TOKEN_COUNTS, DBG_LVL_ALL, "=====>\n");
@@ -29,21 +29,19 @@ static VOID UpdateTokenCount(register struct bcm_mini_adapter *ad)
 		return;
 	}
 
-	do_gettimeofday(&tv);
+	tv = ktime_get_raw();
 	for (i = 0; i < NO_OF_QUEUES; i++) {
 		curr_pi = &ad->PackInfo[i];
 
 		if (TRUE == curr_pi->bValid && (1 == curr_pi->ucDirection)) {
-			curr_time = ((tv.tv_sec -
-				curr_pi->stLastUpdateTokenAt.tv_sec)*1000 +
-				(tv.tv_usec - curr_pi->stLastUpdateTokenAt.tv_usec) /
-				1000);
+			ktime_t curr_ktime = ktime_sub(tv, curr_pi->stLastUpdateTokenAt);
+			curr_time = ktime_to_ns(curr_ktime)/1000/1000; // ns to ms
 			if (0 != curr_time) {
 				curr_pi->uiCurrentTokenCount += (ULONG)
 					((curr_pi->uiMaxAllowedRate) *
 					((ULONG)((curr_time)))/1000);
 				memcpy(&curr_pi->stLastUpdateTokenAt, &tv,
-				       sizeof(struct timeval));
+				       sizeof(ktime_t));
 				curr_pi->liLastUpdateTokenAt = curr_time;
 				if (curr_pi->uiCurrentTokenCount >=
 				    curr_pi->uiMaxBucketSize) {

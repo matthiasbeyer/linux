@@ -185,7 +185,7 @@ struct bcm_packet_info {
 	bool		bHeaderSuppressionEnabled;
 	spinlock_t	SFQueueLock;
 	void		*pstSFIndication;
-	struct timeval	stLastUpdateTokenAt;
+	ktime_t	stLastUpdateTokenAt;
 	atomic_t	uiPerSFTxResourceCount;
 	UINT		uiMaxLatency;
 	UCHAR		bIPCSSupport;

@@ -35,6 +35,7 @@
 #include <linux/udp.h>
 #include <linux/usb.h>
 #include <linux/uaccess.h>
+#include <linux/ktime.h>
 #include <net/ip.h>
 
 #include "Typedefs.h"

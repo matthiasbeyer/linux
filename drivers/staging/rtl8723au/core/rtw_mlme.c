@@ -244,21 +244,18 @@ static void _rtw_roaming(struct rtw_adapter *padapter,
 			do_join_r = rtw_do_join(padapter);
 			if (do_join_r == _SUCCESS)
 				break;
-			else {
-				DBG_8723A("roaming do_join return %d\n",
-					  do_join_r);
-				pmlmepriv->to_roaming--;
 
-				if (padapter->mlmepriv.to_roaming > 0)
-					continue;
-				else {
-					DBG_8723A("%s(%d) -to roaming fail, "
-						  "indicate_disconnect\n",
-						  __func__, __LINE__);
-					rtw_indicate_disconnect23a(padapter);
-					break;
-				}
-			}
+			DBG_8723A("roaming do_join return %d\n", do_join_r);
+			pmlmepriv->to_roaming--;
+
+			if (padapter->mlmepriv.to_roaming > 0)
+				continue;
+
+			DBG_8723A("%s(%d) -to roaming fail, "
+				  "indicate_disconnect\n",
+				  __func__, __LINE__);
+			rtw_indicate_disconnect23a(padapter);
+			break;
 		}
 	}
 }

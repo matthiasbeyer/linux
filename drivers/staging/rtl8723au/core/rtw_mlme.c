@@ -1921,17 +1921,17 @@ static int rtw_append_pmkid(struct rtw_adapter *Adapter, int iEntry,
 	struct security_priv *psecuritypriv = &Adapter->securitypriv;
 
 	if (ie[1] <= 20) {
-		/*  The RSN IE didn't include the PMK ID,
-		    append the PMK information */
-			ie[ie_len] = 1;
-			ie_len++;
-			ie[ie_len] = 0;	/* PMKID count = 0x0100 */
-			ie_len++;
-			memcpy(&ie[ie_len],
-			       &psecuritypriv->PMKIDList[iEntry].PMKID, 16);
+		/* The RSN IE didn't include the PMK ID,
+		   append the PMK information */
+		ie[ie_len] = 1;
+		ie_len++;
+		ie[ie_len] = 0;	/* PMKID count = 0x0100 */
+		ie_len++;
+		memcpy(&ie[ie_len],
+		       &psecuritypriv->PMKIDList[iEntry].PMKID, 16);
 
-			ie_len += 16;
-			ie[1] += 18;/* PMKID length = 2+16 */
+		ie_len += 16;
+		ie[1] += 18;/* PMKID length = 2+16 */
 	}
 	return ie_len;
 }

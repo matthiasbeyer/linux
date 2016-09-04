@@ -1397,7 +1397,7 @@ void rtw23a_join_to_handler (unsigned long data)
 				do_join_r = rtw_do_join(adapter);
 				if (do_join_r != _SUCCESS) {
 					DBG_8723A("%s roaming do_join return "
-						  "%d\n", __func__ , do_join_r);
+						  "%d\n", __func__, do_join_r);
 					continue;
 				}
 				break;
@@ -1546,7 +1546,7 @@ static int rtw_check_join_candidate(struct mlme_priv *pmlmepriv,
 	}
 
 	if (!*candidate ||
-	    (*candidate)->network.Rssi<competitor->network.Rssi) {
+	    (*candidate)->network.Rssi < competitor->network.Rssi) {
 		*candidate = competitor;
 		updated = true;
 	}
@@ -1894,7 +1894,7 @@ static int SecIsInPMKIDList(struct rtw_adapter *Adapter, u8 *bssid)
 
 	do {
 		if (psecuritypriv->PMKIDList[i].bUsed &&
-                    ether_addr_equal(psecuritypriv->PMKIDList[i].Bssid, bssid)) {
+		    ether_addr_equal(psecuritypriv->PMKIDList[i].Bssid, bssid)) {
 			break;
 		} else {
 			i++;
@@ -2139,7 +2139,7 @@ bool rtw_restructure_ht_ie23a(struct rtw_adapter *padapter, u8 *in_ie,
 			out_len = *pout_len;
 			pframe = rtw_set_ie23a(out_ie + out_len,
 					       WLAN_EID_HT_OPERATION,
-					       p[1], p + 2 , pout_len);
+					       p[1], p + 2, pout_len);
 		}
 	}
 

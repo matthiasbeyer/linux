@@ -1062,11 +1062,8 @@ void rtw_joinbss_event_prehandle23a(struct rtw_adapter *adapter, u8 *pbuf)
 			 pmlmepriv->assoc_ssid.ssid);
 	}
 
-	if (ether_addr_equal(pnetwork->network.MacAddress,
-			     cur_network->network.MacAddress))
-		the_same_macaddr = true;
-	else
-		the_same_macaddr = false;
+	the_same_macaddr = ether_addr_equal(pnetwork->network.MacAddress,
+					    cur_network->network.MacAddress);
 
 	pnetwork->network.Length = get_wlan_bssid_ex_sz(&pnetwork->network);
 	if (pnetwork->network.Length > sizeof(struct wlan_bssid_ex)) {

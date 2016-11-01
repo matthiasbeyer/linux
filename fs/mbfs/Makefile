@@ -4,5 +4,5 @@
 
 obj-$(CONFIG_MB_FS) += mbfs.o
 
-mbfs-y := mbfs.o
+#mbfs-y := mbfs.o
 

@@ -1,0 +1,7 @@
+config MB_FS
+	tristate "MBFS support"
+	help
+	  Private FS for playing and learning FS programming
+
+          This will definitively eat everything you put into it.
+

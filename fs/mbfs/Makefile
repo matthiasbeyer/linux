@@ -1,10 +1,8 @@
-obj-m := mbfs.o
-aufs-objs := super.o
+#
+# Makefile for the linux mb-filesystem routines.
+#
 
-CFLAGS_super.o := -DDEBUG
+obj-$(CONFIG_MB_FS) += ext4.o
 
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+mbfs-y := mbfs.o super.o
 
-clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
